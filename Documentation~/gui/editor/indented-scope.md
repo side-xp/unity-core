@@ -1,0 +1,3 @@
+# `IndentedScope` class
+
+@todo

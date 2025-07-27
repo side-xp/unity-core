@@ -1,10 +1,22 @@
-# Sideways Experiments Unity Package (@todo)
+# SideXP Core package
 
-<!-- @todo Write package description and minimum Unity version if applicable -->
+Core SideXP library for Unity, used as a dependency by most of our other packages.
+
+As a general rule, this package is meant to be used as a foundation for our other packages, and can be imported safely in any project. It follows the following recommendations:
+
+- not being tied to a specific Render Pipeline
+- not alter the way Unity works or its expected usage by default
+- not have dependencies to our other packages
+- not have dependencies to specific Unity packages or third-party libraries
 
 ## Features
 
-<!-- @todo Describe the features included in this package -->
+- Utility functions
+- Useful extensions for both Unity and C# types
+- Custom attributes
+- Design pattern implementations
+- Editor behavior monitoring
+- Legacy GUI helpers
 
 ## Installation
 
@@ -28,7 +40,7 @@
 
 ## Documentation & Help
 
-Complete documentation available at https://side-xp.github.io/@todo
+Complete documentation available at https://side-xp.github.io/core
 
 If you need help or just want to chat with the community and the *Sideways Experiments* core team, you're welcome to join our [Discord server](https://discord.gg/bMK2d47JaE)!
 
