@@ -1,0 +1,3 @@
+# `Singleton<T>` class
+
+@todo

@@ -1,0 +1,3 @@
+# `[AnimCurve]` attribute
+
+@todo

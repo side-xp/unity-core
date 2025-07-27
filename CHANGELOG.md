@@ -1,0 +1,16 @@
+# Changelog
+
+All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
+
+## [1.0.0](///compare/v0.0.0...v1.0.0) (2025-07-27)
+
+
+### Features
+
+* import existing core lib scripts cb36ae3
+* subassets management utilities 67a8e93
+
+
+### Bug Fixes
+
+* typos & usings 9a70206

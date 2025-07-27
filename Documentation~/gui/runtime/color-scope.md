@@ -1,0 +1,3 @@
+# `ColorScope` class
+
+@todo

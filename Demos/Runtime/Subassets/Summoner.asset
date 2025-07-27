@@ -1,0 +1,73 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &-5262992647950349571
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f97a0d830776c7b4a93939b476f4736d, type: 3}
+  m_Name: Add [card] to deck
+  m_EditorClassIdentifier: 
+  card: {fileID: 11400000, guid: 2a834d2d3894d294fadd808df7def5cb, type: 2}
+--- !u!114 &-4301870580174645503
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bf0ed53e914a8fb4cad39c44673f5cd9, type: 3}
+  m_Name: 'Increase points by [amount]'
+  m_EditorClassIdentifier: 
+  amount: 0
+--- !u!114 &-3592850754907895986
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 635ba4df7669d8d49a2e3987268721af, type: 3}
+  m_Name: Add [effect] to all [card] instances
+  m_EditorClassIdentifier: 
+  effectToAdd: {fileID: 0}
+  card: {fileID: 0}
+--- !u!114 &-3264739516745678686
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bf0ed53e914a8fb4cad39c44673f5cd9, type: 3}
+  m_Name: 'Increase points by [amount]'
+  m_EditorClassIdentifier: 
+  amount: 5
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e9b825257df01884a8b8881582e9ba98, type: 3}
+  m_Name: Summoner
+  m_EditorClassIdentifier: 
+  description: An entity able to summon demons.
+  EffectOnDraw: {fileID: -5262992647950349571}
+  EffectsOnPlay:
+    _subassetsList:
+    - {fileID: -3264739516745678686}
+  EffectOnDiscard: {fileID: -3592850754907895986}
