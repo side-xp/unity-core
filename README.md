@@ -46,11 +46,11 @@ If you need help or just want to chat with the community and the *Sideways Exper
 
 ## Contributing
 
-Do you want to get involved in our projects? Check the [CONTRIBUTING.md](./.github/CONTRIBUTING.md) to learn more!
+Do you want to get involved in our projects? Check our [general contributing guidelines](https://github.com/side-xp/docs/blob/main/shared/CONTRIBUTING.md) to learn more!
 
 ## License
 
-This project is licensed under the [MIT License](./LICENSE.md).
+This project is licensed under the [MIT License](https://mit-license.org).
 
 ---
 
