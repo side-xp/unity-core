@@ -128,7 +128,7 @@ namespace SideXP.Core
         public static void Pool<T>(Transform container, int expectedCount, Func<Transform, T> onInstantiate, Action<T, int> onInit, Action<T, int> onDiscard = null)
             where T : Component
         {
-            T[] existingInstances = container.GetComponentsInChildren<T>(true);
+            T[] existingInstances = container.GetComponentsInChildren<T>(true, true);
             int count = Mathf.Max(0, expectedCount, existingInstances.Length);
             for (int i = 0; i < count; i++)
             {
