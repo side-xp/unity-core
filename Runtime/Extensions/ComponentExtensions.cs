@@ -135,6 +135,27 @@ namespace SideXP.Core
             return TryGetComponentInChildren(component, out output, false);
         }
 
+        /// <summary>
+        /// Custom version of <see cref="Component.GetComponentsInChildren{T}(bool)"/> that allows you to exclude the parent object.
+        /// </summary>
+        /// <typeparam name="T">The type of components to find.</typeparam>
+        /// <param name="includeInactive">If enabled, inactive objects will be queried too.</param>
+        /// <param name="excludeSelf">If enabled and the given parent has a component of the given type, that component will be
+        /// ignored.</param>
+        /// <returns>Returns the queried components.</returns>
+        public static T[] GetComponentsInChildren<T>(this Component component, bool includeInactive, bool excludeSelf)
+            where T : Component
+        {
+            using (var children = new ListPoolScope<T>())
+            {
+                component.GetComponentsInChildren(includeInactive, children.List);
+                if (excludeSelf && component.TryGetComponent(out T parentComp))
+                    children.Remove(parentComp);
+
+                return children.ToArray();
+            }
+        }
+
     }
 
 }
