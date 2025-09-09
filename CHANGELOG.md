@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.1.1](///compare/v1.1.0...v1.1.1) (2025-09-09)
+
+
+### Bug Fixes
+
+* Exclude self when using `TransformUtility.Pool()` 96092d3
+
 ## [1.1.0](///compare/v1.0.3...v1.1.0) (2025-09-09)
 
 
