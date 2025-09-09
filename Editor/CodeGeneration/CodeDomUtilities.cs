@@ -183,8 +183,8 @@ namespace SideXP.Core.EditorOnly
             // For each property of the base type
             foreach (PropertyInfo propertyInfo in parent.GetProperties(ReflectionUtility.InstanceFlags))
             {
-                MethodInfo getMethod = propertyInfo.GetGetMethod();
-                MethodInfo setMethod = propertyInfo.GetSetMethod();
+                MethodInfo getMethod = propertyInfo.GetGetMethod(true);
+                MethodInfo setMethod = propertyInfo.GetSetMethod(true);
 
                 // Skip if the property is not abstract
                 if (getMethod != null && !getMethod.IsAbstract
@@ -197,23 +197,32 @@ namespace SideXP.Core.EditorOnly
                 var prop = new CodeMemberProperty
                 {
                     Name = propertyInfo.Name,
-                    Attributes = MemberAttributes.Override,
                     Type = GetTypeReference(propertyInfo.PropertyType, importsNamespace, domNamespace: domNamespace),
                     HasGet = getMethod != null,
                     HasSet = setMethod != null,
                 };
 
-                // Use appropriate attribute
-                MethodAttributes getMethodAtttributes = getMethod != null ? getMethod.Attributes : 0;
-                MethodAttributes setMethodAtttributes = setMethod != null ? setMethod.Attributes : 0;
-                if (getMethodAtttributes.HasFlag(MethodAttributes.Public) || setMethodAtttributes.HasFlag(MethodAttributes.Public))
-                    prop.Attributes |= MemberAttributes.Public;
-                else if (getMethodAtttributes.HasFlag(MethodAttributes.Family) || setMethodAtttributes.HasFlag(MethodAttributes.Family))
-                    prop.Attributes |= MemberAttributes.Family;
-                else if (getMethodAtttributes.HasFlag(MethodAttributes.FamANDAssem) || setMethodAtttributes.HasFlag(MethodAttributes.FamANDAssem))
-                    prop.Attributes |= MemberAttributes.FamilyAndAssembly;
-                else if (getMethodAtttributes.HasFlag(MethodAttributes.FamORAssem) || setMethodAtttributes.HasFlag(MethodAttributes.FamORAssem))
-                    prop.Attributes |= MemberAttributes.FamilyOrAssembly;
+                // If the parent class is an interface, just use the "public" modifier, since there's no use for "override"
+                if (parent.IsInterface)
+                {
+                    prop.Attributes = MemberAttributes.Public | MemberAttributes.Final;
+                }
+                // Else, use the "override" attribute, and copy the access modifiers of the original property
+                else
+                {
+                    prop.Attributes = MemberAttributes.Override;
+
+                    MethodAttributes getMethodAtttributes = getMethod != null ? getMethod.Attributes : 0;
+                    MethodAttributes setMethodAtttributes = setMethod != null ? setMethod.Attributes : 0;
+                    if (getMethodAtttributes.HasFlag(MethodAttributes.Public) || setMethodAtttributes.HasFlag(MethodAttributes.Public))
+                        prop.Attributes |= MemberAttributes.Public;
+                    else if (getMethodAtttributes.HasFlag(MethodAttributes.Family) || setMethodAtttributes.HasFlag(MethodAttributes.Family))
+                        prop.Attributes |= MemberAttributes.Family;
+                    else if (getMethodAtttributes.HasFlag(MethodAttributes.FamANDAssem) || setMethodAtttributes.HasFlag(MethodAttributes.FamANDAssem))
+                        prop.Attributes |= MemberAttributes.FamilyAndAssembly;
+                    else if (getMethodAtttributes.HasFlag(MethodAttributes.FamORAssem) || setMethodAtttributes.HasFlag(MethodAttributes.FamORAssem))
+                        prop.Attributes |= MemberAttributes.FamilyOrAssembly;
+                }
 
                 // Override property
                 inheritorClass.Members.Add(prop);
@@ -245,19 +254,29 @@ namespace SideXP.Core.EditorOnly
                 var method = new CodeMemberMethod
                 {
                     Name = methodInfo.Name,
-                    Attributes = MemberAttributes.Override,
                     ReturnType = GetTypeReference(methodInfo.ReturnType, importsNamespace, domNamespace: domNamespace),
                 };
 
-                // Use appropriate attribute
-                if (methodInfo.Attributes.HasFlag(MethodAttributes.Public))
-                    method.Attributes |= MemberAttributes.Public;
-                else if (methodInfo.Attributes.HasFlag(MethodAttributes.Family))
-                    method.Attributes |= MemberAttributes.Family;
-                else if (methodInfo.Attributes.HasFlag(MethodAttributes.FamANDAssem))
-                    method.Attributes |= MemberAttributes.FamilyAndAssembly;
-                else if (methodInfo.Attributes.HasFlag(MethodAttributes.FamORAssem))
-                    method.Attributes |= MemberAttributes.FamilyOrAssembly;
+                // If the parent class is an interface, just use the "public" modifier, since there's no use for "override"
+                if (parent.IsInterface)
+                {
+                    method.Attributes = MemberAttributes.Public | MemberAttributes.Final;
+                }
+                // Else, use the "override" attribute, and copy the access modifiers of the original property
+                else
+                {
+                    method.Attributes = MemberAttributes.Override;
+
+                    method.Attributes &= MemberAttributes.AccessMask;
+                    if (methodInfo.Attributes.HasFlag(MethodAttributes.Public) || parent.IsInterface)
+                        method.Attributes |= MemberAttributes.Public;
+                    else if (methodInfo.Attributes.HasFlag(MethodAttributes.Family))
+                        method.Attributes |= MemberAttributes.Family;
+                    else if (methodInfo.Attributes.HasFlag(MethodAttributes.FamANDAssem))
+                        method.Attributes |= MemberAttributes.FamilyAndAssembly;
+                    else if (methodInfo.Attributes.HasFlag(MethodAttributes.FamORAssem))
+                        method.Attributes |= MemberAttributes.FamilyOrAssembly;
+                }
 
                 // Add generic parameters
                 foreach (Type genericTypeParam in methodInfo.GetGenericArguments())
