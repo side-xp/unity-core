@@ -42,9 +42,11 @@ namespace SideXP.Core
             else if (collider is CompositeCollider2D composite)
                 // @todo
                 bounds = composite.bounds;
+#if UNITY_2021_2_OR_NEWER
             else if (collider is CustomCollider2D custom)
                 // @todo
                 bounds = custom.bounds;
+#endif
             else
                 success = false;
 

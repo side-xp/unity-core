@@ -7,7 +7,12 @@ namespace SideXP.Core.EditorOnly
     /// Asset processor for editor settings.
     /// </summary>
     [InitializeOnLoad]
-    public class EditorConfigProcessor : AssetModificationProcessor
+    public class EditorConfigProcessor
+#if UNITY_6000_0_OR_NEWER
+        : AssetModificationProcessor
+#else
+        : UnityEditor.AssetModificationProcessor
+#endif
     {
 
         /// <summary>

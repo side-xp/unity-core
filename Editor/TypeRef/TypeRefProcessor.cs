@@ -10,12 +10,20 @@ namespace SideXP.Core.EditorOnly
     public class TypeRefProcessor : AssetPostprocessor
     {
 
+#if UNITY_2021_2_OR_NEWER
         private static void OnPostprocessAllAssets(
             string[] importedAssets,
             string[] deletedAssets,
             string[] movedAssets,
             string[] movedFromAssetPaths,
             bool didDomainReload)
+#else
+        private static void OnPostprocessAllAssets(
+            string[] importedAssets,
+            string[] deletedAssets,
+            string[] movedAssets,
+            string[] movedFromAssetPaths)
+#endif
         {
             // Log message if types migrations are not tracked
             foreach (FieldInfo type in TypeCache.GetFieldsWithAttribute<TypeRefAttribute>())

@@ -15,7 +15,20 @@ namespace SideXP.Core.EditorOnly
     public class UniqueIdProcessor : AssetPostprocessor
     {
 
-        private static void OnPostprocessAllAssets(string[] importedAssets, string[] deletedAssets, string[] movedAssets, string[] movedFromAssetPaths, bool didDomainReload)
+#if UNITY_2021_2_OR_NEWER
+        private static void OnPostprocessAllAssets(
+            string[] importedAssets,
+            string[] deletedAssets,
+            string[] movedAssets,
+            string[] movedFromAssetPaths,
+            bool didDomainReload)
+#else
+        private static void OnPostprocessAllAssets(
+            string[] importedAssets,
+            string[] deletedAssets,
+            string[] movedAssets,
+            string[] movedFromAssetPaths)
+#endif
         {
             // Foreach field marked with [UniqueId] attribute in the project
             foreach (FieldInfo fieldInfo in TypeCache.GetFieldsWithAttribute<UniqueIdAttribute>())
