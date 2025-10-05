@@ -91,8 +91,13 @@ namespace SideXP.Core.EditorOnly
             // Foreach existing import for the script to generate
             foreach (object import in importsNamespace.Imports)
             {
+#if UNITY_2023_OR_NEWER
                 if (import is not CodeNamespaceImport namespaceImport)
                     continue;
+#else
+                if (!(import is CodeNamespaceImport namespaceImport))
+                    continue;
+#endif
 
                 // Check if the base type's namespace is already imported
                 if (namespaceStr == namespaceImport.Namespace)

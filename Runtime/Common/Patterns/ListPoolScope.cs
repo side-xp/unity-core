@@ -3,7 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 
 using UnityEngine;
+#if UNITY_2021_OR_NEWER
 using UnityEngine.Pool;
+#endif
 
 namespace SideXP.Core
 {
@@ -39,10 +41,21 @@ namespace SideXP.Core
         /// </summary>
         private bool _disposed = false;
 
+#if !UNITY_2021_OR_NEWER
+        static ListPoolScope()
+        {
+            Debug.LogWarning("The ListPoolScope<T> utility won't work as expected, since UnityEngine.Pool features were implemented only in Unity 2021+. This utility will create new list instances as fallback.");
+        }
+#endif
+
         /// <inheritdoc cref="ListPoolScope{T}"/>
         public ListPoolScope()
         {
+#if UNITY_2021_OR_NEWER
             _list = ListPool<T>.Get();
+#else
+            _list = new List<T>();
+#endif
         }
 
         /// <inheritdoc cref="ListPoolScope{T}"/>
@@ -79,7 +92,9 @@ namespace SideXP.Core
             if (_disposed)
                 return;
 
+#if UNITY_2021_OR_NEWER
             ListPool<T>.Release(_list);
+#endif
             _list = null;
         }
 

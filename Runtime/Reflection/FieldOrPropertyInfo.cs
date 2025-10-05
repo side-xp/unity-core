@@ -102,10 +102,28 @@ namespace SideXP.Core.Reflection
         public bool CanWrite => _fieldInfo != null || _propertyInfo.CanWrite;
 
         /// <inheritdoc cref="ReflectionUtility.IsPublic(MemberInfo)"/>
-        public bool IsPublic => ReflectionUtility.IsPublic(_fieldInfo != null ? _fieldInfo : _propertyInfo);
+        public bool IsPublic
+        {
+            get
+            {
+                if (_fieldInfo != null)
+                    return ReflectionUtility.IsPublic(_fieldInfo);
+                else
+                    return ReflectionUtility.IsPublic(_propertyInfo);
+            }
+        }
 
         /// <inheritdoc cref="ReflectionUtility.IsPrivate(MemberInfo)"/>
-        public bool IsPrivate => ReflectionUtility.IsPublic(_fieldInfo != null ? _fieldInfo : _propertyInfo);
+        public bool IsPrivate
+        {
+            get
+            {
+                if (_fieldInfo != null)
+                    return ReflectionUtility.IsPrivate(_fieldInfo);
+                else
+                    return ReflectionUtility.IsPrivate(_propertyInfo);
+            }
+        }
 
         /// <inheritdoc cref="MemberInfo.GetCustomAttributes(bool)"/>
         public override object[] GetCustomAttributes(bool inherit)

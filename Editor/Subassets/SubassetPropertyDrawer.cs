@@ -29,10 +29,16 @@ namespace SideXP.Core.EditorOnly
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
             // Cancel if the decorated property is not declared inside a ScriptableObject class
+#if UNITY_2023_OR_NEWER
             if (property.serializedObject.targetObject is not ScriptableObject)
+#else
+            if (!(property.serializedObject.targetObject is ScriptableObject))
+#endif
             {
                 Debug.LogError($"The [Subasset] attribute is designed to be used only in {nameof(ScriptableObject)} classes.", property.serializedObject.targetObject);
+#if UNITY_2023_OR_NEWER
                 using (new EditorGUI.MixedValueScope(true))
+#endif
                     EditorGUI.PropertyField(position, property, label);
                 return;
             }
@@ -40,8 +46,10 @@ namespace SideXP.Core.EditorOnly
             // Display default GUI if multiple objects selected
             if (property.hasMultipleDifferentValues)
             {
+#if UNITY_2023_OR_NEWER
                 using (new EditorGUI.MixedValueScope(true))
-                    EditorGUI.PropertyField(position, property, label);
+#endif
+                EditorGUI.PropertyField(position, property, label);
                 return;
             }
 
@@ -60,8 +68,10 @@ namespace SideXP.Core.EditorOnly
             if (subassetsBaseType == null || !subassetsBaseType.Is<ScriptableObject>())
             {
                 Debug.LogError($"The generic type of SubassetsList<T> properties must derive from {nameof(ScriptableObject)}.", property.serializedObject.targetObject);
+#if UNITY_2023_OR_NEWER
                 using (new EditorGUI.MixedValueScope(true))
-                    EditorGUI.PropertyField(position, property, label);
+#endif
+                EditorGUI.PropertyField(position, property, label);
                 return;
             }
 
@@ -226,8 +236,13 @@ namespace SideXP.Core.EditorOnly
             GenericMenu menu = new GenericMenu();
 
             // For each allowed subasset type
+#if UNITY_2023_OR_NEWER
             foreach ((Type t, GUIContent label) in allowedSubassets)
                 menu.AddItem(label, false, () => CreateSubasset(property, t, label.text));
+#else
+            foreach (KeyValuePair<Type, GUIContent> item in allowedSubassets)
+                menu.AddItem(item.Value, false, () => CreateSubasset(property, item.Key, item.Value.text));
+#endif
 
             menu.ShowAsContext();
         }
