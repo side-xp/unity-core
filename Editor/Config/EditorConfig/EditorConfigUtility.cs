@@ -148,13 +148,23 @@ namespace SideXP.Core.EditorOnly
         /// <returns>Returns the computed path, or an empty string if the scope is not valid.</returns>
         private static string GetConfigFilePath(Type configType, EEditorConfigScope scope)
         {
-            string path = scope switch
+            string path;
+            switch (scope)
             {
-                EEditorConfigScope.Project => $"{PathEditorUtility.ProjectSettingsPath}",
-                EEditorConfigScope.User => $"{PathEditorUtility.UserSettingsPath}",
-                EEditorConfigScope.Editor => $"{EditorPrefsKeyPrefix}{configType}",
-                _ => string.Empty
-            };
+                case EEditorConfigScope.Project:
+                    path = $"{PathEditorUtility.ProjectSettingsPath}";
+                    break;
+                case EEditorConfigScope.User:
+                    path = $"{PathEditorUtility.UserSettingsPath}";
+                    break;
+                case EEditorConfigScope.Editor:
+                    path = $"{EditorPrefsKeyPrefix}{configType}";
+                    break;
+                default:
+                    path = string.Empty;
+                    break;
+            }
+
             return path + $"/{configType.FullName}.json";
         }
 

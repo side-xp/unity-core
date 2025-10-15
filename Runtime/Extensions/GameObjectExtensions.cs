@@ -113,7 +113,11 @@ namespace SideXP.Core
         /// <returns>Returns true if a component of the expected type has been found on the given Game Object, or its parent.</returns>
         public static bool TryGetComponentInParent(this GameObject component, Type componentType, out Component output, bool includeInactive)
         {
+#if UNITY_2020_3_OR_NEWER
             output = component.GetComponentInParent(componentType, includeInactive);
+#else
+            output = component.GetComponentInParent(componentType);
+#endif
             return output != null;
         }
 
@@ -128,7 +132,11 @@ namespace SideXP.Core
         public static bool TryGetComponentInParent<T>(this GameObject component, out T output, bool includeInactive)
             where T : Component
         {
+#if UNITY_2020_3_OR_NEWER
             output = component.GetComponentInParent<T>(includeInactive);
+#else
+            output = component.GetComponentInParent<T>();
+#endif
             return output != null;
         }
 

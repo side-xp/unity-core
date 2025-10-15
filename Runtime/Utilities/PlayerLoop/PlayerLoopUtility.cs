@@ -66,14 +66,14 @@ namespace SideXP.Core
             return true;
 
             // Try to insert a given system inside a subsystem of a given type from a given parent one
-            bool TryInsertSystem(ref PlayerLoopSystem parent, in PlayerLoopSystem system, int index)
+            bool TryInsertSystem(ref PlayerLoopSystem parent, in PlayerLoopSystem subSystem, int subIndex)
             {
                 if (parent.subSystemList == null)
                     return false;
 
                 for (int i = 0; i < parent.subSystemList.Length; i++)
                 {
-                    if (!InsertSystemInto<T>(ref parent.subSystemList[i], in system, index))
+                    if (!InsertSystemInto<T>(ref parent.subSystemList[i], in subSystem, subIndex))
                         continue;
 
                     return true;
@@ -165,16 +165,16 @@ namespace SideXP.Core
             PrintPlayerLoop(in system, messageBuilder, 0);
             Debug.Log(messageBuilder.ToString());
 
-            void PrintPlayerLoop(in PlayerLoopSystem system, StringBuilder messageBuilder, int depth)
+            void PrintPlayerLoop(in PlayerLoopSystem subSystem, StringBuilder innerMessageBuilder, int depth)
             {
-                if (system.type != null)
-                    messageBuilder.AppendLine("\t".Repeat(depth) + system.type.FullName);
+                if (subSystem.type != null)
+                    innerMessageBuilder.AppendLine("\t".Repeat(depth) + subSystem.type.FullName);
 
-                if (system.subSystemList == null)
+                if (subSystem.subSystemList == null)
                     return;
 
-                foreach (PlayerLoopSystem subsystem in system.subSystemList)
-                    PrintPlayerLoop(in subsystem, messageBuilder, depth + 1);
+                foreach (PlayerLoopSystem subsystem in subSystem.subSystemList)
+                    PrintPlayerLoop(in subsystem, innerMessageBuilder, depth + 1);
             }
         }
 

@@ -75,7 +75,11 @@ namespace SideXP.Core
         /// parent.</returns>
         public static bool TryGetComponentInParent(this Component component, Type componentType, out Component output, bool includeInactive)
         {
+#if UNITY_2020_3_OR_NEWER
             output = component.GetComponentInParent(componentType, includeInactive);
+#else
+            output = component.GetComponentInParent(componentType);
+#endif
             return output != null;
         }
 
@@ -90,7 +94,11 @@ namespace SideXP.Core
         public static bool TryGetComponentInParent<T>(this Component component, out T output, bool includeInactive)
             where T : Component
         {
+#if UNITY_2020_3_OR_NEWER
             output = component.GetComponentInParent<T>(includeInactive);
+#else
+            output = component.GetComponentInParent<T>();
+#endif
             return output != null;
         }
 
