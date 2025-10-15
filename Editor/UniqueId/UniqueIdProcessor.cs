@@ -31,7 +31,11 @@ namespace SideXP.Core.EditorOnly
 #endif
         {
             // Foreach field marked with [UniqueId] attribute in the project
-            foreach (FieldInfo fieldInfo in TypeCache.GetFieldsWithAttribute<UniqueIdAttribute>())
+#if UNITY_2020_OR_NEWER
+            foreach (FieldInfo fieldInfo in TypeCache.GetFieldsWithAttribute<TypeRefAttribute>())
+#else
+            foreach (FieldInfo fieldInfo in TypeCachePolyfill.GetFieldsWithAttribute<TypeRefAttribute>())
+#endif
             {
                 // If the current field is declared in a ScriptableObject class
                 if (typeof(ScriptableObject).IsAssignableFrom(fieldInfo.DeclaringType))

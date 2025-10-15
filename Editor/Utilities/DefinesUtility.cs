@@ -12,6 +12,8 @@ namespace SideXP.Core.EditorOnly
     public static class DefinesUtility
     {
 
+        public const string DEFINES_SEPARATOR = ";";
+
         /// <summary>
         /// Gets the scripting define symbols from Player Settings for the current target platform.
         /// </summary>
@@ -28,11 +30,14 @@ namespace SideXP.Core.EditorOnly
         /// <returns>Returns the defines from Player Settings.</returns>
         public static string[] GetDefines(BuildTargetGroup platform)
         {
-#if UNITY_6000
+#if UNITY_6000_OR_NEWER
             NamedBuildTarget buildTarget = NamedBuildTarget.FromBuildTargetGroup(platform);
             PlayerSettings.GetScriptingDefineSymbols(buildTarget, out string[] defines);
 #else
-            PlayerSettings.GetScriptingDefineSymbolsForGroup(platform, out string[] defines);
+            string definesStr = PlayerSettings.GetScriptingDefineSymbolsForGroup(platform);
+            string[] defines = definesStr.Split(DEFINES_SEPARATOR);
+            for (int i = 0; i < defines.Length; i++)
+                defines[i] = defines[i].Trim();
 #endif
             return defines;
         }
@@ -80,11 +85,13 @@ namespace SideXP.Core.EditorOnly
                 return false;
 
             defines.Add(define);
-#if UNITY_6000
+#if UNITY_6000_OR_NEWER
             NamedBuildTarget buildTarget = NamedBuildTarget.FromBuildTargetGroup(platform);
             PlayerSettings.SetScriptingDefineSymbols(buildTarget, defines.ToArray());
-#else
+#elif UNITY_2020_2_OR_NEWER
             PlayerSettings.SetScriptingDefineSymbolsForGroup(platform, defines.ToArray());
+#else
+            PlayerSettings.SetScriptingDefineSymbolsForGroup(platform, string.Join(DEFINES_SEPARATOR, defines));
 #endif
             return true;
         }
@@ -111,11 +118,13 @@ namespace SideXP.Core.EditorOnly
                 return false;
 
             defines.Remove(define);
-#if UNITY_6000
+#if UNITY_6000_OR_NEWER
             NamedBuildTarget buildTarget = NamedBuildTarget.FromBuildTargetGroup(platform);
             PlayerSettings.SetScriptingDefineSymbols(buildTarget, defines.ToArray());
-#else
+#elif UNITY_2020_2_OR_NEWER
             PlayerSettings.SetScriptingDefineSymbolsForGroup(platform, defines.ToArray());
+#else
+            PlayerSettings.SetScriptingDefineSymbolsForGroup(platform, string.Join(DEFINES_SEPARATOR, defines));
 #endif
             return true;
         }

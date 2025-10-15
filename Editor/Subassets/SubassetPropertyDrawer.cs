@@ -103,22 +103,22 @@ namespace SideXP.Core.EditorOnly
 
             itemObj.ApplyModifiedProperties();
 
-            void DrawHeader(Rect position)
+            void DrawHeader(Rect headerPosition)
             {
-                Rect rect = position;
-                rect.height = EditorGUIUtility.singleLineHeight;
-                rect.width = EditorGUIUtility.labelWidth;
+                Rect headerRect = headerPosition;
+                headerRect.height = EditorGUIUtility.singleLineHeight;
+                headerRect.width = EditorGUIUtility.labelWidth;
                 // Foldout label
-                property.isExpanded = EditorGUI.Foldout(rect, property.isExpanded, label, true);
+                property.isExpanded = EditorGUI.Foldout(headerRect, property.isExpanded, label, true);
 
-                rect.x += rect.width;
-                rect.width = position.width - rect.width - MoreGUI.HMargin - ButtonWidth;
+                headerRect.x += headerRect.width;
+                headerRect.width = headerPosition.width - headerRect.width - MoreGUI.HMargin - ButtonWidth;
                 // Enable the object reference field only if there's no defined reference but external assets are allowed, OR if the assigned asset is not a subasset
                 using (new EnabledScope((property.objectReferenceValue == null && subassetAttr.AllowExternal) || (property.objectReferenceValue != null && !property.objectReferenceValue.IsSubassetOf(property.serializedObject.targetObject))))
                 {
                     using (var scope = new EditorGUI.ChangeCheckScope())
                     {
-                        Object newRef = EditorGUI.ObjectField(rect, property.objectReferenceValue, subassetsBaseType, false);
+                        Object newRef = EditorGUI.ObjectField(headerRect, property.objectReferenceValue, subassetsBaseType, false);
                         if (scope.changed)
                         {
                             // If the assigned asset is now null
@@ -138,12 +138,12 @@ namespace SideXP.Core.EditorOnly
                     }
                 }
 
-                rect.x += rect.width + MoreGUI.HMargin;
-                rect.width = ButtonWidth;
+                headerRect.x += headerRect.width + MoreGUI.HMargin;
+                headerRect.width = ButtonWidth;
                 // If the subasset reference is missing, display a button to create one
                 if (property.objectReferenceValue == null)
                 {
-                    if (GUI.Button(rect, new GUIContent("Create", $"Display a menu so you can select the type of the subasset to create among the available implementations of {subassetsBaseType.Name} in your project.")))
+                    if (GUI.Button(headerRect, new GUIContent("Create", $"Display a menu so you can select the type of the subasset to create among the available implementations of {subassetsBaseType.Name} in your project.")))
                     {
                         SelectAndCreateSubasset(property, subassetsBaseType);
                     }
@@ -153,7 +153,7 @@ namespace SideXP.Core.EditorOnly
                     // Else, if the referenced object is a subasset of the inspected asset, display a button to destroy it
                     if (property.objectReferenceValue.IsSubassetOf(property.serializedObject.targetObject))
                     {
-                        if (GUI.Button(rect, new GUIContent("Delete", "Destroy the subasset and reset this field to a null value.")))
+                        if (GUI.Button(headerRect, new GUIContent("Delete", "Destroy the subasset and reset this field to a null value.")))
                         {
                             if (EditorUtility.DisplayDialog("Destroy Subasset", "The subasset will be removed from the project. This operation can't be undone.\nProceed?", "Yes, delete the subasset", "No"))
                             {
@@ -167,7 +167,7 @@ namespace SideXP.Core.EditorOnly
                     // Else, if the referenced object is an external asset, display a button to locate it
                     else
                     {
-                        if (GUI.Button(rect, new GUIContent("Locate", "Locate the assigned asset in your project.")))
+                        if (GUI.Button(headerRect, new GUIContent("Locate", "Locate the assigned asset in your project.")))
                         {
                             EditorHelpers.FocusObject(property.objectReferenceValue, true, false);
                         }

@@ -134,13 +134,13 @@ namespace SideXP.Core.EditorOnly
 
                 // For each allowed subasset type
 #if UNITY_2023_OR_NEWER
-                foreach ((Type t, GUIContent label) in allowedSubassets)
+                foreach ((Type t, GUIContent itemLabel) in allowedSubassets)
                 {
 #else
                 foreach (KeyValuePair<Type, GUIContent> item in allowedSubassets)
                 {
                     Type t = item.Key;
-                    GUIContent label = item.Value;
+                    GUIContent itemLabel = item.Value;
 #endif
                     // Check if another subasset with the same type already exists in the list
                     bool containsItem = false;
@@ -157,13 +157,13 @@ namespace SideXP.Core.EditorOnly
                     // If another subasset of the current type exists in the list but unique mode is enabled
                     if (containsItem && optionsAttribute != null && optionsAttribute.Unique)
                     {
-                        menu.AddDisabledItem(label, true);
+                        menu.AddDisabledItem(itemLabel, true);
                         return;
                     }
                     // Else, add menu item
                     else
                     {
-                        menu.AddItem(label, containsItem, () => CreateAndAddSubasset(innerListProp, t, label.text));
+                        menu.AddItem(itemLabel, containsItem, () => CreateAndAddSubasset(innerListProp, t, itemLabel.text));
                     }
                 }
 
@@ -237,9 +237,9 @@ namespace SideXP.Core.EditorOnly
                 SubassetLabelAttribute subassetLabelAttribute = itemProp.objectReferenceValue.GetType().GetCustomAttribute<SubassetLabelAttribute>();
 
                 // Get subasset label
-                GUIContent label = new GUIContent(itemProp.objectReferenceValue.name);
+                GUIContent itemLabel = new GUIContent(itemProp.objectReferenceValue.name);
                 if (subassetLabelAttribute != null && !string.IsNullOrWhiteSpace(subassetLabelAttribute.Description))
-                    label.tooltip = subassetLabelAttribute.Description;
+                    itemLabel.tooltip = subassetLabelAttribute.Description;
 
                 // Indent the whole rect so the foldout icon doesn't merge with the drag icon of the Reorderable List GUI
                 rect.x += FoldoutIndent;
@@ -253,7 +253,7 @@ namespace SideXP.Core.EditorOnly
                 {
                     Rect headerRect = tmpRect;
                     headerRect.width = MiniFoldoutWidth;
-                    itemProp.isExpanded = EditorGUI.Foldout(headerRect, itemProp.isExpanded, new GUIContent(string.Empty, label.tooltip), true);
+                    itemProp.isExpanded = EditorGUI.Foldout(headerRect, itemProp.isExpanded, new GUIContent(string.Empty, itemLabel.tooltip), true);
 
                     headerRect.x += headerRect.width;
                     headerRect.width = tmpRect.width - headerRect.width;
@@ -275,7 +275,7 @@ namespace SideXP.Core.EditorOnly
                 // Else, just draw a foldout with label
                 else
                 {
-                    itemProp.isExpanded = EditorGUI.Foldout(tmpRect, itemProp.isExpanded, label, true, EditorStyles.foldout.Bold());
+                    itemProp.isExpanded = EditorGUI.Foldout(tmpRect, itemProp.isExpanded, itemLabel, true, EditorStyles.foldout.Bold());
                 }
 
                 itemProp.serializedObject.ApplyModifiedProperties();
