@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.1.3](///compare/v1.1.2...v1.1.3) (2025-10-15)
+
+
+### Bug Fixes
+
+* Ensure compatibility with Unity 2020 or older ccfbcb3
+
 ## [1.1.2](///compare/v1.1.1...v1.1.2) (2025-10-05)
 
 
