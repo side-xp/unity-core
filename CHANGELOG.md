@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.1.4](///compare/v1.1.3...v1.1.4) (2025-10-17)
+
+
+### Bug Fixes
+
+* Fixed conditional compilation symbols 99eeb9b
+
 ## [1.1.3](///compare/v1.1.2...v1.1.3) (2025-10-15)
 
 
