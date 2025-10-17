@@ -31,7 +31,7 @@ namespace SideXP.Core.EditorOnly
 #endif
         {
             // Foreach field marked with [UniqueId] attribute in the project
-#if UNITY_2020_OR_NEWER
+#if UNITY_2020_1_OR_NEWER
             foreach (FieldInfo fieldInfo in TypeCache.GetFieldsWithAttribute<TypeRefAttribute>())
 #else
             foreach (FieldInfo fieldInfo in TypeCachePolyfill.GetFieldsWithAttribute<TypeRefAttribute>())

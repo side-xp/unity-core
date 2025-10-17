@@ -31,7 +31,7 @@ namespace SideXP.Core.EditorOnly
         {
             if (property.hasMultipleDifferentValues)
             {
-#if UNITY_2023_OR_NEWER
+#if UNITY_2023_1_OR_NEWER
                 using (new EditorGUI.MixedValueScope(true))
 #endif
                     EditorGUI.PropertyField(position, property, label);
