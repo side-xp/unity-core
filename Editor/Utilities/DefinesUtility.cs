@@ -30,7 +30,7 @@ namespace SideXP.Core.EditorOnly
         /// <returns>Returns the defines from Player Settings.</returns>
         public static string[] GetDefines(BuildTargetGroup platform)
         {
-#if UNITY_6000_OR_NEWER
+#if UNITY_6000_0_OR_NEWER
             NamedBuildTarget buildTarget = NamedBuildTarget.FromBuildTargetGroup(platform);
             PlayerSettings.GetScriptingDefineSymbols(buildTarget, out string[] defines);
 #else
@@ -85,7 +85,7 @@ namespace SideXP.Core.EditorOnly
                 return false;
 
             defines.Add(define);
-#if UNITY_6000_OR_NEWER
+#if UNITY_6000_0_OR_NEWER
             NamedBuildTarget buildTarget = NamedBuildTarget.FromBuildTargetGroup(platform);
             PlayerSettings.SetScriptingDefineSymbols(buildTarget, defines.ToArray());
 #elif UNITY_2020_2_OR_NEWER
@@ -118,7 +118,7 @@ namespace SideXP.Core.EditorOnly
                 return false;
 
             defines.Remove(define);
-#if UNITY_6000_OR_NEWER
+#if UNITY_6000_0_OR_NEWER
             NamedBuildTarget buildTarget = NamedBuildTarget.FromBuildTargetGroup(platform);
             PlayerSettings.SetScriptingDefineSymbols(buildTarget, defines.ToArray());
 #elif UNITY_2020_2_OR_NEWER

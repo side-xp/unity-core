@@ -42,14 +42,14 @@ namespace SideXP.Core.EditorOnly
             SerializedProperty subassetsListProp = property.FindPropertyRelative(SubassetsListProp);
 
             // Cancel if the decorated property is not declared inside a ScriptableObject class
-#if UNITY_2023_OR_NEWER
+#if UNITY_2023_1_OR_NEWER
             if (property.serializedObject.targetObject is not ScriptableObject)
 #else
             if (!(property.serializedObject.targetObject is ScriptableObject))
 #endif
             {
                 Debug.LogError($"SubassetsList<T> properties are designed to be used only in {nameof(ScriptableObject)} classes.", property.serializedObject.targetObject);
-#if UNITY_2023_OR_NEWER
+#if UNITY_2023_1_OR_NEWER
                 using (new EditorGUI.MixedValueScope(true))
 #endif
                     EditorGUI.PropertyField(position, subassetsListProp, label);
@@ -59,7 +59,7 @@ namespace SideXP.Core.EditorOnly
             // Display default GUI if multiple objects selected
             if (property.hasMultipleDifferentValues)
             {
-#if UNITY_2023_OR_NEWER
+#if UNITY_2023_1_OR_NEWER
                 using (new EditorGUI.MixedValueScope(true))
 #endif
                 EditorGUI.PropertyField(position, subassetsListProp, label);
@@ -71,7 +71,7 @@ namespace SideXP.Core.EditorOnly
             if (subassetsBaseType == null || !subassetsBaseType.Is<ScriptableObject>())
             {
                 Debug.LogError($"The generic type of SubassetsList<T> properties must derive from {nameof(ScriptableObject)}.", property.serializedObject.targetObject);
-#if UNITY_2023_OR_NEWER
+#if UNITY_2023_1_OR_NEWER
                 using (new EditorGUI.MixedValueScope(true))
 #endif
                 EditorGUI.PropertyField(position, subassetsListProp, label);
@@ -133,7 +133,7 @@ namespace SideXP.Core.EditorOnly
                 GenericMenu menu = new GenericMenu();
 
                 // For each allowed subasset type
-#if UNITY_2023_OR_NEWER
+#if UNITY_2023_1_OR_NEWER
                 foreach ((Type t, GUIContent itemLabel) in allowedSubassets)
                 {
 #else
