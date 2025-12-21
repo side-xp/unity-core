@@ -26,7 +26,7 @@ namespace SideXP.Core.EditorOnly
 #endif
         {
             // Log message if types migrations are not tracked
-#if UNITY_2020_OR_NEWER
+#if UNITY_2020_1_OR_NEWER
             foreach (FieldInfo fieldInfo in TypeCache.GetFieldsWithAttribute<TypeRefAttribute>())
 #else
             foreach (FieldInfo fieldInfo in TypeCachePolyfill.GetFieldsWithAttribute<TypeRefAttribute>())
