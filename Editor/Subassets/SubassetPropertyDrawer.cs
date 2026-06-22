@@ -49,7 +49,7 @@ namespace SideXP.Core.EditorOnly
 #if UNITY_2023_1_OR_NEWER
                 using (new EditorGUI.MixedValueScope(true))
 #endif
-                EditorGUI.PropertyField(position, property, label);
+                    EditorGUI.PropertyField(position, property, label);
                 return;
             }
 
@@ -71,7 +71,7 @@ namespace SideXP.Core.EditorOnly
 #if UNITY_2023_1_OR_NEWER
                 using (new EditorGUI.MixedValueScope(true))
 #endif
-                EditorGUI.PropertyField(position, property, label);
+                    EditorGUI.PropertyField(position, property, label);
                 return;
             }
 

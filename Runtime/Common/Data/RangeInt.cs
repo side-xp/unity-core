@@ -23,7 +23,7 @@ namespace SideXP.Core
         /// </summary>
         /// <inheritdoc cref="RangeInt(int, int)"/>
         public RangeInt(int max)
-            : this (0, max) { }
+            : this(0, max) { }
 
         /// <inheritdoc cref="RangeInt"/>
         /// <param name="min">The minimum value of this range.</param>
@@ -37,7 +37,7 @@ namespace SideXP.Core
         /// <param name="other">The range to copy.</param>
         /// <inheritdoc cref="Range(int, int)"/>
         public RangeInt(RangeInt other)
-            : this (other._min, other._max) { }
+            : this(other._min, other._max) { }
 
         /// <inheritdoc cref="_min"/>
         public int Min

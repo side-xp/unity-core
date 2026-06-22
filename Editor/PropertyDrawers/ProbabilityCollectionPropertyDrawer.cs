@@ -5,8 +5,6 @@ using UnityEngine;
 using UnityEditor;
 using UnityEditorInternal;
 
-using SideXP.Core;
-
 namespace SideXP.Core.EditorOnly
 {
 
