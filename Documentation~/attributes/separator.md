@@ -1,3 +1,0 @@
-# `[Separator]` attribute
-
-@todo

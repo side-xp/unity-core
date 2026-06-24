@@ -1,3 +1,0 @@
-# `CodeParameterDeclarationExpressionCollectionExtensions` class
-
-@todo

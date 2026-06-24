@@ -1,3 +1,0 @@
-# `CultureScope` class
-
-@todo

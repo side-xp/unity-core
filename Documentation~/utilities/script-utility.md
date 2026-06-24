@@ -1,3 +1,0 @@
-# `ScriptUtility` class
-
-@todo

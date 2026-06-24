@@ -2,7 +2,7 @@
 
 Defines a color using flags.
 
-This enum is completed by [`FColorExtensions`](../../extensions/f-color.md) class, meant to retrieve the actual [Color](https://docs.unity3d.com/Documentation/ScriptReference/Color.html) instance from the defined flags.
+This enum is completed by `FColorExtensions`, meant to retrieve the actual [Color](https://docs.unity3d.com/Documentation/ScriptReference/Color.html) instance from the defined flags.
 
 ## Usage example
 

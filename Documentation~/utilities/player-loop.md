@@ -1,14 +1,10 @@
-# `PlayerLoopUtility` class
+# Player Loop customization
 
 [PlayerLoop](https://docs.unity3d.com/ScriptReference/LowLevel.PlayerLoop.html) is an API provided by Unity to access and customize the systems that can be initialized and updated at runtime.
 
 You can see the updates and subsystems that are running at runtime from `Tools > Sideways Experiments > Viewers > Player Loops Viewer`.
 
-The core library provides additional utility functions from `PlayerLoopUtility` to alter the current *Player Loop*:
-
-## `InsertSubsystem<T>()`
-
-Inserts a subsystem into a system of a given type.
+## Adding a custom subsystem
 
 ```cs
 using UnityEngine;
@@ -33,14 +29,12 @@ public class DemoCustomPlayerLoop
             }
         };
         
-        PlayerLoopUtility.InsertSubsystem<Update>(in system);
+        PlayerLoopUtility.InsertSubsystem<Update>(in customUpdateSystem);
     }
 }
 ```
 
-## `RemoveSubsystem<T>()`
-
-Removes a subsystem from a system of a given type.
+## Removing a built-in subsystem
 
 ```cs
 using UnityEngine;
@@ -56,9 +50,7 @@ public class DemoCustomPlayerLoop
 }
 ```
 
-## `PrintPlayerLoop()`
-
-Logs a message in console that displays the full subsystems hierarchy of the current Player Loop.
+## Inspecting the current Player Loop
 
 ```cs
 using UnityEngine;

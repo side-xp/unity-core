@@ -1,3 +1,0 @@
-# `MoreGUIScope` class
-
-@todo

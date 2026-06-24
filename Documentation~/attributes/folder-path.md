@@ -1,3 +1,0 @@
-# `[FolderPath]` attribute
-
-@todo

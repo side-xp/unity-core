@@ -1,3 +1,0 @@
-# `[UniqueId]` attribute
-
-@todo
