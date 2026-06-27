@@ -1,3 +1,0 @@
-# `[Remap]` attribute
-
-@todo

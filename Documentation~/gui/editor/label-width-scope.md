@@ -1,3 +1,0 @@
-# `LabelWidthScope` class
-
-@todo

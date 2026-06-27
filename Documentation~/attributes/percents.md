@@ -1,3 +1,0 @@
-# `[Percents]` attribute
-
-@todo

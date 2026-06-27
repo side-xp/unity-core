@@ -1,3 +1,0 @@
-# `[Boolton]` attribute
-
-@todo
