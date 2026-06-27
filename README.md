@@ -46,7 +46,7 @@ If you need help or just want to chat with the community and the *Sideways Exper
 
 ## Contributing
 
-Do you want to get involved in our projects? Check the [CONTRIBUTING.md](./.github/CONTRIBUTING.md) file to learn more!
+Do you want to get involved in our projects? Check the [CONTRIBUTING.md](./CONTRIBUTING.md) file to learn more!
 
 ## License
 
