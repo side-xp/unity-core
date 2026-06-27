@@ -73,6 +73,12 @@ jobs:
       id-token: write
       pages: write
       contents: read
+    # Bind this job to the "github-pages" deployment environment, and expose the deployed URL on it.
+    # This makes the environment (with a clickable link to the docs) show up on the repository's main page,
+    # in the repo's Deployments/Environments view, and on this job's node in the Actions run graph.
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     # Allow only one concurrent Pages deployment, without cancelling in-progress ones.
     concurrency:
       group: pages
@@ -121,14 +127,16 @@ jobs:
         with:
           path: docs/site
 
-      # Deploy the website to GitHub Pages
+      # Deploy the website to GitHub Pages.
+      # The "deployment" id exposes the page_url output, consumed by the job's environment.url above.
       - name: Deploy to GitHub Pages
+        id: deployment
         uses: actions/deploy-pages@v4
 
-      # Display output link
+      # Display the actual deployed URL in the logs (taken from the deployment output, not hardcoded).
       - name: Feedback
         run: |
-          echo "Documentation website successfully deployed at https://${{github.repository_owner}}.github.io/${{github.event.repository.name}}"
+          echo "Documentation website successfully deployed at ${{ steps.deployment.outputs.page_url }}"
 
   # Package the source + docs into ZIP/Tarball archives and attach them to the published Release.
   # Skipped on manual (workflow_dispatch) runs, since there is no Release to attach assets to.
