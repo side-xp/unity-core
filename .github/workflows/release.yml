@@ -19,7 +19,19 @@ jobs:
     steps:
       # Checkout repository
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
+
+      # Install the .NET SDK, required to run the SideXP.Instadoc CLI tool.
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: '8.x'
+
+      # Install the SideXP.Instadoc CLI tool as a global .NET tool, and make sure its install location is on PATH.
+      - name: Install SideXP.Instadoc
+        run: |
+          dotnet tool install --global SideXP.Instadoc
+          echo "$HOME/.dotnet/tools" >> "$GITHUB_PATH"
 
       # Read the "name" property from package.json, which is used as the archive file name.
       # The version is read from the release tag provided by the GitHub event instead.
@@ -40,6 +52,21 @@ jobs:
             --exclude ".editorconfig" \
             --exclude ".gitignore" \
             --exclude ".vsconfig"
+
+      # Generate the API reference as MarkDown files into Documentation~/api/ directly from the C# source.
+      # No compilation is needed: the tool scans the .cs files with Roslyn.
+      # This runs after the package folder is prepared, so the generated API docs are included only in the docs
+      # archive (below) and not in the package archive, matching the committed package's contents.
+      - name: Generate API docs
+        run: |
+          instadoc \
+            --input Runtime \
+            --input Editor \
+            --input Demos \
+            --output "Documentation~/api" \
+            --grouping namespace \
+            --exclude "**/*.Generated.cs" \
+            --quiet
 
       # Create a separate release/docs/ folder that will contain the content of the Documentation~/ folder.
       # Note that the Documentation~/ folder is included in the package's source anyway.

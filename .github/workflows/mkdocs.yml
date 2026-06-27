@@ -1,13 +1,16 @@
-# This workflow takes the content of the Documentation~/ directory, and uses MkDocs to generate a static website from MarkDown files (*.md).
-# Once built, the website is then deployed to GitHub Pages.
+# This workflow generates the API reference as MarkDown files from the package's C# source (using the SideXP.Instadoc
+# CLI tool), then takes the content of the Documentation~/ directory and uses MkDocs to build a static website.
+# Once built, the website is deployed to GitHub Pages.
 # Make sure you have selected "GitHub Actions" mode in Settings > Pages.
 # After running this workflow, the website should be accessible at https://[username].github.io/[repository-name]
 name: Build & deploy docs
 
 # Trigger workflow whenever a GitHub Release is published, so the deployed docs always match a released version.
+# The manual "workflow_dispatch" trigger is also enabled so the docs can be rebuilt/tested without cutting a release.
 on:
   release:
     types: [published]
+  workflow_dispatch:
 
 # Setup permissions for this workflow.
 permissions:
@@ -24,11 +27,37 @@ jobs:
     steps:
       # Checkout repository
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
+
+      # Install the .NET SDK, required to run the SideXP.Instadoc CLI tool.
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: '8.x'
+
+      # Install the SideXP.Instadoc CLI tool as a global .NET tool, and make sure its install location is on PATH.
+      - name: Install SideXP.Instadoc
+        run: |
+          dotnet tool install --global SideXP.Instadoc
+          echo "$HOME/.dotnet/tools" >> "$GITHUB_PATH"
+
+      # Generate the API reference as MarkDown files into Documentation~/api/ directly from the C# source.
+      # No compilation is needed: the tool scans the .cs files with Roslyn.
+      # The Documentation~/api/ folder is gitignored, so it is (re)generated fresh here on every run.
+      - name: Generate API docs
+        run: |
+          instadoc \
+            --input Runtime \
+            --input Editor \
+            --input Demos \
+            --output "Documentation~/api" \
+            --grouping namespace \
+            --exclude "**/*.Generated.cs" \
+            --quiet
 
       # Install Python for this workflow
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: '3.x'
 
@@ -49,7 +78,7 @@ jobs:
 
       # Configure GitHub Pages
       - name: Configure GitHub Pages
-        uses: actions/configure-pages@v5
+        uses: actions/configure-pages@v6
 
       # Upload the MkDocs build output (which by default is in a site/ folder)
       - name: Upload site artifact
