@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.1.5](https://github.com/side-xp/unity-core/compare/v1.1.4...v1.1.5) (2026-06-27)
+
+
+### Bug Fixes
+
+* fixed typos ([d48733f](https://github.com/side-xp/unity-core/commit/d48733f5a7b70a3c3e746a4bb6bb7c0022d55c6e))
+
 ## [1.1.4](///compare/v1.1.3...v1.1.4) (2025-10-17)
 
 
