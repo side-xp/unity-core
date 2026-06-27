@@ -45,7 +45,7 @@ namespace SideXP.Core.EditorOnly
                     {
                         string guid = null;
                         // Try to get the GUID from file
-                        if(!AssetDatabase.TryGetGUIDAndLocalFileIdentifier(asset, out guid, out long localId) && !string.IsNullOrEmpty(guid) && localId != 0)
+                        if (!AssetDatabase.TryGetGUIDAndLocalFileIdentifier(asset, out guid, out long localId) && !string.IsNullOrEmpty(guid) && localId != 0)
                         {
                             Debug.LogWarning($"Failed to get the GUID of the asset of type {asset.GetType()}: as a fallback, {nameof(UniqueIdProcessor)} will assign a native C# GUID to its field {fieldInfo.DeclaringType}.{fieldInfo.Name} marked with {nameof(UniqueIdAttribute)}.", asset);
                             guid = Guid.NewGuid().ToString();

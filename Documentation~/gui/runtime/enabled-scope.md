@@ -1,3 +1,0 @@
-# `EnabledScope` class
-
-@todo

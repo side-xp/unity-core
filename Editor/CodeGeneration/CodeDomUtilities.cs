@@ -65,6 +65,7 @@ namespace SideXP.Core.EditorOnly
         /// <summary>
         /// Checks the namespace of a given type is imported in the script being generated.
         /// </summary>
+        /// <param name="type">The type to check.</param>
         /// <inheritdoc cref="ContainsImport(string, CodeNamespace, CodeNamespace)"/>
         public static bool ContainsImport(Type type, CodeNamespace importsNamespace, CodeNamespace domNamespace = null)
         {

@@ -24,4 +24,4 @@ public class RangeDemoComponent : MonoBehaviour
 }
 ```
 
-![Range & RangeInt example](../../img/common_data_range.png)
+![Range & RangeInt example](../img/common_data_range.png)

@@ -1,3 +1,0 @@
-# `DropZone` class
-
-@todo

@@ -4,7 +4,6 @@ using UnityEngine;
 using UnityEditor;
 
 using Object = UnityEngine.Object;
-using System.IO;
 
 namespace SideXP.Core.EditorOnly
 {

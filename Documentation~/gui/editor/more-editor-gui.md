@@ -1,3 +1,0 @@
-# `MoreEditorGUI` class
-
-@todo

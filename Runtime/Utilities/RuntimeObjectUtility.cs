@@ -241,7 +241,9 @@ namespace SideXP.Core
                 {
                     // If no name is defined and the expected object is a specifically a component, simply use Object.FindObjectOfType()
                     if (string.IsNullOrEmpty(name) && typeof(Component).IsAssignableFrom(type))
-#if UNITY_6000
+#if UNITY_6000_5_OR_NEWER
+                        return Object.FindAnyObjectByType(type);
+#elif UNITY_6000_0_OR_NEWER
                         return Object.FindFirstObjectByType(type);
 #else
                         return Object.FindObjectOfType(type);
@@ -273,7 +275,7 @@ namespace SideXP.Core
             else
             {
                 Object[] objs = Resources.FindObjectsOfTypeAll(type);
-                
+
                 // If no name is defined and, return the first object found with the expected type
                 if (string.IsNullOrEmpty(name) && objs.Length > 0)
                     return objs[0];
@@ -315,11 +317,37 @@ namespace SideXP.Core
             return obj != null;
         }
 
-#endregion
+        #endregion
 
 
         #region Runtime Callbacks
 
+#if UNITY_6000_5_OR_NEWER
+        /// <summary>
+        /// Invokes registered <see cref="OpenAssetDelegate"/> handlers to check if one of them can open the asset.<br/>
+        /// WARNING: Since this function resolves the asset by using <see cref="UnityEditor.EditorUtility.EntityIdToObject(EntityId)"/>, it
+        /// won't do anything outside the editor context.
+        /// </summary>
+        /// <remarks>
+        /// This is mostly meant to use <see cref="UnityEditor.Callbacks.OnOpenAssetAttribute"/> without having to implement editor code in
+        /// your assets, and allowing the custom editors to handle this event easily.
+        /// </remarks>
+        /// <param name="entityId">The unique identifier of the asset being opened.</param>
+        /// <param name="line">The target line in the file being opened.</param>
+        /// <returns>Returns true if the asset can be opened.</returns>
+        public static bool TryOpenAsset(EntityId entityId, int line)
+        {
+#if UNITY_EDITOR
+            Object asset = UnityEditor.EditorUtility.EntityIdToObject(entityId);
+            foreach (OpenAssetDelegate handler in s_openAssetHandlers)
+            {
+                if (handler.Invoke(asset, line))
+                    return true;
+            }
+#endif
+            return false;
+        }
+#else
         /// <summary>
         /// Invokes registered <see cref="OpenAssetDelegate"/> handlers to check if one of them can open the asset.<br/>
         /// WARNING: Since this function resolves the asset by using <see cref="UnityEditor.EditorUtility.InstanceIDToObject(int)"/>, it
@@ -344,6 +372,7 @@ namespace SideXP.Core
 #endif
             return false;
         }
+#endif
 
         /// <summary>
         /// Registers a handler for an "open asset" operation.

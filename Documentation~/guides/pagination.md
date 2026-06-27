@@ -60,4 +60,4 @@ public class PaginationDemoComponent : MonoBehaviour
 }
 ```
 
-![Pagination example GUI](../../img/common_data_pagination.png)
+![Pagination example GUI](../img/common_data_pagination.png)

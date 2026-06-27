@@ -1,7 +1,5 @@
 # Subassets management
 
-@todo
-
 ## Usage example
 
 An asset that represents a playable card in a game, with effects attached as subassets:
