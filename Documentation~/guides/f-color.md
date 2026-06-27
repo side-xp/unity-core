@@ -31,4 +31,4 @@ public class FColorDemoComponent : MonoBehaviour
 }
 ```
 
-![Range & RangeInt example](../../img/common_enums_color.png)
+![Range & RangeInt example](../img/common_enums_color.png)
