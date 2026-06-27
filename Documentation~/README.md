@@ -34,4 +34,4 @@ This project is licensed under the [MIT License](https://mit-license.org).
 
 Crafted and maintained with love by [Sideways Experiments](https://sideways-experiments.com)
 
-(c) 2022-2025 Sideways Experiments
+(c) 2022-2026 Sideways Experiments

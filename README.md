@@ -4,7 +4,7 @@ Core SideXP library for Unity, used as a dependency by most of our other package
 
 As a general rule, this package is meant to be used as a foundation for our other packages, and can be imported safely in any project. It follows the following recommendations:
 
-- not being tied to a specific Render Pipeline
+- not tied to a specific Render Pipeline
 - not alter the way Unity works or its expected usage by default
 - not have dependencies to our other packages
 - not have dependencies to specific Unity packages or third-party libraries
@@ -24,7 +24,7 @@ As a general rule, this package is meant to be used as a foundation for our othe
 
 1. In your *Unity* project, go to `Window > Package Management > Package Manager` (or `Window > Package Manager` for *Unity 6.0-*)
 2. Click on the *+* icon in the top-left corner, and select *Install package from Git URL...*
-3. In the text field, enter the URL to this package's repository (including the `*.git` extensions), and click *Install*
+3. In the text field, enter the URL to this package's repository (including the `*.git` extension), and click *Install*
 4. Wait for Unity to get the files, and you're ready to go!
 
 > Tip: if you need to use a specific version of this package for your project, add `#<tag-name>` to the URL before clicking on the *Install* button.
@@ -56,4 +56,4 @@ This project is licensed under the [MIT License](./LICENSE.md).
 
 Crafted and maintained with love by [Sideways Experiments](https://sideways-experiments.com)
 
-(c) 2022-2025 Sideways Experiments
+(c) 2022-2026 Sideways Experiments
