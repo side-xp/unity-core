@@ -16,9 +16,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  # ---------------------------------------------------------------------------------------------------------------
   # Generate the API reference as MarkDown files ONCE, and share it with the downstream jobs as an artifact.
-  # ---------------------------------------------------------------------------------------------------------------
   generate-docs:
     name: Generate API docs
     runs-on: ubuntu-latest
@@ -65,9 +63,7 @@ jobs:
           path: "Documentation~/api"
           retention-days: 1
 
-  # ---------------------------------------------------------------------------------------------------------------
   # Build the documentation website with MkDocs and deploy it to GitHub Pages.
-  # ---------------------------------------------------------------------------------------------------------------
   deploy-pages:
     name: Build & deploy docs
     runs-on: ubuntu-latest
@@ -89,7 +85,7 @@ jobs:
 
       # Restore the generated API docs (from the generate-docs job) into Documentation~/api/.
       - name: Download API docs artifact
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: api-docs
           path: "Documentation~/api"
@@ -134,10 +130,8 @@ jobs:
         run: |
           echo "Documentation website successfully deployed at https://${{github.repository_owner}}.github.io/${{github.event.repository.name}}"
 
-  # ---------------------------------------------------------------------------------------------------------------
   # Package the source + docs into ZIP/Tarball archives and attach them to the published Release.
   # Skipped on manual (workflow_dispatch) runs, since there is no Release to attach assets to.
-  # ---------------------------------------------------------------------------------------------------------------
   release-assets:
     name: Create Release assets
     runs-on: ubuntu-latest
@@ -151,27 +145,17 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v7
 
-      # Read the "name" property from package.json, which is used as the archive file name.
-      # The version is read from the release tag provided by the GitHub event instead.
-      - name: Read package.json
-        id: pkg
+      # Package the source as ZIP and Tarball archives, using `git archive` so that only tracked files are included.
+      # This honors the `export-ignore` attributes in .gitattributes (which exclude .github/, .vscode/, etc.), and
+      # naturally leaves out the generated Documentation~/api/ folder since it is untracked (gitignored) -- keeping
+      # the package archives lean, matching the committed package's contents.
+      # Archives are named [package-name].zip / [package-name].tar.gz, reading the name from package.json.
+      - name: Package source archives
         run: |
+          mkdir -p dist
           NAME=$(jq -r .name "package.json")
-          echo "package_name=$NAME" >> $GITHUB_OUTPUT
-
-      # Create a release/package/ folder that will contain only the "useful" files (exclude .github/, .vscode/, etc.)
-      # This runs BEFORE restoring the generated API docs, so the package archive stays lean (no generated api/),
-      # matching the committed package's contents.
-      - name: Prepare package folder
-        run: |
-          mkdir -p release/package
-          rsync --prune-empty-dirs -a ./ release/package/ \
-            --exclude ".git*" \
-            --exclude ".github" \
-            --exclude ".vscode" \
-            --exclude ".editorconfig" \
-            --exclude ".gitignore" \
-            --exclude ".vsconfig"
+          git archive --format=zip    -o "dist/$NAME.zip"    HEAD
+          git archive --format=tar.gz -o "dist/$NAME.tar.gz" HEAD
 
       # Restore the generated API docs (from the generate-docs job) into Documentation~/api/, so they are included
       # in the docs archive below.
@@ -181,52 +165,20 @@ jobs:
           name: api-docs
           path: "Documentation~/api"
 
-      # Create a separate release/docs/ folder that will contain the content of the Documentation~/ folder.
-      # Note that the Documentation~/ folder is included in the package's source anyway.
-      - name: Prepare docs folder
+      # Package the documentation (including the freshly generated MarkDown api/ files) as a ZIP archive.
+      # That archive file is named Documentation_vX.Y.Z.zip, using the release tag as the version.
+      # This is built manually (not via `git archive`) precisely because it must include the untracked api/ folder.
+      # The mkdocs.yml file is excluded, as the archive only ships the MarkDown files, not the website config.
+      - name: Package docs archive
         run: |
-          mkdir -p release/docs
+          mkdir -p dist release/docs
           cp -a "Documentation~" "release/docs"
           rm "release/docs/Documentation~/mkdocs.yml"
-
-      # Create a ZIP archive with the content of the release/package/ folder.
-      # That archive file is named [package-name].zip
-      - name: Output package as ZIP archive
-        id: pkg_zip
-        run: |
-          PKG_ZIP_PATH=${{ steps.pkg.outputs.package_name }}.zip
-          echo "path=$PKG_ZIP_PATH" >> $GITHUB_OUTPUT
-          cd release/package
-          zip -r ../$PKG_ZIP_PATH .
-          cd ../..
-
-      # Create a Tarball archive with the content of the release/package/ folder.
-      # That archive file is named [package-name].tar.gz
-      - name: Output package as tarball
-        id: pkg_targz
-        run: |
-          PKG_TARGZ_PATH="${{ steps.pkg.outputs.package_name }}.tar.gz"
-          echo "path=$PKG_TARGZ_PATH" >> $GITHUB_OUTPUT
-          cd release/package
-          tar -czf ../$PKG_TARGZ_PATH .
-          cd ../..
-
-      # Create a ZIP archive with the content of the release/docs/ folder.
-      # That archive file is named Documentation_vX.Y.Z.zip, using the release tag as the version.
-      - name: Output docs as ZIP archive
-        id: docs_zip
-        run: |
-          DOCS_PATH="Documentation_${{ github.event.release.tag_name }}.zip"
-          echo "path=$DOCS_PATH" >> $GITHUB_OUTPUT
           cd release/docs
-          zip -r -q ../$DOCS_PATH ./*
-          cd ../..
+          zip -r -q "${{ github.workspace }}/dist/Documentation_${{ github.event.release.tag_name }}.zip" ./*
 
-      # Upload all archives as assets on the existing GitHub Release entry.
+      # Upload all archives (everything in dist/) as assets on the existing GitHub Release entry.
       - name: Upload Release assets
         uses: softprops/action-gh-release@v3
         with:
-          files: |
-            release/${{ steps.pkg_zip.outputs.path }}
-            release/${{ steps.pkg_targz.outputs.path }}
-            release/${{ steps.docs_zip.outputs.path }}
+          files: dist/*
