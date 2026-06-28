@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.2.1](https://github.com/side-xp/unity-core/compare/v1.2.0...v1.2.1) (2026-06-28)
+
+
+### Bug Fixes
+
+* fixed Zensical theme version ([e676e6b](https://github.com/side-xp/unity-core/commit/e676e6b2fa4ac67717596f2f46e9161cd2186268))
+
 ## [1.2.0](https://github.com/side-xp/unity-core/compare/v1.1.6...v1.2.0) (2026-06-28)
 
 
