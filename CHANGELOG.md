@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.2.0](https://github.com/side-xp/unity-core/compare/v1.1.6...v1.2.0) (2026-06-28)
+
+
+### Features
+
+* replace MkDocs with Zensical for docs ([91a2657](https://github.com/side-xp/unity-core/commit/91a2657cac72be501c0f67ebcc7b02ecc62afd3a))
+
 ## [1.1.6](https://github.com/side-xp/unity-core/compare/v1.1.5...v1.1.6) (2026-06-27)
 
 
