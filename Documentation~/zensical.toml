@@ -1,20 +1,13 @@
-# Zensical configuration for the package's documentation website.
-# Zensical is the successor of "Material for MkDocs"; see https://zensical.org.
-#
-# The "side-xp" theme is our own Zensical theme (brand colors, logo treatment, ...):
-#   https://github.com/side-xp/py-zensical-theme
-# It is installed in CI before `zensical build` runs (see .github/workflows/release.yml).
-#
-# Note: this file lives inside Documentation~/ next to the MarkDown sources. Zensical resolves
-# "docs_dir" and "site_dir" relative to this file's own directory, so "docs_dir = ." builds the
-# whole Documentation~/ tree (guides, api/, img/, ...) in place, and the website is written to
-# Documentation~/site/ (gitignored). Build it with: zensical build -f Documentation~/zensical.toml
+# More info on available options:
+# https://zensical.org/docs/setup/basics/#settings
 
 [project]
-site_name = "SideXP Core package"
-site_description = "Core SideXP library for Unity, used as a dependency by most of our other packages."
+site_name = "SideXP - Unity Core package"
+site_description = "Sideways Experiments' Core library for Unity, used as a dependency by most of our other packages."
 site_author = "Sideways Experiments"
-copyright = "Copyright &copy; 2022-2026 Sideways Experiments"
+copyright = """
+&copy; 2026 <a href="https://sideways-experiments.com">Sideways Experiments</a>
+"""
 
 # Source MarkDown files and generated website output. Both are resolved relative to this file.
 docs_dir = "."
@@ -22,11 +15,29 @@ site_dir = "site"
 
 [project.theme]
 name = "side-xp"
-logo = "img/logo.png"
-favicon = "img/favicon.ico"
+language = "en"
+features = [
+    "announce.dismiss",
+    "content.code.annotate",
+    "content.code.copy",
+    "content.code.select",
+    "content.footnote.tooltips",
+    "content.tabs.link",
+    "content.tooltips",
+    "navigation.footer",
+    "navigation.indexes",
+    "navigation.instant",
+    "navigation.instant.prefetch",
+    "navigation.instant.progress",
+    "navigation.path",
+    "navigation.sections",
+    "navigation.top",
+    "navigation.tracking",
+    "search.highlight",
+]
 
-# Markdown extensions enabled for rendering (mirrors Zensical's vetted defaults: admonitions,
-# code highlighting with copy button, content tabs, task lists, ...).
+# More about extensions:
+# https://zensical.org/docs/setup/extensions/
 [project.markdown_extensions.abbr]
 [project.markdown_extensions.admonition]
 [project.markdown_extensions.attr_list]
@@ -35,6 +46,8 @@ favicon = "img/favicon.ico"
 [project.markdown_extensions.md_in_html]
 [project.markdown_extensions.toc]
 permalink = true
+[project.markdown_extensions.pymdownx.arithmatex]
+generic = true
 [project.markdown_extensions.pymdownx.betterem]
 [project.markdown_extensions.pymdownx.caret]
 [project.markdown_extensions.pymdownx.details]
