@@ -101,4 +101,5 @@ InitTestScene*.unity*
 # SideXP Library Project
 /Assets/_DEV/*
 !/Assets/_DEV/donotdelete~
-/Documentation~/api/**
+/Documentation~/api
+/Documentation~/site

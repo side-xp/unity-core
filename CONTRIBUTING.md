@@ -12,7 +12,7 @@ This package is developed as part of an internal Unity project, where it (and ou
 
 - **Unity**: minimum supported version is **2019.4**
 - **.NET SDK 8.0+**: only required if you want to (re)generate the API documentation locally (see [Documentation](#documentation) below).
-- **Python 3 + MkDocs**: optional, only if you want to preview the documentation website locally.
+- **Python 3 + Zensical**: optional, only if you want to preview the documentation website locally.
 
 ### Getting the package into a Unity project
 
@@ -29,7 +29,7 @@ This package is developed as part of an internal Unity project, where it (and ou
 | `Runtime/` | Runtime code shipped with the package |
 | `Editor/` | Editor-only code (excluded from player builds) |
 | `Demos/` | Sample scenes and scripts |
-| `Documentation~/` | Documentation sources: guides, images and the MkDocs config. The `~` suffix tells Unity to ignore this folder. |
+| `Documentation~/` | Documentation sources: guides, images and the Zensical config. The `~` suffix tells Unity to ignore this folder. |
 
 ### Documentation
 
@@ -53,14 +53,14 @@ instadoc \
   --exclude "**/*.Generated.cs"
 ```
 
-The full documentation website (built from the Markdown files with MkDocs) is assembled automatically in CI and deployed to GitHub Pages on each release. You don't need to build it to contribute. To preview it locally, mirror the CI layout from the package root:
+The full documentation website (built from the Markdown files with [Zensical](https://zensical.org), using our [side-xp theme](https://github.com/side-xp/py-zensical-theme)) is assembled automatically in CI and deployed to GitHub Pages on each release. You don't need to build it to contribute. To preview it locally from the package root:
 
 ```sh
-pip install mkdocs
-cp -a "Documentation~" docs
-mv "docs/Documentation~/mkdocs.yml" docs/
-( cd docs && mkdocs serve )
+pip install "git+https://github.com/side-xp/py-zensical-theme"
+zensical serve -f "Documentation~/zensical.toml"
 ```
+
+This serves the docs with live reload. To produce the static site instead, use `zensical build -f "Documentation~/zensical.toml"`, which writes it to the gitignored `Documentation~/site/` folder.
 
 ## Get involved!
 
