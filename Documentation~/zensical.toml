@@ -1,0 +1,62 @@
+# Zensical configuration for the package's documentation website.
+# Zensical is the successor of "Material for MkDocs"; see https://zensical.org.
+#
+# The "side-xp" theme is our own Zensical theme (brand colors, logo treatment, ...):
+#   https://github.com/side-xp/py-zensical-theme
+# It is installed in CI before `zensical build` runs (see .github/workflows/release.yml).
+#
+# Note: this file lives inside Documentation~/ next to the MarkDown sources. Zensical resolves
+# "docs_dir" and "site_dir" relative to this file's own directory, so "docs_dir = ." builds the
+# whole Documentation~/ tree (guides, api/, img/, ...) in place, and the website is written to
+# Documentation~/site/ (gitignored). Build it with: zensical build -f Documentation~/zensical.toml
+
+[project]
+site_name = "SideXP Core package"
+site_description = "Core SideXP library for Unity, used as a dependency by most of our other packages."
+site_author = "Sideways Experiments"
+copyright = "Copyright &copy; 2022-2026 Sideways Experiments"
+
+# Source MarkDown files and generated website output. Both are resolved relative to this file.
+docs_dir = "."
+site_dir = "site"
+
+[project.theme]
+name = "side-xp"
+logo = "img/logo.png"
+favicon = "img/favicon.ico"
+
+# Markdown extensions enabled for rendering (mirrors Zensical's vetted defaults: admonitions,
+# code highlighting with copy button, content tabs, task lists, ...).
+[project.markdown_extensions.abbr]
+[project.markdown_extensions.admonition]
+[project.markdown_extensions.attr_list]
+[project.markdown_extensions.def_list]
+[project.markdown_extensions.footnotes]
+[project.markdown_extensions.md_in_html]
+[project.markdown_extensions.toc]
+permalink = true
+[project.markdown_extensions.pymdownx.betterem]
+[project.markdown_extensions.pymdownx.caret]
+[project.markdown_extensions.pymdownx.details]
+[project.markdown_extensions.pymdownx.emoji]
+emoji_generator = "zensical.extensions.emoji.to_svg"
+emoji_index = "zensical.extensions.emoji.twemoji"
+[project.markdown_extensions.pymdownx.highlight]
+anchor_linenums = true
+line_spans = "__span"
+pygments_lang_class = true
+[project.markdown_extensions.pymdownx.inlinehilite]
+[project.markdown_extensions.pymdownx.keys]
+[project.markdown_extensions.pymdownx.magiclink]
+[project.markdown_extensions.pymdownx.mark]
+[project.markdown_extensions.pymdownx.smartsymbols]
+[project.markdown_extensions.pymdownx.superfences]
+custom_fences = [
+  { name = "mermaid", class = "mermaid", format = "pymdownx.superfences.fence_code_format" }
+]
+[project.markdown_extensions.pymdownx.tabbed]
+alternate_style = true
+combine_header_slug = true
+[project.markdown_extensions.pymdownx.tasklist]
+custom_checkbox = true
+[project.markdown_extensions.pymdownx.tilde]
