@@ -123,6 +123,17 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v7
 
+      # Build the documentation index page from the repo-root README, so it can never drift from it.
+      # Documentation~/README.md is NOT committed (it's gitignored): it is generated here. The sed
+      # expressions interpret our HTML-comment markers: drop the `docs:remove` blocks (shown only on
+      # GitHub) and un-comment the `docs:only` blocks (hidden on GitHub, shown on the docs site).
+      - name: Generate docs index from README
+        run: |
+          sed -e '/<!-- docs:remove:start -->/,/<!-- docs:remove:end -->/d' \
+              -e '/<!-- docs:only:start/d' \
+              -e '/docs:only:end -->/d' \
+              README.md > "Documentation~/README.md"
+
       # Restore the generated API docs (from the generate-docs job) into Documentation~/api/.
       - name: Download API docs artifact
         uses: actions/download-artifact@v8
@@ -186,6 +197,16 @@ jobs:
       # Checkout repository
       - name: Checkout repository
         uses: actions/checkout@v7
+
+      # Build the documentation index page from the repo-root README (see the deploy-pages job for details).
+      # Needed here so the generated index is included in the docs archive below. The source archive is built
+      # with `git archive HEAD`, so this untracked file never leaks into it.
+      - name: Generate docs index from README
+        run: |
+          sed -e '/<!-- docs:remove:start -->/,/<!-- docs:remove:end -->/d' \
+              -e '/<!-- docs:only:start/d' \
+              -e '/docs:only:end -->/d' \
+              README.md > "Documentation~/README.md"
 
       # Package the source as ZIP and Tarball archives, using `git archive` so that only tracked files are included.
       # This honors the `export-ignore` attributes in .gitattributes (which exclude .github/, .vscode/, etc.), and

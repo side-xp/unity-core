@@ -40,17 +40,29 @@ As a general rule, this package is meant to be used as a foundation for our othe
 
 ## Documentation & Help
 
+<!-- docs:remove:start -->
 Complete documentation available at https://side-xp.github.io/unity-core
 
+<!-- docs:remove:end -->
 If you need help or just want to chat with the community and the *Sideways Experiments* core team, you're welcome to join our [Discord server](https://discord.gg/bMK2d47JaE)!
 
 ## Contributing
 
+<!-- docs:remove:start -->
 Do you want to get involved in our projects? Check the [CONTRIBUTING.md](./CONTRIBUTING.md) file to learn more!
+<!-- docs:remove:end -->
+<!-- docs:only:start
+Do you want to get involved in our projects? Check our [contributing guidelines](https://github.com/side-xp/unity-core/blob/main/CONTRIBUTING.md) to learn more!
+docs:only:end -->
 
 ## License
 
+<!-- docs:remove:start -->
 This project is licensed under the [MIT License](./LICENSE.md).
+<!-- docs:remove:end -->
+<!-- docs:only:start
+This project is licensed under the [MIT License](https://mit-license.org).
+docs:only:end -->
 
 ---
 

@@ -53,9 +53,20 @@ instadoc \
   --exclude "**/*.Generated.cs"
 ```
 
+The documentation site's index page, `Documentation~/README.md`, is **generated from the repo-root [`README.md`](./README.md)** so the two never drift, and is therefore **not committed** (it's gitignored). CI rebuilds it on every docs build. The root README carries a few HTML-comment markers that the build interprets:
+
+- `<!-- docs:remove:start -->` … `<!-- docs:remove:end -->`: content shown only on GitHub (e.g. the "Complete documentation available at …" pointer), stripped from the docs site index.
+- `<!-- docs:only:start` … `docs:only:end -->`: content hidden on GitHub (it sits inside the comment) and shown only on the docs site — used to swap repo-relative links (`./CONTRIBUTING.md`, `./LICENSE.md`) for absolute ones that resolve on the published site.
+
 The full documentation website (built from the Markdown files with [Zensical](https://zensical.org), using our [side-xp theme](https://github.com/side-xp/py-zensical-theme)) is assembled automatically in CI and deployed to GitHub Pages on each release. You don't need to build it to contribute. To preview it locally from the package root:
 
 ```sh
+# Generate the index page from the root README (same transform CI runs)
+sed -e '/<!-- docs:remove:start -->/,/<!-- docs:remove:end -->/d' \
+    -e '/<!-- docs:only:start/d' \
+    -e '/docs:only:end -->/d' \
+    README.md > "Documentation~/README.md"
+
 pip install "git+https://github.com/side-xp/py-zensical-theme"
 zensical serve -f "Documentation~/zensical.toml"
 ```
