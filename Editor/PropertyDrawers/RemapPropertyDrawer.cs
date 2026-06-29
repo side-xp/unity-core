@@ -74,7 +74,7 @@ namespace SideXP.Core.EditorOnly
             {
                 case SerializedPropertyType.Integer:
                     {
-                        property.intValue = (int)Math.Remap(property.intValue, fromMin, fromMax, toMin, toMax);
+                        property.intValue = (int)MathUtility.Remap(property.intValue, fromMin, fromMax, toMin, toMax);
                         if (clamped)
                             property.intValue = (int)Mathf.Clamp(property.intValue, toMin, toMax);
                     }
@@ -82,8 +82,8 @@ namespace SideXP.Core.EditorOnly
 
                 case SerializedPropertyType.Vector2:
                     {
-                        float x = Math.Remap(property.vector2Value.x, fromMin, fromMax, toMin, toMax);
-                        float y = Math.Remap(property.vector2Value.y, fromMin, fromMax, toMin, toMax);
+                        float x = MathUtility.Remap(property.vector2Value.x, fromMin, fromMax, toMin, toMax);
+                        float y = MathUtility.Remap(property.vector2Value.y, fromMin, fromMax, toMin, toMax);
 
                         if (clamped)
                         {
@@ -97,8 +97,8 @@ namespace SideXP.Core.EditorOnly
 
                 case SerializedPropertyType.Vector2Int:
                     {
-                        int x = (int)Math.Remap(property.vector2IntValue.x, fromMin, fromMax, toMin, toMax);
-                        int y = (int)Math.Remap(property.vector2IntValue.y, fromMin, fromMax, toMin, toMax);
+                        int x = (int)MathUtility.Remap(property.vector2IntValue.x, fromMin, fromMax, toMin, toMax);
+                        int y = (int)MathUtility.Remap(property.vector2IntValue.y, fromMin, fromMax, toMin, toMax);
 
                         if (clamped)
                         {
@@ -112,9 +112,9 @@ namespace SideXP.Core.EditorOnly
 
                 case SerializedPropertyType.Vector3:
                     {
-                        float x = Math.Remap(property.vector3Value.x, fromMin, fromMax, toMin, toMax);
-                        float y = Math.Remap(property.vector3Value.y, fromMin, fromMax, toMin, toMax);
-                        float z = Math.Remap(property.vector3Value.z, fromMin, fromMax, toMin, toMax);
+                        float x = MathUtility.Remap(property.vector3Value.x, fromMin, fromMax, toMin, toMax);
+                        float y = MathUtility.Remap(property.vector3Value.y, fromMin, fromMax, toMin, toMax);
+                        float z = MathUtility.Remap(property.vector3Value.z, fromMin, fromMax, toMin, toMax);
 
                         if (clamped)
                         {
@@ -129,9 +129,9 @@ namespace SideXP.Core.EditorOnly
 
                 case SerializedPropertyType.Vector3Int:
                     {
-                        int x = (int)Math.Remap(property.vector3IntValue.x, fromMin, fromMax, toMin, toMax);
-                        int y = (int)Math.Remap(property.vector3IntValue.y, fromMin, fromMax, toMin, toMax);
-                        int z = (int)Math.Remap(property.vector3IntValue.z, fromMin, fromMax, toMin, toMax);
+                        int x = (int)MathUtility.Remap(property.vector3IntValue.x, fromMin, fromMax, toMin, toMax);
+                        int y = (int)MathUtility.Remap(property.vector3IntValue.y, fromMin, fromMax, toMin, toMax);
+                        int z = (int)MathUtility.Remap(property.vector3IntValue.z, fromMin, fromMax, toMin, toMax);
 
                         if (clamped)
                         {
@@ -146,10 +146,10 @@ namespace SideXP.Core.EditorOnly
 
                 case SerializedPropertyType.Vector4:
                     {
-                        float x = Math.Remap(property.vector4Value.x, fromMin, fromMax, toMin, toMax);
-                        float y = Math.Remap(property.vector4Value.y, fromMin, fromMax, toMin, toMax);
-                        float z = Math.Remap(property.vector4Value.z, fromMin, fromMax, toMin, toMax);
-                        float w = Math.Remap(property.vector4Value.w, fromMin, fromMax, toMin, toMax);
+                        float x = MathUtility.Remap(property.vector4Value.x, fromMin, fromMax, toMin, toMax);
+                        float y = MathUtility.Remap(property.vector4Value.y, fromMin, fromMax, toMin, toMax);
+                        float z = MathUtility.Remap(property.vector4Value.z, fromMin, fromMax, toMin, toMax);
+                        float w = MathUtility.Remap(property.vector4Value.w, fromMin, fromMax, toMin, toMax);
 
                         if (clamped)
                         {
@@ -165,7 +165,7 @@ namespace SideXP.Core.EditorOnly
 
                 default:
                     {
-                        property.floatValue = Math.Remap(property.floatValue, fromMin, fromMax, toMin, toMax);
+                        property.floatValue = MathUtility.Remap(property.floatValue, fromMin, fromMax, toMin, toMax);
                         if (clamped)
                             property.floatValue = Mathf.Clamp(property.floatValue, toMin, toMax);
                     }
