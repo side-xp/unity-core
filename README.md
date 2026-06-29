@@ -1,4 +1,4 @@
-# SideXP Core package
+# SideXP - Core (Unity)
 
 Core SideXP library for Unity, used as a dependency by most of our other packages.
 
