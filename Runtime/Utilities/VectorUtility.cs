@@ -6,7 +6,7 @@ namespace SideXP.Core
 {
 
     /// <summary>
-    /// Miscellaeous functions for working with vectors.
+    /// Miscellaneous functions for working with vectors.
     /// </summary>
     public static class VectorUtility
     {
@@ -31,7 +31,7 @@ namespace SideXP.Core
             return points.Count > 0 ? sum / points.Count : Vector3.zero;
         }
 
-        /// <inheritdoc cref="Barycentre(IList{Vector2})"/>
+        /// <inheritdoc cref="Barycentre(IList{Vector3})"/>
         public static Vector2 Barycentre(IList<Vector2> points)
         {
             Vector2 sum = Vector2.zero;
@@ -41,7 +41,8 @@ namespace SideXP.Core
         }
 
         /// <inheritdoc cref="Barycentre(IList{Vector3})"/>
-        /// <param name="weightedPoints">The points from which you want to compute the barycentre, and their associated weight. The more the weight value, the closer the barycentre to this point.</param>
+        /// <param name="weightedPoints">The points from which you want to compute the barycentre, and their associated weight. The more
+        /// the weight value, the closer the barycentre to this point.</param>
         public static Vector3 Barycentre(IList<(Vector3, float)> weightedPoints)
         {
             Vector3 sum = Vector3.zero;
