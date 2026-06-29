@@ -6,7 +6,7 @@ namespace SideXP.Core
     /// <summary>
     /// Represents an asst with a unique identifier.
     /// </summary>
-    [HelpURL(Constants.BaseHelpUrl)]
+    [HelpURL(Constants.BaseHelpUrl + "/api/SideXP.Core/" + nameof(UniqueSO))]
     public class UniqueSO : ScriptableObject
     {
 

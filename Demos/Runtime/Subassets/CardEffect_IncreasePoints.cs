@@ -7,6 +7,7 @@ namespace SideXP.Core.Demos
     /// Represents an effect that increase the player's score by a defined amount.<br/>
     /// Used to illustrate Subassets usage.
     /// </summary>
+    [HelpURL(Constants.BaseHelpUrl + "/api/SideXP.Core.Demos/" + nameof(CardEffect_IncreasePoints))]
     [SubassetLabel("Increase points by [amount]")]
     public class CardEffect_IncreasePoints : CardEffectBase
     {

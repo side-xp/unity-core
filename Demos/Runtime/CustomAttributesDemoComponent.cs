@@ -6,6 +6,7 @@ namespace SideXP.Core.Demos
     /// <summary>
     /// Illustrates usage of custom attributes for inspector GUI.
     /// </summary>
+    [HelpURL(Constants.BaseHelpUrl + "/api/SideXP.Core.Demos/" + nameof(CustomAttributesDemoComponent))]
     [AddComponentMenu(Constants.AddComponentMenuDemosCore + "/Custom Attributes Demo")]
     public class CustomAttributesDemoComponent : MonoBehaviour
     {

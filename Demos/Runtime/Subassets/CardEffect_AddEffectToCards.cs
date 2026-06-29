@@ -7,6 +7,7 @@ namespace SideXP.Core.Demos
     /// Represents an effect that add a defined effect to all cards related to a defined asset.<br/>
     /// Used to illustrate Subassets usage.
     /// </summary>
+    [HelpURL(Constants.BaseHelpUrl + "/api/SideXP.Core.Demos/" + nameof(CardEffect_AddEffectToCards))]
     [SubassetLabel("Add [effect] to all [card] instances")]
     public class CardEffect_AddEffectToCards : CardEffectBase
     {
