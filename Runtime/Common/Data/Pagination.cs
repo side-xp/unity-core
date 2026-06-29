@@ -87,7 +87,7 @@ namespace SideXP.Core
         /// <summary>
         /// Gets the number of pages.
         /// </summary>
-        public int PagesCount => CountPages(_elementsCount, _nbElementsPerPage);
+        public int PagesCount => CountPages(_elementsCount, NbElementsPerPage);
 
         /// <summary>
         /// Gets/sets the total number of elements.

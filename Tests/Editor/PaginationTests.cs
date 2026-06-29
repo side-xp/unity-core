@@ -81,6 +81,16 @@ namespace SideXP.Core.Tests
             Assert.AreEqual(0, new Pagination(0, 25, 0).PagesCount);
         }
 
+        [Test]
+        public void PagesCount_WithNonPositivePerPage_UsesClampedValue()
+        {
+            // PagesCount routes through the clamped NbElementsPerPage (min 1), so a per-page count of 0
+            // does not divide by zero — it behaves as 1 element per page.
+            var pagination = new Pagination(0, 5, 10);
+            pagination.NbElementsPerPage = 0;
+            Assert.AreEqual(10, pagination.PagesCount);
+        }
+
         #endregion
 
 
