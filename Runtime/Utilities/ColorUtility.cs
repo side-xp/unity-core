@@ -6,7 +6,7 @@ namespace SideXP.Core
 {
 
     /// <summary>
-    /// Miscellanous functions for working with <see cref="Color"/> and <see cref="Color32"/> values.
+    /// Miscellaneous functions for working with <see cref="Color"/> and <see cref="Color32"/> values.
     /// </summary>
     public static class ColorUtility
     {
@@ -43,10 +43,11 @@ namespace SideXP.Core
             return UnityColorUtility.ToHtmlStringRGB(color);
         }
 
-        /// <inheritdoc cref="ToHexRGBA(Color)"/>
+        /// <inheritdoc cref="ToHexRGB(Color)"/>
         public static string ToHexRGB(Color32 color)
         {
-            return ToHexRGB(color);
+            // A Color32 is already byte-based, so format the channels directly instead of round-tripping through Color.
+            return $"{color.r:X2}{color.g:X2}{color.b:X2}";
         }
 
         /// <inheritdoc cref="ToHexRGB(Color)"/>
@@ -59,7 +60,8 @@ namespace SideXP.Core
         /// <inheritdoc cref="ToHexRGBA(Color)"/>
         public static string ToHexRGBA(Color32 color)
         {
-            return ToHexRGBA(color);
+            // A Color32 is already byte-based, so format the channels directly instead of round-tripping through Color.
+            return $"{color.r:X2}{color.g:X2}{color.b:X2}{color.a:X2}";
         }
 
         /// <summary>
@@ -76,16 +78,6 @@ namespace SideXP.Core
         /// <returns>Returns true if the string has been parsed successfully.</returns>
         public static bool FromHex(ref Color color, string hexString)
         {
-            //string[] split = ParseHexColorString(hexString);
-            //if (split == null)
-            //    return false;
-
-            //color.r = int.Parse(split[0], System.Globalization.NumberStyles.HexNumber) / MaxColorValueFloat;
-            //color.g = int.Parse(split[1], System.Globalization.NumberStyles.HexNumber) / MaxColorValueFloat;
-            //color.b = int.Parse(split[2], System.Globalization.NumberStyles.HexNumber) / MaxColorValueFloat;
-            //color.a = int.Parse(split[3], System.Globalization.NumberStyles.HexNumber) / MaxColorValueFloat;
-            //return true;
-
             return UnityColorUtility.TryParseHtmlString(hexString, out color);
         }
 
@@ -101,18 +93,18 @@ namespace SideXP.Core
             return output;
         }
 
-        /// <inheritdoc cref="FromHex(ref Color string)"/>
+        /// <inheritdoc cref="FromHex(ref Color, string)"/>
         public static bool FromHex32(ref Color32 color, string hexString)
         {
-            string[] split = ParseHexColorString(hexString);
-            if (split == null)
-                return false;
-
-            color.r = byte.Parse(split[0], System.Globalization.NumberStyles.HexNumber);
-            color.g = byte.Parse(split[1], System.Globalization.NumberStyles.HexNumber);
-            color.b = byte.Parse(split[2], System.Globalization.NumberStyles.HexNumber);
-            color.a = byte.Parse(split[3], System.Globalization.NumberStyles.HexNumber);
-            return true;
+            // Delegate to Unity's parser (like FromHex) so both share the same supported formats
+            // (#RGB, #RGBA, #RRGGBB, #RRGGBBAA). Parse into a temporary so a failed parse leaves the
+            // given color untouched.
+            if (UnityColorUtility.TryParseHtmlString(hexString, out Color parsed))
+            {
+                color = parsed;
+                return true;
+            }
+            return false;
         }
 
         /// <inheritdoc cref="FromHex32(ref Color32, string)"/>
@@ -153,41 +145,7 @@ namespace SideXP.Core
         /// <inheritdoc cref="GetOverlayTint(Color)"/>
         public static Color32 GetOverlayTint(Color32 color)
         {
-            return GetOverlayTint(color);
-        }
-
-        #endregion
-
-
-        #region Private API
-
-        /// <summary>
-        /// Splits an hexadecimal color string in 4 hex values.
-        /// </summary>
-        /// <param name="hexString">The hexadecimal string (like F9F9F9, F9F9F9F9, #F9F9F9, #F9F9F9F9).</param>
-        /// <returns>Returns an array with 4 values, or null if the given hexadecimal string can't be parsed.</returns>
-        private static string[] ParseHexColorString(string hexString)
-        {
-            hexString = hexString.Replace("#", "");
-            if (hexString.Length < 8)
-            {
-                hexString += "ff";
-            }
-
-            string[] split = new string[4];
-            try
-            {
-                split[0] = hexString.Substring(0, 2);
-                split[1] = hexString.Substring(2, 2);
-                split[2] = hexString.Substring(4, 2);
-                split[3] = hexString.Substring(6, 2);
-            }
-            catch (System.Exception)
-            {
-                return null;
-            }
-
-            return split;
+            return GetOverlayTint((Color)color);
         }
 
         #endregion

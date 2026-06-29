@@ -4,7 +4,7 @@ namespace SideXP.Core
 {
 
     /// <summary>
-    /// Miscellanous functions for working with <see cref="AnimationCurve"/> instances.
+    /// Miscellaneous functions for working with <see cref="AnimationCurve"/> instances.
     /// </summary>
     public static class AnimationCurveUtility
     {
