@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 using UnityEngine;
@@ -25,6 +26,9 @@ namespace SideXP.Core
         /// <returns>Returns the computed barycentre.</returns>
         public static Vector3 Barycentre(IList<Vector3> points)
         {
+            if (points == null)
+                throw new ArgumentNullException(nameof(points));
+
             Vector3 sum = Vector3.zero;
             foreach (Vector3 p in points)
                 sum += p;
@@ -34,6 +38,9 @@ namespace SideXP.Core
         /// <inheritdoc cref="Barycentre(IList{Vector3})"/>
         public static Vector2 Barycentre(IList<Vector2> points)
         {
+            if (points == null)
+                throw new ArgumentNullException(nameof(points));
+
             Vector2 sum = Vector2.zero;
             foreach (Vector2 p in points)
                 sum += p;
@@ -45,6 +52,9 @@ namespace SideXP.Core
         /// the weight value, the closer the barycentre to this point.</param>
         public static Vector3 Barycentre(IList<(Vector3, float)> weightedPoints)
         {
+            if (weightedPoints == null)
+                throw new ArgumentNullException(nameof(weightedPoints));
+
             Vector3 sum = Vector3.zero;
             float weightSum = 0f;
             foreach ((Vector3, float) p in weightedPoints)
@@ -58,6 +68,9 @@ namespace SideXP.Core
         /// <inheritdoc cref="Barycentre(IList{ValueTuple{Vector3, float}})"/>
         public static Vector2 Barycentre(IList<(Vector2, float)> weightedPoints)
         {
+            if (weightedPoints == null)
+                throw new ArgumentNullException(nameof(weightedPoints));
+
             Vector2 sum = Vector2.zero;
             float weightSum = 0f;
             foreach ((Vector2, float) p in weightedPoints)

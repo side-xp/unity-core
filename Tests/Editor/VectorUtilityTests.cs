@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 using NUnit.Framework;
@@ -141,6 +142,35 @@ namespace SideXP.Core.Tests
                 (new Vector2(1f, 1f), -2f),
             };
             AssertApproximatelyEqual(Vector2.zero, VectorUtility.Barycentre(weighted));
+        }
+
+        #endregion
+
+
+        #region Null guards
+
+        [Test]
+        public void Barycentre_Vector3_Null_Throws()
+        {
+            Assert.Throws<ArgumentNullException>(() => VectorUtility.Barycentre((IList<Vector3>)null));
+        }
+
+        [Test]
+        public void Barycentre_Vector2_Null_Throws()
+        {
+            Assert.Throws<ArgumentNullException>(() => VectorUtility.Barycentre((IList<Vector2>)null));
+        }
+
+        [Test]
+        public void Barycentre_WeightedVector3_Null_Throws()
+        {
+            Assert.Throws<ArgumentNullException>(() => VectorUtility.Barycentre((IList<(Vector3, float)>)null));
+        }
+
+        [Test]
+        public void Barycentre_WeightedVector2_Null_Throws()
+        {
+            Assert.Throws<ArgumentNullException>(() => VectorUtility.Barycentre((IList<(Vector2, float)>)null));
         }
 
         #endregion
