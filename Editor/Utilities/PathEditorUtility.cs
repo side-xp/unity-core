@@ -1,4 +1,3 @@
-using UnityEngine;
 using UnityEditor;
 
 namespace SideXP.Core.EditorOnly
@@ -8,7 +7,7 @@ namespace SideXP.Core.EditorOnly
     /// Miscellaneous functions for working with path strings.
     /// </summary>
     [InitializeOnLoad]
-    public class PathEditorUtility : MonoBehaviour
+    public static class PathEditorUtility
     {
 
         #region Fields
@@ -24,12 +23,12 @@ namespace SideXP.Core.EditorOnly
         public const string UserSettingsDirectory = "UserSettings";
 
         /// <summary>
-        /// The absolute path to the /ProjectSettings directory
+        /// The absolute path to the project's /ProjectSettings directory.
         /// </summary>
         public static readonly string ProjectSettingsPath = null;
 
         /// <summary>
-        /// The absolute path to the /UserSettings directory
+        /// The absolute path to the project's /UserSettings directory.
         /// </summary>
         public static readonly string UserSettingsPath = null;
 
@@ -43,8 +42,8 @@ namespace SideXP.Core.EditorOnly
         /// </summary>
         static PathEditorUtility()
         {
-            ProjectSettingsPath = PathUtility.ToPath(ProjectSettingsDirectory);
-            UserSettingsPath = PathUtility.ToPath(UserSettingsDirectory);
+            ProjectSettingsPath = $"{PathUtility.ProjectPath}/{ProjectSettingsDirectory}";
+            UserSettingsPath = $"{PathUtility.ProjectPath}/{UserSettingsDirectory}";
         }
 
         #endregion
