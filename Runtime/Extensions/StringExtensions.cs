@@ -1,6 +1,5 @@
 using System;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Globalization;
 
 using UnityEngine;
@@ -28,17 +27,24 @@ namespace SideXP.Core
 
         #region Public API
 
+#if !UNITY_2021_2_OR_NEWER
         /// <summary>
-        /// Shortcut for using <see cref="string.Split(string[], StringSplitOptions)"/> with one string as a separator.
+        /// Polyfill for <see cref="string.Split(string, StringSplitOptions)"/>, which was added to Unity's base class library
+        /// in Unity 2021.2 (.NET Standard 2.1). On Unity 2021.2 and newer, the built-in method is used instead.
         /// </summary>
+        /// <remarks>
+        /// The default options match the built-in method (<see cref="StringSplitOptions.None"/>, so empty entries are kept),
+        /// ensuring that splitting a string behaves identically across all supported Unity versions.
+        /// </remarks>
         /// <param name="str">The string to split.</param>
         /// <param name="separator">The separator to use for splitting the string.</param>
         /// <param name="splitOptions">Eventual split options.</param>
         /// <returns>Returns the splitted string.</returns>
-        public static string[] Split(this string str, string separator, StringSplitOptions splitOptions = StringSplitOptions.RemoveEmptyEntries)
+        public static string[] Split(this string str, string separator, StringSplitOptions splitOptions = StringSplitOptions.None)
         {
             return str.Split(new string[1] { separator }, splitOptions);
         }
+#endif
 
         /// <summary>
         /// Splits a string by newline characters.
@@ -59,22 +65,37 @@ namespace SideXP.Core
 		/// <returns>Returns the input string repeated the given number of times.</returns>
 		public static string Repeat(this string str, int iterations)
         {
-            string output = "";
-            for (int i = 0; i < System.Math.Max(0, iterations); i++)
-                output += str;
+            if (string.IsNullOrEmpty(str) || iterations <= 0)
+                return string.Empty;
 
-            return output;
+            StringBuilder output = new StringBuilder(str.Length * iterations);
+            for (int i = 0; i < iterations; i++)
+                output.Append(str);
+
+            return output.ToString();
         }
 
         /// <summary>
-        /// Counts the number of occurrences of a given string into another.
+        /// Counts the number of (non-overlapping) occurrences of a given substring into another string.
         /// </summary>
+        /// <remarks>The pattern is matched literally (ordinal), not as a regular expression.</remarks>
         /// <param name="str">The string in which you want to count the occurrences.</param>
-        /// <param name="pattern">The pattern you want to count the occurrences.</param>
+        /// <param name="pattern">The substring you want to count the occurrences of.</param>
         /// <returns>Returns the number of occurrences found.</returns>
         public static int Occurrences(this string str, string pattern)
         {
-            return Regex.Matches(str, pattern).Count;
+            if (string.IsNullOrEmpty(str) || string.IsNullOrEmpty(pattern))
+                return 0;
+
+            int count = 0;
+            int index = 0;
+            while ((index = str.IndexOf(pattern, index, StringComparison.Ordinal)) != -1)
+            {
+                count++;
+                index += pattern.Length;
+            }
+
+            return count;
         }
 
         /// <inheritdoc cref="Slice(string, int, int)"/>
@@ -124,17 +145,20 @@ namespace SideXP.Core
         /// <returns>Returns the processed string.</returns>
         public static string RemoveDiacritics(this string str)
         {
+            if (string.IsNullOrEmpty(str))
+                return str;
+
             str = str.Normalize(NormalizationForm.FormD);
-            string output = string.Empty;
+            StringBuilder output = new StringBuilder(str.Length);
 
             for (int i = 0; i < str.Length; i++)
             {
                 char c = str[i];
                 UnicodeCategory category = CharUnicodeInfo.GetUnicodeCategory(c);
                 if (category != UnicodeCategory.NonSpacingMark && category != UnicodeCategory.Surrogate)
-                    output += c;
+                    output.Append(c);
             }
-            return output;
+            return output.ToString();
         }
 
         /// <summary>
@@ -145,32 +169,18 @@ namespace SideXP.Core
         /// <returns>Returns the processed string.</returns>
         public static string RemoveSpecialChars(this string str, string allowedChars = null)
         {
-            string output = string.Empty;
-            if (allowedChars == null)
-                allowedChars = "";
+            if (string.IsNullOrEmpty(str))
+                return str;
 
+            StringBuilder output = new StringBuilder(str.Length);
             for (int i = 0; i < str.Length; i++)
             {
-                if (!IsLetterOrDigit(str[i]))
-                {
-                    bool allowed = false;
-                    for (int j = 0; j < allowedChars.Length; j++)
-                    {
-                        if (str[i] == allowedChars[j])
-                        {
-                            allowed = true;
-                            break;
-                        }
-                    }
-
-                    if (!allowed)
-                        continue;
-                }
-
-                output += str[i];
+                char c = str[i];
+                if (char.IsLetterOrDigit(c) || (allowedChars != null && allowedChars.IndexOf(c) >= 0))
+                    output.Append(c);
             }
 
-            return output;
+            return output.ToString();
         }
 
         /// <inheritdoc cref="PathUtility.ToPath(string, bool, char)"/>
@@ -231,25 +241,6 @@ namespace SideXP.Core
         public static GUIContent ToGUIContent(this string text)
         {
             return new GUIContent(text);
-        }
-
-        #endregion
-
-
-        #region Private API
-
-        /// <summary>
-        /// Checks if the given character is a letter (capital or not) or a digit.
-        /// </summary>
-        /// <param name="character">The character you want to check.</param>
-        /// <returns>Returns true if the given character is a letter or a digit.</returns>
-        private static bool IsLetterOrDigit(this char character)
-        {
-            byte asByte = (byte)character;
-            return
-                (asByte >= Ascii0 && asByte <= Ascii9) ||
-                (asByte >= AsciiA && asByte <= AsciiZ) ||
-                (asByte >= Asciia && asByte <= Asciiz);
         }
 
         #endregion
