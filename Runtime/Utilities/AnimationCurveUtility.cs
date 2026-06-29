@@ -1,3 +1,5 @@
+using System;
+
 using UnityEngine;
 
 namespace SideXP.Core
@@ -101,6 +103,9 @@ namespace SideXP.Core
         /// <returns>Returns the found keyframe, or the default one if there's no keyframe on the curve.</returns>
         public static Keyframe GetFirstKeyframe(AnimationCurve curve)
         {
+            if (curve == null)
+                throw new ArgumentNullException(nameof(curve));
+
             int count = curve.keys.Length;
             if (count > 0)
             {
@@ -123,6 +128,9 @@ namespace SideXP.Core
         /// <inheritdoc cref="GetFirstKeyframe(AnimationCurve)"/>
         public static Keyframe GetLastKeyframe(AnimationCurve curve)
         {
+            if (curve == null)
+                throw new ArgumentNullException(nameof(curve));
+
             int count = curve.keys.Length;
             if (count > 0)
             {
@@ -145,6 +153,9 @@ namespace SideXP.Core
         /// <inheritdoc cref="GetFirstKeyframe(AnimationCurve)"/>
         public static Keyframe GetMinKeyframe(AnimationCurve curve)
         {
+            if (curve == null)
+                throw new ArgumentNullException(nameof(curve));
+
             int count = curve.keys.Length;
             if (count > 0)
             {
@@ -167,6 +178,9 @@ namespace SideXP.Core
         /// <inheritdoc cref="GetFirstKeyframe(AnimationCurve)"/>
         public static Keyframe GetMaxKeyframe(AnimationCurve curve)
         {
+            if (curve == null)
+                throw new ArgumentNullException(nameof(curve));
+
             int count = curve.keys.Length;
             if (count > 0)
             {
@@ -254,6 +268,9 @@ namespace SideXP.Core
         /// <inheritdoc cref="GetFirstKeyframe(AnimationCurve)"/>
         public static AnimationCurve Loop(AnimationCurve curve)
         {
+            if (curve == null)
+                throw new ArgumentNullException(nameof(curve));
+
             curve.preWrapMode = WrapMode.Loop;
             curve.postWrapMode = WrapMode.Loop;
             return curve;
@@ -266,6 +283,9 @@ namespace SideXP.Core
         /// <inheritdoc cref="GetFirstKeyframe(AnimationCurve)"/>
         public static AnimationCurve PingPong(AnimationCurve curve)
         {
+            if (curve == null)
+                throw new ArgumentNullException(nameof(curve));
+
             curve.preWrapMode = WrapMode.PingPong;
             curve.postWrapMode = WrapMode.PingPong;
             return curve;
