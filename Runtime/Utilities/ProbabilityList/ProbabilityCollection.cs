@@ -33,69 +33,71 @@ namespace SideXP.Core
         /// <summary>
         /// Gets an object from this collection picked randomly based on the probability values.
         /// </summary>
+        /// <remarks>An item with a probability of zero or less is never picked. If the collection is empty or every item has a
+        /// non-positive probability, this returns false.</remarks>
         /// <param name="data">Outputs the picked object.</param>
         /// <returns>Returns true if a valid object has been picked from the list successfully.</returns>
         public virtual bool Get(out object data)
         {
-            // Calculate the random range
-            float min = 0f;
-            float total = 0;
+            // Sum the weights. A negative or zero probability means the item can't be picked.
+            float total = 0f;
+            foreach (IProbabilityItem item in Items)
+                total += Mathf.Max(0f, item.Probability);
+
+            // No item can be picked (empty collection, or all probabilities are zero or negative).
+            if (total <= 0f)
+            {
+                data = default;
+                return false;
+            }
+
+            float random = Random.Range(0f, total);
+            float cursor = 0f;
+            IProbabilityItem lastPickable = null;
             foreach (IProbabilityItem item in Items)
             {
-                min = Mathf.Min(min, item.Probability);
-                total += Mathf.Abs(item.Probability);
-            }
+                float weight = Mathf.Max(0f, item.Probability);
+                if (weight <= 0f)
+                    continue;
 
-            float random = Random.Range(min, min + total);
-            // Return first (or default) item if the random output is exactly the minimum value
-            if (random == min)
-            {
-                data = Items.Length > 0 ? Items[0].Data : default;
-                return Items.Length > 0;
-            }
-
-            float cursor = min;
-            // For each item in this collection
-            for (int i = 0; i < Items.Length; i++)
-            {
-                // If the random value is in the range from current cursor to item's probability, return it
-                if (random > cursor && random <= (cursor + Items[i].Probability))
+                lastPickable = item;
+                cursor += weight;
+                if (random <= cursor)
                 {
-                    data = Items[i].Data;
+                    data = item.Data;
                     return true;
                 }
-
-                // Move cursor to next item
-                cursor += Mathf.Abs(Items[i].Probability);
             }
 
-            data = default;
-            return false;
+            // Fallback for floating-point rounding (random landing just past the last cursor).
+            data = lastPickable.Data;
+            return true;
         }
 
         /// <summary>
         /// Gets the probability percentage for a given object in this collection to be picked.
         /// </summary>
+        /// <remarks>A probability of zero or less is reported as a 0% chance, consistently with <see cref="Get(out object)"/>.</remarks>
         /// <param name="data">The object from this collection.</param>
         /// <returns>Returns the probability percentage for the given object to be picked.</returns>
         public virtual float GetProbabilityPercents(object data)
         {
             IProbabilityItem targetItem = null;
 
-            // Calculate the probability range
+            // Sum the weights, consistently with Get() (negative or zero probabilities don't count).
             float total = 0f;
             foreach (IProbabilityItem item in Items)
             {
-                total += Mathf.Abs(item.Probability);
+                total += Mathf.Max(0f, item.Probability);
                 if (item.Data != null && item.Data.Equals(data))
                     targetItem = item;
             }
 
-            // Cancel if the given value is not in the list
-            if (targetItem == null)
+            // Cancel if the given value is not in the list, or if no item can be picked.
+            if (targetItem == null || total <= 0f)
                 return 0f;
 
-            return targetItem.Probability.Ratio(0, total) * 100;
+            return Mathf.Max(0f, targetItem.Probability) / total * 100f;
         }
 
         #endregion
