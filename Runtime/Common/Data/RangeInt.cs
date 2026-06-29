@@ -61,7 +61,7 @@ namespace SideXP.Core
         /// <summary>
         /// Gets a random value between min and max, both inclusive.
         /// </summary>
-        public int Random => _min != _max ? UnityEngine.Random.Range(Min, Max + 1) : 0;
+        public int Random => UnityEngine.Random.Range(Min, Max + 1);
 
     }
 
