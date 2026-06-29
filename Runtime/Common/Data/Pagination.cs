@@ -122,7 +122,7 @@ namespace SideXP.Core
         /// <param name="nbElementsPerPage">The number of elements per page.</param>
         public static T[] Paginate<T>(IList<T> list, int page, int nbElementsPerPage = DefaultElementsCountPerPage)
         {
-            Pagination pagination = new Pagination(list.Count, page, nbElementsPerPage);
+            Pagination pagination = new Pagination(page, nbElementsPerPage, list.Count);
             return pagination.Paginate(list);
         }
 
@@ -130,7 +130,7 @@ namespace SideXP.Core
         /// <param name="pagination">Outputs the <see cref="Pagination"/> infos of the operation.</param>
         public static T[] Paginate<T>(IList<T> list, out Pagination pagination, int page, int nbElementsPerPage = DefaultElementsCountPerPage)
         {
-            pagination = new Pagination(list.Count, page, nbElementsPerPage);
+            pagination = new Pagination(page, nbElementsPerPage, list.Count);
             return pagination.Paginate(list);
         }
 
@@ -192,7 +192,7 @@ namespace SideXP.Core
             return
                 a.Page != b.Page ||
                 a.ElementsCount != b.ElementsCount ||
-                a.NbElementsPerPage == b.NbElementsPerPage;
+                a.NbElementsPerPage != b.NbElementsPerPage;
         }
 
         /// <summary>
@@ -238,7 +238,7 @@ namespace SideXP.Core
         {
             return
                 other != null &&
-                !GetType().Equals(other.GetType()) &&
+                GetType().Equals(other.GetType()) &&
                 this == (Pagination)other;
         }
 
