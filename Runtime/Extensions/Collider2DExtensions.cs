@@ -27,12 +27,17 @@ namespace SideXP.Core
             bool success = true;
             bounds = default;
 
+            // Primitives: build a local-space bounds from the collider's geometry, then transform it into world space (so the
+            // object's position, rotation and scale are taken into account), consistent with ColliderExtensions.
             if (collider is CircleCollider2D circle)
-                bounds = new Bounds(circle.offset, new Vector2(circle.radius * 2, circle.radius * 2));
+            {
+                float diameter = circle.radius * 2f;
+                bounds = ColliderExtensions.TransformBounds(circle.transform, new Bounds(circle.offset, new Vector3(diameter, diameter, 0f)));
+            }
             else if (collider is BoxCollider2D box)
-                bounds = new Bounds(box.offset, box.size);
+                bounds = ColliderExtensions.TransformBounds(box.transform, new Bounds(box.offset, new Vector3(box.size.x, box.size.y, 0f)));
             else if (collider is CapsuleCollider2D capsule)
-                bounds = new Bounds(capsule.offset, capsule.size);
+                bounds = ColliderExtensions.TransformBounds(capsule.transform, new Bounds(capsule.offset, new Vector3(capsule.size.x, capsule.size.y, 0f)));
             else if (collider is PolygonCollider2D poly)
                 // @todo
                 bounds = poly.bounds;
@@ -66,7 +71,7 @@ namespace SideXP.Core
         /// <summary>
         /// Gets the offset of a <see cref="Collider2D"/>.
         /// </summary>
-        /// <param name="collider">The game object to check.</param>
+        /// <param name="collider">The collider to check.</param>
         /// <param name="offset">Outputs the found collider offset.</param>
         /// <returns>Returns true if the offset has been queried successfully.</returns>
         public static bool GetColliderOffset(this Collider2D collider, out Vector2 offset)

@@ -97,7 +97,7 @@ namespace SideXP.Core
         /// <param name="transform">The transform to apply.</param>
         /// <param name="localBounds">The local-space bounds to transform.</param>
         /// <returns>Returns the world-space axis-aligned bounds.</returns>
-        private static Bounds TransformBounds(Transform transform, Bounds localBounds)
+        internal static Bounds TransformBounds(Transform transform, Bounds localBounds)
         {
             Vector3 center = localBounds.center;
             Vector3 ext = localBounds.extents;
