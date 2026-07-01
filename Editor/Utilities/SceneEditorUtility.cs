@@ -91,7 +91,7 @@ namespace SideXP.Core.EditorOnly
         /// <returns>Returns true if the scene has been added to build settings successfully.</returns>
         public static bool AddToBuildSettings(string scenePath)
         {
-            if (IsIncluded(scenePath))
+            if (string.IsNullOrEmpty(scenePath) || IsIncluded(scenePath))
                 return false;
 
             List<EditorBuildSettingsScene> scenesList = new List<EditorBuildSettingsScene>(EditorBuildSettings.scenes)
