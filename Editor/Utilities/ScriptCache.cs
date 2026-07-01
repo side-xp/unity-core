@@ -191,7 +191,7 @@ namespace SideXP.Core.EditorOnly
         #endregion
 
 
-        #region Privtae API
+        #region Private API
 
         /// <summary>
         /// Removes all invalid entries in cached data.
