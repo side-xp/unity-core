@@ -65,7 +65,7 @@ namespace SideXP.Core.EditorOnly
         {
             FieldOrPropertyInfo info = ReflectionUtility.GetFieldOrPropertyFromPath(property.serializedObject.targetObject.GetType(), property.propertyPath, true);
             targetType = info != null ? info.Type : null;
-            return info.Type != null;
+            return targetType != null;
         }
 
         /// <summary>
@@ -76,7 +76,9 @@ namespace SideXP.Core.EditorOnly
         /// <returns>Returns true if the given property is an array element.</returns>
         public static bool IsArrayElement(this SerializedProperty property)
         {
-            return property.propertyPath.Contains("Array");
+            // Unity always represents an array/list element with a ".Array.data[i]" path segment. Matching that exact marker
+            // (rather than a bare "Array") avoids false positives for fields whose name merely contains "Array".
+            return property.propertyPath.Contains(".Array.data[");
         }
 
         #endregion
