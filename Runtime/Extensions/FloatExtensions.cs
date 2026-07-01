@@ -18,7 +18,7 @@ namespace SideXP.Core
         /// <inheritdoc cref="MathUtility.Approximately(float, float, float)"/>
         public static bool Approximately(this float a, float b, float epsilon)
         {
-            return a > b - epsilon && a < b + epsilon;
+            return MathUtility.Approximately(a, b, epsilon);
         }
 
         /// <inheritdoc cref="MathUtility.Ratio(float, float, float)"/>
