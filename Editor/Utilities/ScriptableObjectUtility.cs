@@ -52,74 +52,10 @@ namespace SideXP.Core.EditorOnly
         {
             ScriptableObject defaultObj = ScriptableObject.CreateInstance(obj.GetType());
             string json = JsonUtility.ToJson(defaultObj);
+            Object.DestroyImmediate(defaultObj);
             Undo.RecordObject(obj, "Reset Object To Defaults");
             JsonUtility.FromJsonOverwrite(json, obj);
         }
-
-        // The following part has been removed, as Resources are not meant to be used anymore.
-        //
-        ///// <summary>
-        ///// Gets a resource of a given type if it exists, or creates it.
-        ///// </summary>
-        ///// <param name="assetType">The expected type of the resource asset.</param>
-        ///// <param name="isNew">Outputs true if the asset has just been created.</param>
-        ///// <param name="path">The path of the resource asset, from /Resources directory (so excluding the "Resources/" part). You must also
-        ///// omit the file extension.</param>
-        ///// <returns>Returns the found or created resource asset.</returns>
-        //public static ScriptableObject GetOrCreateResource(Type assetType, out bool isNew, string path = null)
-        //{
-        //    // Use [Asset Type Name].asset as default path
-        //    if (string.IsNullOrEmpty(path))
-        //        path = $"{assetType.Name}";
-
-        //    // If an asset exists at the given type
-        //    Object existingAsset = Resources.Load(path, assetType);
-        //    if (existingAsset != null)
-        //    {
-        //        isNew = false;
-        //        // Warning if the types doesn't match
-        //        if (!assetType.IsAssignableFrom(existingAsset.GetType()))
-        //        {
-        //            Debug.LogWarning($"A resource already exists at {PathUtility.BaseResourcesPath}/{path}, but the found object is of type {existingAsset.GetType().FullName}, expected {assetType.FullName}.", existingAsset);
-        //            return null;
-        //        }
-        //        return existingAsset as ScriptableObject;
-        //    }
-
-        //    // Fix resource path
-        //    if (!path.StartsWith(PathUtility.BaseResourcesPath))
-        //        path = $"{PathUtility.BaseResourcesPath}/{path}";
-        //    if (Path.GetExtension(path) != ".asset")
-        //        path += ".asset";
-
-        //    // Create directory if it doesn't exist yet
-        //    string absPath = Path.GetDirectoryName(path.ToAbsolutePath());
-        //    try
-        //    {
-        //        if (!Directory.Exists(absPath))
-        //            Directory.CreateDirectory(absPath);
-        //    }
-        //    catch (Exception e)
-        //    {
-        //        Debug.LogException(e);
-        //    }
-
-        //    // Create the asset
-        //    ScriptableObject asset = ScriptableObject.CreateInstance(assetType);
-        //    AssetDatabase.CreateAsset(asset, path);
-        //    Debug.Log($"Resource of type {assetType.FullName} created at {PathUtility.BaseResourcesPath}/{path}", asset);
-        //    isNew = true;
-        //    return asset;
-        //}
-
-        ///// <typeparam name="T"><inheritdoc cref="GetOrCreateResource(Type, out bool, string)" path="/param[@name='assetType']"/></typeparam>
-        ///// <inheritdoc cref="GetOrCreateResource(Type, out bool, string)"/>
-        //public static T GetOrCreateResource<T>(out bool isNew, string path = null)
-        //    where T : ScriptableObject
-        //{
-        //    ScriptableObject asset = GetOrCreateResource(typeof(T), out isNew, path);
-        //    return asset as T;
-        //}
 
     }
 
