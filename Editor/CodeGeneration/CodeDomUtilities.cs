@@ -24,7 +24,7 @@ namespace SideXP.Core.EditorOnly
 
         /// <inheritdoc cref="CodeDomUtility.CreateParameter(Type, string, CodeNamespace, CodeNamespace)"/>
         public static CodeParameterDeclarationExpression CreateParameter(Type type, string name, CodeNamespace importsNamespace, CodeNamespace domNamespace = null)
-            => CodeDomUtility.CreateParameter(type, name, importsNamespace, importsNamespace);
+            => CodeDomUtility.CreateParameter(type, name, importsNamespace, domNamespace);
 
         /// <inheritdoc cref="CodeDomUtility.CreateParameter(ParameterInfo, CodeNamespace, CodeNamespace)"/>
         public static CodeParameterDeclarationExpression CreateParameter(ParameterInfo param, CodeNamespace importsNamespace, CodeNamespace domNamespace = null)
