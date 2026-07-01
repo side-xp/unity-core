@@ -1,1 +1,1 @@
-[assembly: NUnit.Framework.Category("SideXP - Core")]
+[assembly: NUnit.Framework.Category("SideXP.Core")]
