@@ -92,7 +92,7 @@ namespace SideXP.Core.EditorOnly
         {
             foreach (EditorWindow w in Resources.FindObjectsOfTypeAll<EditorWindow>())
             {
-                if (w.GetType().IsAssignableFrom(windowType))
+                if (windowType.IsAssignableFrom(w.GetType()))
                     return w;
             }
             return null;
