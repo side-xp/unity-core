@@ -96,20 +96,20 @@ namespace SideXP.Core
             return ColorUtility.ToHexRGBA(color);
         }
 
-        /// <inheritdoc cref="ColorUtility.ToHexRGBA(Color)"/>
+        /// <inheritdoc cref="ColorUtility.ToHexRGBA(Color32)"/>
         public static string ToHexRGBA(this Color32 color)
         {
             return ColorUtility.ToHexRGBA(color);
         }
 
         /// <inheritdoc cref="ColorUtility.FromHex(ref Color, string)"/>
-        public static bool FromHex(this Color color, string hexString)
+        public static bool FromHex(this ref Color color, string hexString)
         {
             return ColorUtility.FromHex(ref color, hexString);
         }
 
         /// <inheritdoc cref="ColorUtility.FromHex32(ref Color32, string)"/>
-        public static bool FromHex32(this Color32 color, string hexString)
+        public static bool FromHex32(this ref Color32 color, string hexString)
         {
             return ColorUtility.FromHex32(ref color, hexString);
         }

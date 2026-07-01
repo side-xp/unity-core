@@ -78,7 +78,12 @@ namespace SideXP.Core
         /// <returns>Returns true if the string has been parsed successfully.</returns>
         public static bool FromHex(ref Color color, string hexString)
         {
-            return UnityColorUtility.TryParseHtmlString(hexString, out color);
+            if (UnityColorUtility.TryParseHtmlString(hexString, out Color parsed))
+            {
+                color = parsed;
+                return true;
+            }
+            return false;
         }
 
         /// <summary>

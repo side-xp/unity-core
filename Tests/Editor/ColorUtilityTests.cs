@@ -78,10 +78,13 @@ namespace SideXP.Core.Tests
         }
 
         [Test]
-        public void FromHex_Ref_Invalid_ReturnsFalse()
+        public void FromHex_Ref_Invalid_ReturnsFalseAndLeavesColorUntouched()
         {
-            Color color = Color.clear;
-            Assert.IsFalse(ColorUtility.FromHex(ref color, "not-a-color"));
+            Color original = new Color(0.1f, 0.2f, 0.3f, 0.4f);
+            Color color = original;
+            bool ok = ColorUtility.FromHex(ref color, "not-a-color");
+            Assert.IsFalse(ok);
+            AssertColorApprox(original, color); // not clobbered on failure (matches FromHex32)
         }
 
         [Test]

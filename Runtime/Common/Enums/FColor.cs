@@ -29,7 +29,7 @@ namespace SideXP.Core
         // Tints
         Clear = 0,
         Black = Alpha100,
-        Grey = Maroon | Green | Navy,
+        Grey = Maroon | Lime | Navy,
         White = Red | Green | Blue,
 
         // Other colors

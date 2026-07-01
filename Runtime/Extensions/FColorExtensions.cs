@@ -62,6 +62,9 @@ namespace SideXP.Core
                 { output.a = .87f; }
                 else if (color.HasFlag(FColor.Alpha100))
                 { output.a = 1f; }
+                // No alpha flag set: default to opaque.
+                else
+                { output.a = 1f; }
             }
 
             return output;
@@ -121,6 +124,9 @@ namespace SideXP.Core
                 { output.a = (byte)(MaxColorValue * .87f); }
                 else if (color.HasFlag(FColor.Alpha100))
                 { output.a = MaxColorValue; }
+                // No alpha flag set: default to opaque.
+                else
+                { output.a = MaxColorValue; }
             }
 
             return output;
@@ -138,7 +144,7 @@ namespace SideXP.Core
         /// <inheritdoc cref="ToColor(FColor, float)"/>
         public static Color32 ToColor32(this FColor color, float alpha)
         {
-            return color.ToColor32((byte)(alpha != 0 ? (MaxColorValue / alpha) : 0));
+            return color.ToColor32((byte)(Mathf.Clamp01(alpha) * MaxColorValue));
         }
 
     }
