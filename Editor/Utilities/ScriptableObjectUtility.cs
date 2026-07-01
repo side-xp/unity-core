@@ -11,26 +11,34 @@ namespace SideXP.Core.EditorOnly
     /// <summary>
     /// Miscellaneous functions for working with <see cref="ScriptableObject"/> and assets in the editor.
     /// </summary>
-    public class ScriptableObjectUtility
+    public static class ScriptableObjectUtility
     {
 
         /// <summary>
         /// Gets the path to the source script of the given type of <see cref="ScriptableObject"/>.
         /// </summary>
         /// <param name="scriptableObjectType">The type of the <see cref="ScriptableObject"/> you want to get the script file path.</param>
+        /// <returns>Returns the found script path, or null if the path to the script file can't be found.</returns>
         public static string GetScriptPath(Type scriptableObjectType)
         {
+            if (scriptableObjectType == null)
+                throw new ArgumentNullException(nameof(scriptableObjectType));
+            if (!typeof(ScriptableObject).IsAssignableFrom(scriptableObjectType))
+                throw new ArgumentException($"The type {scriptableObjectType.FullName} is not a {nameof(ScriptableObject)}.", nameof(scriptableObjectType));
+
             ScriptableObject tmpInstance = ScriptableObject.CreateInstance(scriptableObjectType);
             MonoScript sourceScriptAsset = MonoScript.FromScriptableObject(tmpInstance);
             Object.DestroyImmediate(tmpInstance);
-            return AssetDatabase.GetAssetPath(sourceScriptAsset);
+            string path = AssetDatabase.GetAssetPath(sourceScriptAsset);
+            return string.IsNullOrEmpty(path) ? null : path;
         }
 
         /// <inheritdoc cref="GetScriptPath(Type)"/>
         /// <param name="obj">The <see cref="ScriptableObject"/> you want to get the script path.</param>
-        /// <returns>Returns the found script path, or null if the path to the script file can't be found.</returns>
         public static string GetScriptPath(ScriptableObject obj)
         {
+            if (obj == null)
+                throw new ArgumentNullException(nameof(obj));
             return GetScriptPath(obj.GetType());
         }
 
@@ -50,6 +58,9 @@ namespace SideXP.Core.EditorOnly
         /// <param name="obj">The object to reset.</param>
         public static void ResetToDefaults(ScriptableObject obj)
         {
+            if (obj == null)
+                throw new ArgumentNullException(nameof(obj));
+
             ScriptableObject defaultObj = ScriptableObject.CreateInstance(obj.GetType());
             string json = JsonUtility.ToJson(defaultObj);
             Object.DestroyImmediate(defaultObj);
