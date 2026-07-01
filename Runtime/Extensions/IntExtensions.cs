@@ -4,7 +4,7 @@ namespace SideXP.Core
 {
 
     /// <summary>
-    /// Extension functions for float values.
+    /// Extension functions for int values.
     /// </summary>
     public static class IntExtensions
     {
