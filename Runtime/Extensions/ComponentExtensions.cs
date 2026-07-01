@@ -29,10 +29,10 @@ namespace SideXP.Core
         }
 
         /// <inheritdoc cref="InstantiateGameObject{T}(T, Vector3, Quaternion, Transform, out GameObject)"/>
-        public static T InstantiateGameObject<T>(this T component, Vector3 position, Quaternion rotation, Transform parentt)
+        public static T InstantiateGameObject<T>(this T component, Vector3 position, Quaternion rotation, Transform parent)
             where T : Component
         {
-            return InstantiateGameObject(component, position, rotation, parentt, out _);
+            return InstantiateGameObject(component, position, rotation, parent, out _);
         }
 
         /// <inheritdoc cref="InstantiateGameObject{T}(T, Vector3, Quaternion, Transform, out GameObject)"/>
