@@ -1,4 +1,4 @@
-﻿#if !UNITY_2020_OR_NEWER
+﻿#if !UNITY_2020_1_OR_NEWER
 
 using SideXP.Core.Reflection;
 
