@@ -1,8 +1,10 @@
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 
 using NUnit.Framework;
 
 using UnityEngine;
+using UnityEngine.TestTools;
 
 namespace SideXP.Core.Tests
 {
@@ -59,9 +61,11 @@ namespace SideXP.Core.Tests
         [Test]
         public void GetExtentsOrthographic_Perspective_ReturnsZero()
         {
-            // A perspective camera logs an informational message (Debug.Log, which does not fail the test) and returns zero.
+            // A perspective camera logs an informational message and returns zero. Declare the log as expected (it still echoes to
+            // the console — Unity does not silence expected logs — but this asserts it fires and keeps the test log-hygienic).
             Camera camera = NewCamera(false, 5f, 2f);
 
+            LogAssert.Expect(LogType.Log, new Regex("must be turned to orthographic"));
             Assert.AreEqual(Vector2.zero, camera.GetExtentsOrthographic());
         }
 
@@ -86,6 +90,7 @@ namespace SideXP.Core.Tests
         {
             Camera camera = NewCamera(false, 5f, 2f);
 
+            LogAssert.Expect(LogType.Log, new Regex("must be turned to orthographic"));
             Assert.AreEqual(Vector2.zero, camera.GetBoundsOrthographic());
         }
 
