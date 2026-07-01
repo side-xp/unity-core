@@ -9,7 +9,7 @@ using SideXP.Core.EditorOnly;
 namespace SideXP.Core.Tests
 {
 
-    public class CodeDomUtilitiesTests
+    public class CodeDomUtilityTests
     {
 
         #region Samples
@@ -37,7 +37,7 @@ namespace SideXP.Core.Tests
 
         private static ParameterInfo[] GetParamSampleParameters()
         {
-            return typeof(CodeDomUtilitiesTests)
+            return typeof(CodeDomUtilityTests)
                 .GetMethod(nameof(ParamSample), BindingFlags.Static | BindingFlags.NonPublic)
                 .GetParameters();
         }
@@ -62,7 +62,7 @@ namespace SideXP.Core.Tests
         public void GetTypeReference_String_UsesKeywordAndNoImport()
         {
             var imports = new CodeNamespace();
-            CodeTypeReference typeRef = CodeDomUtilities.GetTypeReference(typeof(string), imports);
+            CodeTypeReference typeRef = CodeDomUtility.GetTypeReference(typeof(string), imports);
             Assert.AreEqual("string", typeRef.BaseType);
             Assert.AreEqual(0, imports.Imports.Count, "string must not trigger a 'System' import");
         }
@@ -71,7 +71,7 @@ namespace SideXP.Core.Tests
         public void GetTypeReference_Object_UsesKeywordAndNoImport()
         {
             var imports = new CodeNamespace();
-            CodeTypeReference typeRef = CodeDomUtilities.GetTypeReference(typeof(object), imports);
+            CodeTypeReference typeRef = CodeDomUtility.GetTypeReference(typeof(object), imports);
             Assert.AreEqual("object", typeRef.BaseType);
             Assert.AreEqual(0, imports.Imports.Count);
         }
@@ -80,7 +80,7 @@ namespace SideXP.Core.Tests
         public void GetTypeReference_Primitive_AddsNoImport()
         {
             var imports = new CodeNamespace();
-            CodeDomUtilities.GetTypeReference(typeof(int), imports);
+            CodeDomUtility.GetTypeReference(typeof(int), imports);
             Assert.AreEqual(0, imports.Imports.Count, "primitives are rendered as keywords, no import needed");
         }
 
@@ -88,7 +88,7 @@ namespace SideXP.Core.Tests
         public void GetTypeReference_CustomType_UsesShortNameAndAddsImport()
         {
             var imports = new CodeNamespace();
-            CodeTypeReference typeRef = CodeDomUtilities.GetTypeReference(typeof(PlainSample), imports);
+            CodeTypeReference typeRef = CodeDomUtility.GetTypeReference(typeof(PlainSample), imports);
             Assert.AreEqual(nameof(PlainSample), typeRef.BaseType);
             Assert.AreEqual(1, imports.Imports.Count);
             Assert.AreEqual(typeof(PlainSample).Namespace, ((CodeNamespaceImport)imports.Imports[0]).Namespace);
@@ -100,7 +100,7 @@ namespace SideXP.Core.Tests
             // Regression: ContainsImport used to dereference domNamespace.Name unconditionally (NRE when omitted).
             var imports = new CodeNamespace();
             CodeTypeReference typeRef = null;
-            Assert.DoesNotThrow(() => typeRef = CodeDomUtilities.GetTypeReference(typeof(PlainSample), imports));
+            Assert.DoesNotThrow(() => typeRef = CodeDomUtility.GetTypeReference(typeof(PlainSample), imports));
             Assert.AreEqual(nameof(PlainSample), typeRef.BaseType);
             Assert.AreEqual(1, imports.Imports.Count);
         }
@@ -109,7 +109,7 @@ namespace SideXP.Core.Tests
         public void GetTypeReference_AttributeType_StripsAttributeSuffix()
         {
             var imports = new CodeNamespace();
-            CodeTypeReference typeRef = CodeDomUtilities.GetTypeReference(typeof(ObsoleteAttribute), imports);
+            CodeTypeReference typeRef = CodeDomUtility.GetTypeReference(typeof(ObsoleteAttribute), imports);
             Assert.AreEqual("Obsolete", typeRef.BaseType);
         }
 
@@ -118,7 +118,7 @@ namespace SideXP.Core.Tests
         {
             // The "-Attribute" suffix must not be stripped from System.Attribute itself.
             var imports = new CodeNamespace();
-            CodeTypeReference typeRef = CodeDomUtilities.GetTypeReference(typeof(Attribute), imports);
+            CodeTypeReference typeRef = CodeDomUtility.GetTypeReference(typeof(Attribute), imports);
             Assert.AreEqual(nameof(Attribute), typeRef.BaseType);
         }
 
@@ -127,7 +127,7 @@ namespace SideXP.Core.Tests
         {
             // Regression: the import step used to run even when fullyQualified was set (|| instead of &&).
             var imports = new CodeNamespace();
-            CodeTypeReference typeRef = CodeDomUtilities.GetTypeReference(typeof(PlainSample), imports, fullyQualified: true);
+            CodeTypeReference typeRef = CodeDomUtility.GetTypeReference(typeof(PlainSample), imports, fullyQualified: true);
             Assert.AreEqual(typeof(PlainSample).FullName, typeRef.BaseType);
             Assert.AreEqual(0, imports.Imports.Count, "a fully-qualified reference must not add an import");
         }
@@ -136,7 +136,7 @@ namespace SideXP.Core.Tests
         public void GetTypeReference_SkipImport_ProcessesNameButAddsNoImport()
         {
             var imports = new CodeNamespace();
-            CodeTypeReference typeRef = CodeDomUtilities.GetTypeReference(typeof(PlainSample), imports, skipImport: true);
+            CodeTypeReference typeRef = CodeDomUtility.GetTypeReference(typeof(PlainSample), imports, skipImport: true);
             Assert.AreEqual(nameof(PlainSample), typeRef.BaseType, "the short name is still produced");
             Assert.AreEqual(0, imports.Imports.Count);
         }
@@ -145,8 +145,8 @@ namespace SideXP.Core.Tests
         public void GetTypeReference_SameTypeTwice_ImportsOnlyOnce()
         {
             var imports = new CodeNamespace();
-            CodeDomUtilities.GetTypeReference(typeof(PlainSample), imports);
-            CodeDomUtilities.GetTypeReference(typeof(PlainSample), imports);
+            CodeDomUtility.GetTypeReference(typeof(PlainSample), imports);
+            CodeDomUtility.GetTypeReference(typeof(PlainSample), imports);
             Assert.AreEqual(1, imports.Imports.Count, "an already-imported namespace must not be added again");
         }
 
@@ -158,8 +158,8 @@ namespace SideXP.Core.Tests
         [Test]
         public void ContainsImport_EmptyNamespace_ReturnsTrue()
         {
-            Assert.IsTrue(CodeDomUtilities.ContainsImport("", new CodeNamespace()));
-            Assert.IsTrue(CodeDomUtilities.ContainsImport("   ", new CodeNamespace()));
+            Assert.IsTrue(CodeDomUtility.ContainsImport("", new CodeNamespace()));
+            Assert.IsTrue(CodeDomUtility.ContainsImport("   ", new CodeNamespace()));
         }
 
         [Test]
@@ -168,7 +168,7 @@ namespace SideXP.Core.Tests
             // Regression: used to NRE on the null domNamespace default.
             var imports = new CodeNamespace();
             bool result = true;
-            Assert.DoesNotThrow(() => result = CodeDomUtilities.ContainsImport("Some.Namespace", imports));
+            Assert.DoesNotThrow(() => result = CodeDomUtility.ContainsImport("Some.Namespace", imports));
             Assert.IsFalse(result);
         }
 
@@ -177,7 +177,7 @@ namespace SideXP.Core.Tests
         {
             var imports = new CodeNamespace();
             imports.Imports.Add(new CodeNamespaceImport("Some.Namespace"));
-            Assert.IsTrue(CodeDomUtilities.ContainsImport("Some.Namespace", imports));
+            Assert.IsTrue(CodeDomUtility.ContainsImport("Some.Namespace", imports));
         }
 
         [Test]
@@ -186,7 +186,7 @@ namespace SideXP.Core.Tests
             var imports = new CodeNamespace();
             var dom = new CodeNamespace("SideXP.Core.Tests");
             // The generated script's own namespace already "sees" the outer namespace.
-            Assert.IsTrue(CodeDomUtilities.ContainsImport("SideXP.Core", imports, dom));
+            Assert.IsTrue(CodeDomUtility.ContainsImport("SideXP.Core", imports, dom));
         }
 
         [Test]
@@ -194,7 +194,7 @@ namespace SideXP.Core.Tests
         {
             var imports = new CodeNamespace();
             imports.Imports.Add(new CodeNamespaceImport(typeof(PlainSample).Namespace));
-            Assert.IsTrue(CodeDomUtilities.ContainsImport(typeof(PlainSample), imports));
+            Assert.IsTrue(CodeDomUtility.ContainsImport(typeof(PlainSample), imports));
         }
 
         #endregion
@@ -206,7 +206,7 @@ namespace SideXP.Core.Tests
         public void CreateParameter_Primitive_SetsTypeAndName()
         {
             var imports = new CodeNamespace();
-            CodeParameterDeclarationExpression param = CodeDomUtilities.CreateParameter(typeof(int), "count", imports);
+            CodeParameterDeclarationExpression param = CodeDomUtility.CreateParameter(typeof(int), "count", imports);
             Assert.AreEqual("count", param.Name);
             Assert.AreEqual(0, imports.Imports.Count);
         }
@@ -215,7 +215,7 @@ namespace SideXP.Core.Tests
         public void CreateParameter_CustomType_AddsImport()
         {
             var imports = new CodeNamespace();
-            CodeParameterDeclarationExpression param = CodeDomUtilities.CreateParameter(typeof(PlainSample), "sample", imports);
+            CodeParameterDeclarationExpression param = CodeDomUtility.CreateParameter(typeof(PlainSample), "sample", imports);
             Assert.AreEqual("sample", param.Name);
             Assert.AreEqual(nameof(PlainSample), param.Type.BaseType);
             Assert.AreEqual(1, imports.Imports.Count);
@@ -227,10 +227,10 @@ namespace SideXP.Core.Tests
             var imports = new CodeNamespace();
             ParameterInfo[] parameters = GetParamSampleParameters();
 
-            CodeParameterDeclarationExpression normal = CodeDomUtilities.CreateParameter(parameters[0], imports);
-            CodeParameterDeclarationExpression byRef = CodeDomUtilities.CreateParameter(parameters[1], imports);
-            CodeParameterDeclarationExpression byOut = CodeDomUtilities.CreateParameter(parameters[2], imports);
-            CodeParameterDeclarationExpression byIn = CodeDomUtilities.CreateParameter(parameters[3], imports);
+            CodeParameterDeclarationExpression normal = CodeDomUtility.CreateParameter(parameters[0], imports);
+            CodeParameterDeclarationExpression byRef = CodeDomUtility.CreateParameter(parameters[1], imports);
+            CodeParameterDeclarationExpression byOut = CodeDomUtility.CreateParameter(parameters[2], imports);
+            CodeParameterDeclarationExpression byIn = CodeDomUtility.CreateParameter(parameters[3], imports);
 
             Assert.AreEqual("normal", normal.Name);
             Assert.AreEqual(FieldDirection.In, normal.Direction);
@@ -255,7 +255,7 @@ namespace SideXP.Core.Tests
         {
             var cls = new CodeTypeDeclaration("Generated");
             var imports = new CodeNamespace();
-            Assert.IsFalse(CodeDomUtilities.InheritFrom(cls, null, imports));
+            Assert.IsFalse(CodeDomUtility.InheritFrom(cls, null, imports));
             Assert.AreEqual(0, cls.BaseTypes.Count);
         }
 
@@ -264,7 +264,7 @@ namespace SideXP.Core.Tests
         {
             var cls = new CodeTypeDeclaration("Generated");
             var imports = new CodeNamespace();
-            Assert.IsTrue(CodeDomUtilities.InheritFrom(cls, typeof(PlainSample), imports));
+            Assert.IsTrue(CodeDomUtility.InheritFrom(cls, typeof(PlainSample), imports));
             Assert.AreEqual(1, cls.BaseTypes.Count);
             Assert.AreEqual(0, cls.Members.Count, "a non-abstract parent needs no overrides");
         }
@@ -274,7 +274,7 @@ namespace SideXP.Core.Tests
         {
             var cls = new CodeTypeDeclaration("Generated");
             var imports = new CodeNamespace();
-            Assert.IsTrue(CodeDomUtilities.InheritFrom(cls, typeof(AbstractSample), imports));
+            Assert.IsTrue(CodeDomUtility.InheritFrom(cls, typeof(AbstractSample), imports));
 
             Assert.AreEqual(1, cls.BaseTypes.Count);
 
@@ -293,7 +293,7 @@ namespace SideXP.Core.Tests
         {
             var cls = new CodeTypeDeclaration("Generated");
             var imports = new CodeNamespace();
-            Assert.IsTrue(CodeDomUtilities.InheritFrom(cls, typeof(AbstractSample), imports, noOverride: true));
+            Assert.IsTrue(CodeDomUtility.InheritFrom(cls, typeof(AbstractSample), imports, noOverride: true));
             Assert.AreEqual(1, cls.BaseTypes.Count);
             Assert.AreEqual(0, cls.Members.Count);
         }
@@ -308,7 +308,7 @@ namespace SideXP.Core.Tests
         {
             var cls = new CodeTypeDeclaration("Generated");
             var imports = new CodeNamespace();
-            Assert.IsTrue(CodeDomUtilities.OverrideAbstractProperties(cls, typeof(AbstractSample), imports));
+            Assert.IsTrue(CodeDomUtility.OverrideAbstractProperties(cls, typeof(AbstractSample), imports));
 
             CodeMemberProperty prop = FindMember<CodeMemberProperty>(cls, nameof(AbstractSample.AbstractProp));
             Assert.IsNotNull(prop);
@@ -323,7 +323,7 @@ namespace SideXP.Core.Tests
         {
             var cls = new CodeTypeDeclaration("Generated");
             var imports = new CodeNamespace();
-            Assert.IsTrue(CodeDomUtilities.OverrideAbstractProperties(cls, typeof(ISample), imports));
+            Assert.IsTrue(CodeDomUtility.OverrideAbstractProperties(cls, typeof(ISample), imports));
 
             CodeMemberProperty prop = FindMember<CodeMemberProperty>(cls, nameof(ISample.InterfaceProp));
             Assert.IsNotNull(prop);
@@ -338,7 +338,7 @@ namespace SideXP.Core.Tests
         {
             var cls = new CodeTypeDeclaration("Generated");
             var imports = new CodeNamespace();
-            Assert.IsFalse(CodeDomUtilities.OverrideAbstractProperties(cls, typeof(PlainSample), imports));
+            Assert.IsFalse(CodeDomUtility.OverrideAbstractProperties(cls, typeof(PlainSample), imports));
             Assert.AreEqual(0, cls.Members.Count);
         }
 
@@ -354,7 +354,7 @@ namespace SideXP.Core.Tests
             // and the "override" scope flag used to be masked away.
             var cls = new CodeTypeDeclaration("Generated");
             var imports = new CodeNamespace();
-            Assert.IsTrue(CodeDomUtilities.OverrideAbstractMethods(cls, typeof(AbstractSample), imports));
+            Assert.IsTrue(CodeDomUtility.OverrideAbstractMethods(cls, typeof(AbstractSample), imports));
 
             CodeMemberMethod method = FindMember<CodeMemberMethod>(cls, nameof(AbstractSample.AbstractMethod));
             Assert.IsNotNull(method);
@@ -378,7 +378,7 @@ namespace SideXP.Core.Tests
             var imports = new CodeNamespace();
 
             // AbstractSample's only non-accessor abstract method is AbstractMethod.
-            CodeDomUtilities.OverrideAbstractMethods(cls, typeof(AbstractSample), imports);
+            CodeDomUtility.OverrideAbstractMethods(cls, typeof(AbstractSample), imports);
 
             foreach (CodeTypeMember member in cls.Members)
                 Assert.IsFalse(member.Name.StartsWith("get_") || member.Name.StartsWith("set_"), $"unexpected accessor member: {member.Name}");
@@ -389,7 +389,7 @@ namespace SideXP.Core.Tests
         {
             var cls = new CodeTypeDeclaration("Generated");
             var imports = new CodeNamespace();
-            Assert.IsTrue(CodeDomUtilities.OverrideAbstractMethods(cls, typeof(ISample), imports));
+            Assert.IsTrue(CodeDomUtility.OverrideAbstractMethods(cls, typeof(ISample), imports));
 
             CodeMemberMethod method = FindMember<CodeMemberMethod>(cls, nameof(ISample.InterfaceMethod));
             Assert.IsNotNull(method);
@@ -402,7 +402,7 @@ namespace SideXP.Core.Tests
         {
             var cls = new CodeTypeDeclaration("Generated");
             var imports = new CodeNamespace();
-            Assert.IsFalse(CodeDomUtilities.OverrideAbstractMethods(cls, typeof(PlainSample), imports));
+            Assert.IsFalse(CodeDomUtility.OverrideAbstractMethods(cls, typeof(PlainSample), imports));
             Assert.AreEqual(0, cls.Members.Count);
         }
 

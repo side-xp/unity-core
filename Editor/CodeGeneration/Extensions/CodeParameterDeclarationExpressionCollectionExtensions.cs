@@ -16,18 +16,18 @@ namespace SideXP.Core.EditorOnly
         /// </summary>
         /// <param name="collection">The collection to which the parameter declaration is added.</param>
         /// <returns>The index at which the new element was inserted.</returns>
-        /// <inheritdoc cref="CodeDomUtilities.CreateParameter(Type, string, CodeNamespace, CodeNamespace)"/>
+        /// <inheritdoc cref="CodeDomUtility.CreateParameter(Type, string, CodeNamespace, CodeNamespace)"/>
         public static int Add(this CodeParameterDeclarationExpressionCollection collection, Type type, string name, CodeNamespace importsNamespace, CodeNamespace domNamespace = null)
         {
-            CodeParameterDeclarationExpression declaration = CodeDomUtilities.CreateParameter(type, name, importsNamespace, domNamespace);
+            CodeParameterDeclarationExpression declaration = CodeDomUtility.CreateParameter(type, name, importsNamespace, domNamespace);
             return collection.Add(declaration);
         }
 
         /// <inheritdoc cref="Add(CodeParameterDeclarationExpressionCollection, Type, string, CodeNamespace, CodeNamespace)"/>
-        /// <inheritdoc cref="CodeDomUtilities.CreateParameter(ParameterInfo, CodeNamespace, CodeNamespace)"/>
+        /// <inheritdoc cref="CodeDomUtility.CreateParameter(ParameterInfo, CodeNamespace, CodeNamespace)"/>
         public static int Add(this CodeParameterDeclarationExpressionCollection collection, ParameterInfo param, CodeNamespace importsNamespace, CodeNamespace domNamespace = null)
         {
-            CodeParameterDeclarationExpression declaration = CodeDomUtilities.CreateParameter(param, importsNamespace, domNamespace);
+            CodeParameterDeclarationExpression declaration = CodeDomUtility.CreateParameter(param, importsNamespace, domNamespace);
             return collection.Add(declaration);
         }
 
