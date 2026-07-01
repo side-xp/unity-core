@@ -162,17 +162,17 @@ namespace SideXP.Core.EditorOnly
         /// <param name="type">The type declared in the script.</param>
         public static void Set(string path, Type type)
         {
-            // Delete potential existing entry for the given type
+            string relativePath = path.ToRelativePath();
+
+            // Delete any existing entry for the same path or the same type, so a path maps to a single (up-to-date) type and vice
+            // versa. Deduplicating by path (not just by type) avoids leaving a stale entry behind when a path's declared type changes.
             for (int i = I._cacheData.Count - 1; i >= 0; i--)
             {
-                if (I._cacheData[i].Type == type)
-                {
+                if (I._cacheData[i].Path == relativePath || I._cacheData[i].Type == type)
                     I._cacheData.RemoveAt(i);
-                    break;
-                }
             }
 
-            I._cacheData.Add(new ScriptInfo(path.ToRelativePath(), type));
+            I._cacheData.Add(new ScriptInfo(relativePath, type));
         }
 
         /// <summary>
