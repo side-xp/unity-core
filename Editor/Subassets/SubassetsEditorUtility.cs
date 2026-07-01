@@ -8,6 +8,9 @@ using UnityEditor;
 namespace SideXP.Core.EditorOnly
 {
 
+    /// <summary>
+    /// Miscellaneous utility functions for working with subassets in the editor.
+    /// </summary>
     public static class SubassetsEditorUtility
     {
 
