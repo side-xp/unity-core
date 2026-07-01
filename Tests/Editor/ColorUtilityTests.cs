@@ -222,6 +222,24 @@ namespace SideXP.Core.Tests
             }
         }
 
+        [Test]
+        public void GenerateRandomColor_SubdivsBelowOne_ClampedNoDivideByZero([Values(0, -3)] int subdivs)
+        {
+            Random.InitState(2024);
+
+            for (int i = 0; i < 50; i++)
+            {
+                Color color = ColorUtility.GenerateRandomColor(subdivs);
+                foreach (float channel in new[] { color.r, color.g, color.b })
+                {
+                    Assert.IsFalse(float.IsNaN(channel), "channel must not be NaN");
+                    Assert.IsFalse(float.IsInfinity(channel), "channel must be finite");
+                    // Clamped to a single subdiv, so channels are 0 or 1.
+                    Assert.IsTrue(channel == 0f || channel == 1f, $"unexpected channel value {channel}");
+                }
+            }
+        }
+
         #endregion
 
     }

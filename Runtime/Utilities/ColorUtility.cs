@@ -124,10 +124,11 @@ namespace SideXP.Core
         /// Generates a random color.
         /// </summary>
         /// <param name="subdivs">The number of subdivs a single color channel can have when generating random color. As an example, if you
-        /// set 2, a channel can get value 0, 0.5 or 1.</param>
+        /// set 2, a channel can get value 0, 0.5 or 1. Values below 1 are clamped to 1 (a channel then gets only 0 or 1).</param>
         /// <returns>Returns the generated color.</returns>
         public static Color GenerateRandomColor(int subdivs = GeneratedColorSteps)
         {
+            subdivs = Mathf.Max(1, subdivs);
             Color color = Color.white;
             float step = 1f / subdivs;
             color.r = Random.Range(0, subdivs + 1) * step;
