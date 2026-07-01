@@ -83,8 +83,8 @@ namespace SideXP.Core.EditorOnly
             /// <summary>
             /// Updates the data of this type.
             /// </summary>
-            /// <returns>Returns true if the type is still valid, or false if the type is not valid or its containing script has been
-            /// doesn't exist.</returns>
+            /// <returns>Returns true if the type is still valid, or false if the type is not valid or its containing script doesn't
+            /// exist.</returns>
             public bool Update()
             {
                 string path = AssetDatabase.GUIDToAssetPath(_scriptGUID);
@@ -159,6 +159,10 @@ namespace SideXP.Core.EditorOnly
             // For each tracked type data
             foreach (TypeMigrationHistory data in I._trackedTypes)
                 data.Update();
+
+            // Renames only happen across a recompile (which reloads the domain and resets this static), so a single pass per session is
+            // enough — mark it done so repeated calls (e.g. from the asset postprocessor on every import) become no-ops.
+            s_didReload = true;
         }
 
         /// <summary>
@@ -229,6 +233,9 @@ namespace SideXP.Core.EditorOnly
         /// <returns>Returns the <see cref="Type.AssemblyQualifiedName"/> of the given <see cref="Type"/>.</returns>
         public static string Resolve(Type type)
         {
+            if (type == null)
+                throw new ArgumentNullException(nameof(type));
+
             Resolve(type.AssemblyQualifiedName);
             return type.AssemblyQualifiedName;
         }
