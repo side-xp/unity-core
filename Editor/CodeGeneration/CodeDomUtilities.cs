@@ -53,7 +53,7 @@ namespace SideXP.Core.EditorOnly
             var typeRef = new CodeTypeReference(type) { BaseType = baseTypeName };
 
             // Import the referenced type if applicable
-            if (!skipImport || !fullyQualified)
+            if (!skipImport && !fullyQualified)
             {
                 if (!ContainsImport(type.Namespace, importsNamespace, domNamespace))
                     importsNamespace.Imports.Add(new CodeNamespaceImport(type.Namespace));
@@ -86,7 +86,7 @@ namespace SideXP.Core.EditorOnly
                 return true;
 
             // Stop if the script being generated is part of the expected namespace
-            if (!string.IsNullOrWhiteSpace(domNamespace.Name) && domNamespace.Name.StartsWith(namespaceStr))
+            if (domNamespace != null && !string.IsNullOrWhiteSpace(domNamespace.Name) && domNamespace.Name.StartsWith(namespaceStr))
                 return true;
 
             // Foreach existing import for the script to generate
@@ -256,6 +256,11 @@ namespace SideXP.Core.EditorOnly
                 if (!methodInfo.IsAbstract)
                     continue;
 
+                // Skip compiler-generated accessors (property get_/set_, event add_/remove_): those are emitted by
+                // OverrideAbstractProperties (and event handling), so re-emitting them here would produce duplicate members.
+                if (methodInfo.IsSpecialName)
+                    continue;
+
                 // Create method member
                 var method = new CodeMemberMethod
                 {
@@ -273,8 +278,7 @@ namespace SideXP.Core.EditorOnly
                 {
                     method.Attributes = MemberAttributes.Override;
 
-                    method.Attributes &= MemberAttributes.AccessMask;
-                    if (methodInfo.Attributes.HasFlag(MethodAttributes.Public) || parent.IsInterface)
+                    if (methodInfo.Attributes.HasFlag(MethodAttributes.Public))
                         method.Attributes |= MemberAttributes.Public;
                     else if (methodInfo.Attributes.HasFlag(MethodAttributes.Family))
                         method.Attributes |= MemberAttributes.Family;
@@ -296,6 +300,7 @@ namespace SideXP.Core.EditorOnly
                 method.Statements.Add(new CodeThrowExceptionStatement(new CodeObjectCreateExpression(typeof(NotImplementedException))));
 
                 inheritorClass.Members.Add(method);
+                success = true;
             }
 
             return success;

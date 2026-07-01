@@ -5,13 +5,15 @@ using System.CodeDom.Compiler;
 using System.Text.RegularExpressions;
 using Microsoft.CSharp;
 
+using UnityEngine;
+
 namespace SideXP.Core.EditorOnly
 {
 
     /// <summary>
     /// Miscellaneous utility functions for generating code, following our standards.
     /// </summary>
-    public class CodeGenerationUtility
+    public static class CodeGenerationUtility
     {
 
         /// <summary>
@@ -35,7 +37,8 @@ namespace SideXP.Core.EditorOnly
         public static readonly CodeGeneratorOptions CompileUnitOptions = new CodeGeneratorOptions
         {
             BracingStyle = "C",
-            BlankLinesBetweenMembers = true
+            BlankLinesBetweenMembers = true,
+            IndentString = "    ",
         };
 
         /// <inheritdoc cref="MakeScriptCompileUnit(Type, out CodeNamespace, out CodeNamespace)"/>
@@ -79,12 +82,7 @@ namespace SideXP.Core.EditorOnly
         {
             CodeDomProvider codeProvider = new CSharpCodeProvider();
             StringWriter writer = new StringWriter();
-            codeProvider.GenerateCodeFromCompileUnit(compileUnit, writer, new CodeGeneratorOptions
-            {
-                BracingStyle = "C",
-                BlankLinesBetweenMembers = true,
-                IndentString = "    ",
-            });
+            codeProvider.GenerateCodeFromCompileUnit(compileUnit, writer, CompileUnitOptions);
             string script = writer.ToString();
 
             RemoveAutocomment(ref script);
@@ -100,29 +98,32 @@ namespace SideXP.Core.EditorOnly
         /// <returns>Returns true if the script has been generated successfully.</returns>
         public static bool GenerateScriptFile(string path, CodeCompileUnit compileUnit)
         {
-            CodeDomProvider codeProvider = CodeDomProvider.CreateProvider("CSharp");
             path = path.ToAbsolutePath();
 
-            using (StreamWriter writer = new StreamWriter(path))
+            try
             {
-                codeProvider.GenerateCodeFromCompileUnit(compileUnit, writer, CompileUnitOptions);
+                // Reuse the string-generation pipeline so the file output matches GenerateScript() exactly
+                // (same options, auto-comment removal and blank-line normalization).
+                File.WriteAllText(path, GenerateScript(compileUnit));
+                return true;
             }
-            RemoveAutocommentFromFile(path);
-
-            return true;
+            catch (Exception e)
+            {
+                Debug.LogException(e);
+                return false;
+            }
         }
 
         /// <summary>
         /// Removes the comment added by C# code DOM provider when generating a script.
         /// </summary>
-        /// <param name="scriptContent">The content of the script as a string.</param>
-        /// <returns>Returns the script content as a string after removing the auto-comment.</returns>
+        /// <param name="scriptContent">The content of the script as a string. Modified in place to strip the auto-comment.</param>
         public static void RemoveAutocomment(ref string scriptContent)
         {
             scriptContent = AutocommentPattern.Replace(scriptContent, "");
         }
 
-        /// <inheritdoc cref="RemoveAutocomment(string)"/>
+        /// <inheritdoc cref="RemoveAutocomment(ref string)"/>
         /// <param name="path">The path to the generated file.</param>
         public static void RemoveAutocommentFromFile(string path)
         {
@@ -132,7 +133,7 @@ namespace SideXP.Core.EditorOnly
         }
 
         /// <summary>
-        /// Removes excess blank lines andd add one between closing brackets.
+        /// Removes excess blank lines and adds one between closing brackets.
         /// </summary>
         /// <param name="scriptContent">The content of the script as a string.</param>
         public static void FixBlankLines(ref string scriptContent)
