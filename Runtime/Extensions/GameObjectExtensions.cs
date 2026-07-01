@@ -86,7 +86,7 @@ namespace SideXP.Core
                     if (renderer != null && RendererExtensions.GetRendererBounds(renderer, out bounds))
                         return true;
                 }
-               else
+                else
                 {
                     Renderer renderer = gameObject.GetComponentInChildren<Renderer>();
                     if (renderer != null && RendererExtensions.GetRendererBounds(renderer, out bounds))
@@ -107,7 +107,7 @@ namespace SideXP.Core
         }
 
         /// <inheritdoc cref="GameObject.GetComponentInParent(Type, bool)"/>
-        /// <param name="component">The component from which to get the target one.</param>
+        /// <param name="component">The Game Object from which to get the target one.</param>
         /// <param name="componentType"><inheritdoc cref="GameObject.GetComponentInParent(Type, bool)" path="/param[@name='t']"/></param>
         /// <param name="output">Outputs the found component of the given type.</param>
         /// <returns>Returns true if a component of the expected type has been found on the given Game Object, or its parent.</returns>
@@ -148,7 +148,7 @@ namespace SideXP.Core
         }
 
         /// <inheritdoc cref="Component.GetComponentInChildren(Type, bool)"/>
-        /// <param name="component">The component from which to get the target one.</param>
+        /// <param name="component">The Game Object from which to get the target one.</param>
         /// <param name="componentType"><inheritdoc cref="Component.GetComponentInChildren(Type, bool)" path="/param[@name='t']"/></param>
         /// <param name="output">Outputs the found component of the given type.</param>
         /// <returns>Returns true if a component of the expected type has been found on the given Game Object, or its children.</returns>
