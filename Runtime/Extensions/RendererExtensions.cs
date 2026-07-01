@@ -21,7 +21,7 @@ namespace SideXP.Core
         /// </summary>
         /// <remarks>
         /// Contrary to colliders (see <see cref="ColliderExtensions.GetColliderBounds(Collider, out Bounds)"/>), a mesh renderer's
-        /// <see cref="Renderer.bounds"/> is populated even when the game is not running, so it can be read directlyhere.
+        /// <see cref="Renderer.bounds"/> is populated even when the game is not running, so it can be read directly here.
         /// </remarks>
         /// <param name="renderer">The renderer of which to query the bounds.</param>
         /// <param name="bounds">Outputs the renderer bounds.</param>

@@ -125,15 +125,15 @@ namespace SideXP.Core.Tests
         }
 
         [Test]
-        public void GetBounds_PreferCollider_TakesColliderPathAndReportsSuccess()
+        public void GetBounds_PreferCollider_ReturnsColliderBounds()
         {
-            // A primitive cube has both a renderer and a collider; preferCollider takes the collider path first, and a
-            // BoxCollider is a supported type, so the method reports success.
-            // Note: at edit time collider.bounds is not populated (returns a zeroed Bounds), so the bounds *value* is only
-            // meaningful in play mode — see GetBounds_PreferCollider_PlayMode_ReturnsColliderBounds.
+            // A primitive cube has both a renderer and a collider; preferCollider takes the collider path first.
+            // ColliderExtensions computes collider bounds from geometry at edit time, so the value is meaningful here.
             GameObject cube = NewPrimitive(new Vector3(-2f, 1f, 0f));
 
-            Assert.IsTrue(cube.GetBounds(out _, preferCollider: true));
+            Assert.IsTrue(cube.GetBounds(out Bounds bounds, preferCollider: true));
+            AssertApproximately(cube.transform.position, bounds.center);
+            AssertApproximately(Vector3.one, bounds.size);
         }
 
         [Test]

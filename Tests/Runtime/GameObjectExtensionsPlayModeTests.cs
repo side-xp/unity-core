@@ -48,7 +48,8 @@ namespace SideXP.Core.Tests
 
             yield return new WaitForFixedUpdate(); // let physics register the collider so collider.bounds is populated
 
-            // Unlike edit mode (where collider.bounds is zeroed), the collider path yields the real world-space bounds here.
+            // This covers the play-mode branch specifically: GetColliderBounds reads the physics-provided collider.bounds directly
+            // (the edit-time branch, which computes bounds from geometry, is covered in ColliderExtensionsTests).
             Assert.IsTrue(go.GetBounds(out Bounds bounds, preferCollider: true));
             Assert.Less(Vector3.Distance(go.transform.position, bounds.center), Tolerance, "Bounds should be centered on the object.");
             Assert.Less(Vector3.Distance(Vector3.one, bounds.size), Tolerance, "A unit BoxCollider should have unit-sized bounds.");
