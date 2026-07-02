@@ -8,7 +8,7 @@ namespace SideXP.Core.EditorOnly
     /// <summary>
     /// Displays a value on GUI, but remap this value in the target field.
     /// </summary>
-    [CustomPropertyDrawer(typeof(RemapAttribute))]
+    [CustomPropertyDrawer(typeof(RemapAttribute), true)]
     public class RemapPropertyDrawer : PropertyDrawer
     {
 

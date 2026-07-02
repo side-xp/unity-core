@@ -48,6 +48,10 @@ namespace SideXP.Core.Demos
         [Indent(2)]
         public string Indent2 = "Indented at level 2";
 
+        [Readonly]
+        [Tooltip("This field is visible in the inspector, but can't be edited.")]
+        public string Readonly = "Visible but not editable";
+
         [ProgressBar]
         public float ProgressBar = .3f;
 
@@ -69,6 +73,10 @@ namespace SideXP.Core.Demos
         [Tooltip("Use Debug mode in the Inspector to see the remapped values stored in this property." +
             "\nNote that this will remap the vector components, but won't normalize the vector itself.")]
         public Vector2 RemapAxis = Vector2.up;
+
+        [Percents]
+        [Tooltip("Preset of Remap: edit this value as 0-100%, but store it as a 0-1 ratio (use Debug mode in the Inspector to see the stored value).")]
+        public float Percents = .75f;
 
         [Separator]
 
