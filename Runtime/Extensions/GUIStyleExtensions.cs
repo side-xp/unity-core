@@ -95,7 +95,7 @@ namespace SideXP.Core
         /// <summary>
         /// Copies the input style, and enables/disables rich text mode.
         /// </summary>
-        /// <param name="enable">Is word rich text enabled?</param>
+        /// <param name="enable">Is rich text enabled?</param>
         /// <inheritdoc cref="Margin(GUIStyle, int, int, int, int)"/>
         public static GUIStyle RichText(this GUIStyle style, bool enable)
         {

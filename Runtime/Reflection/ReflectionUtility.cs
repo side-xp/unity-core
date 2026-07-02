@@ -199,7 +199,7 @@ namespace SideXP.Core.Reflection
         /// <returns>Returns true if the given memebr has an attribute of the given type.</returns>
         public static bool HasAttribute(MemberInfo member, Type attributeType, bool inherit = true)
         {
-            return TryGetAttribute(member, attributeType, out _, inherit);
+            return member.IsDefined(attributeType, inherit);
         }
 
         /// <typeparam name="TAttribute"><inheritdoc cref="HasAttribute(MemberInfo, Type, bool)" path="/param[@name='attributeType']"/></typeparam>
@@ -271,19 +271,30 @@ namespace SideXP.Core.Reflection
             }
             else if (member is PropertyInfo propertyInfo)
             {
-                MethodInfo accessor = propertyInfo.GetGetMethod(true);
-                if (accessor == null || !accessor.IsPrivate)
-                    return false;
+                MethodInfo getter = propertyInfo.GetGetMethod(true);
+                MethodInfo setter = propertyInfo.GetSetMethod(true);
 
-                accessor = propertyInfo.GetSetMethod(true);
-                if (accessor == null || !accessor.IsPrivate)
-                    return false;
+                // The property is private only if every accessor it actually declares is private.
+                bool hasAccessor = false;
+                if (getter != null)
+                {
+                    hasAccessor = true;
+                    if (!getter.IsPrivate)
+                        return false;
+                }
+                if (setter != null)
+                {
+                    hasAccessor = true;
+                    if (!setter.IsPrivate)
+                        return false;
+                }
+                return hasAccessor;
             }
             else if (member is FieldOrPropertyInfo fieldOrProperty)
             {
                 return fieldOrProperty.IsField
-                    ? IsPublic(fieldOrProperty.FieldInfo)
-                    : IsPublic(fieldOrProperty.PropertyInfo);
+                    ? IsPrivate(fieldOrProperty.FieldInfo)
+                    : IsPrivate(fieldOrProperty.PropertyInfo);
             }
 
             return false;
@@ -299,7 +310,10 @@ namespace SideXP.Core.Reflection
         {
             using (var scope = new ListPoolScope<FieldInfo>())
             {
-                foreach (FieldInfo field in type.GetFields(InstanceFlags))
+                // DeclaredOnly so each level reports only its own fields: this avoids the inherited public fields being
+                // returned both here and again by the recursion below, and lets the recursion reach inherited private
+                // [SerializeField] fields (which GetFields wouldn't return from a derived type).
+                foreach (FieldInfo field in type.GetFields(InstanceFlags | BindingFlags.DeclaredOnly))
                 {
                     // Skip if the field is not exposed
                     if (!field.IsPublic && field.GetCustomAttribute<SerializeField>() == null)
@@ -395,14 +409,18 @@ namespace SideXP.Core.Reflection
         /// types.</param>
         /// <param name="bindingFlags">The binding flags used for querying the member.</param>
         /// <returns>Returns the informations ahout the found fields and properties;</returns>
-        public static FieldOrPropertyInfo[] GetFieldsAndProperties(Type type, bool inherited = false, BindingFlags bindingFlags = BindingFlags.Instance)
+        public static FieldOrPropertyInfo[] GetFieldsAndProperties(Type type, bool inherited = false, BindingFlags bindingFlags = InstanceFlags)
         {
             using (var scope = new ListPoolScope<FieldOrPropertyInfo>())
             {
-                foreach (FieldInfo field in type.GetFields(bindingFlags))
+                // DeclaredOnly so each level reports only its own members (see GetExposedFields): avoids inherited members
+                // being returned twice and lets the recursion reach inherited private members.
+                BindingFlags declaredFlags = bindingFlags | BindingFlags.DeclaredOnly;
+
+                foreach (FieldInfo field in type.GetFields(declaredFlags))
                     scope.List.Add(new FieldOrPropertyInfo(field));
 
-                foreach (PropertyInfo property in type.GetProperties(bindingFlags))
+                foreach (PropertyInfo property in type.GetProperties(declaredFlags))
                     scope.List.Add(new FieldOrPropertyInfo(property));
 
                 if (inherited && type.BaseType != null)
@@ -414,14 +432,14 @@ namespace SideXP.Core.Reflection
 
         /// <param name="target">The object from which to get the informations.</param>
         /// <inheritdoc cref="GetFieldsAndProperties(Type, bool, BindingFlags)"/>
-        public static FieldOrPropertyInfo[] GetFieldsAndProperties(object target, bool inherited = false, BindingFlags bindingFlags = BindingFlags.Instance)
+        public static FieldOrPropertyInfo[] GetFieldsAndProperties(object target, bool inherited = false, BindingFlags bindingFlags = InstanceFlags)
         {
             return GetFieldsAndProperties(target.GetType(), inherited, bindingFlags);
         }
 
         /// <typeparam name="T"><inheritdoc cref="GetFieldsAndProperties(Type, bool, BindingFlags)" path="/param[@name='type']"/></typeparam>
         /// <inheritdoc cref="GetFieldsAndProperties(Type, bool, BindingFlags)"/>
-        public static FieldOrPropertyInfo[] GetFieldsAndProperties<T>(bool inherited = false, BindingFlags bindingFlags = BindingFlags.Instance)
+        public static FieldOrPropertyInfo[] GetFieldsAndProperties<T>(bool inherited = false, BindingFlags bindingFlags = InstanceFlags)
         {
             return GetFieldsAndProperties(typeof(T), inherited, bindingFlags);
         }

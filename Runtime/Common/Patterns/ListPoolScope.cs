@@ -112,7 +112,11 @@ namespace SideXP.Core
         public int Count => _list.Count;
 
         /// <inheritdoc cref="List{T}.Capacity"/>
-        public int Capacity { get; set; }
+        public int Capacity
+        {
+            get => _list.Capacity;
+            set => _list.Capacity = value;
+        }
 
         /// <inheritdoc cref="ICollection{T}.IsReadOnly"/>
         public bool IsReadOnly => ((ICollection<T>)_list).IsReadOnly;

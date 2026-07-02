@@ -31,18 +31,34 @@ namespace SideXP.Core
         /// <summary>
         /// Joins the items in the given collection into a single string using a separator.
         /// </summary>
+        /// <remarks>Each item is represented by its <see cref="object.ToString()"/> value (null items are represented as empty
+        /// strings).</remarks>
         /// <param name="enumerable">The collection to pack into a single string.</param>
         /// <param name="separator">The character(s) that separates each elements in the output text.</param>
         /// <returns>Returns the processed string.</returns>
         public static string Join(this IEnumerable enumerable, string separator)
         {
-            return string.Join(separator, enumerable);
+            if (enumerable == null)
+                return string.Empty;
+
+            // Note: a non-generic IEnumerable doesn't match string.Join(string, IEnumerable<T>), so the items are
+            // materialized into a typed list first to join their string representations instead of the collection's.
+            using (var scope = new ListPoolScope<object>())
+            {
+                foreach (object item in enumerable)
+                    scope.List.Add(item);
+
+                return string.Join(separator, scope.List);
+            }
         }
 
         /// <param name="mapFunc">The function called for every item to convert it into a string.</param>
         /// <inheritdoc cref="Join(IEnumerable, string)"/>
         public static string Join<T>(this IEnumerable<T> enumerable, string separator, MapPredicateDelegate<T, string> mapFunc)
         {
+            if (enumerable == null)
+                return string.Empty;
+
             return string.Join(separator, Map(enumerable, mapFunc));
         }
 
@@ -56,6 +72,9 @@ namespace SideXP.Core
         /// <returns>Returns the mapped items array.</returns>
         public static TOutput[] Map<TInput, TOutput>(this IEnumerable<TInput> enumerable, MapPredicateDelegate<TInput, TOutput> mapFunc)
         {
+            if (enumerable == null)
+                return System.Array.Empty<TOutput>();
+
             using (var scope = new ListPoolScope<TOutput>())
             {
                 foreach (TInput item in enumerable)
@@ -79,6 +98,9 @@ namespace SideXP.Core
         /// <summary>
         /// Filters all the objects from a collection that have a given type.
         /// </summary>
+        /// <remarks>By default, only the objects whose runtime type is exactly <typeparamref name="TTarget"/> are kept. Enable
+        /// <paramref name="includeDerivedTypes"/> to also keep the objects that derive from it. Null items are always
+        /// skipped.</remarks>
         /// <typeparam name="TSource">The type of the source collection.</typeparam>
         /// <typeparam name="TTarget">The type of the objects to filter.</typeparam>
         /// <param name="source">The source collection.</param>
@@ -88,6 +110,9 @@ namespace SideXP.Core
         public static TTarget[] Filter<TSource, TTarget>(this IEnumerable<TSource> source, bool includeDerivedTypes = false)
             where TTarget : TSource
         {
+            if (source == null)
+                return System.Array.Empty<TTarget>();
+
             using (var scope = new ListPoolScope<TTarget>())
             {
                 if (includeDerivedTypes)
@@ -102,7 +127,7 @@ namespace SideXP.Core
                 {
                     foreach (TSource i in source)
                     {
-                        if (i.GetType() == typeof(TTarget))
+                        if (i != null && i.GetType() == typeof(TTarget))
                             scope.List.Add((TTarget)i);
                     }
                 }
@@ -119,6 +144,9 @@ namespace SideXP.Core
         /// <returns>Returns the picked element, or a default value if the collection is empty.</returns>
         public static T PickRandom<T>(this IEnumerable<T> source)
         {
+            if (source == null)
+                return default;
+
             using (var list = new ListPoolScope<T>(source))
             {
                 return list.Count > 0

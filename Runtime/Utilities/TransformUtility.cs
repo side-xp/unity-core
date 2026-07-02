@@ -60,13 +60,7 @@ namespace SideXP.Core
         /// <inheritdoc cref="ForEachChild(Transform, Action{Transform}, bool)"/>
         public static void ClearHierarchy(Transform transform)
         {
-            ForEachChild(transform, child =>
-            {
-                if (Application.isPlaying)
-                    Object.Destroy(child.gameObject);
-                else
-                    Object.DestroyImmediate(child.gameObject);
-            });
+            ForEachChild(transform, child => DestroyGameObject(child.gameObject));
         }
 
         /// <summary>
@@ -80,12 +74,17 @@ namespace SideXP.Core
             int count = 0;
             ForEachChild(transform, child =>
             {
+                // The recursive scan works on a snapshot of the hierarchy, so an entry may reference a descendant of a child
+                // that was already destroyed on a previous iteration (with DestroyImmediate in edit mode). Skip those.
+                if (child == null)
+                    return;
+
                 if (child.TryGetComponent(componentType, out Component _))
                 {
-                    Object.Destroy(child.gameObject);
+                    DestroyGameObject(child.gameObject);
                     count++;
                 }
-            });
+            }, true);
             return count;
         }
 
@@ -98,7 +97,7 @@ namespace SideXP.Core
         }
 
         /// <summary>
-        /// Reuse existing instances of a given type of component from a given conntainer, or create new instances to match a given count.
+        /// Reuse existing instances of a given type of component from a given container, or create new instances to match a given count.
         /// <example>
         /// <code>
         /// Transform container = GetUIContainer();
@@ -123,7 +122,7 @@ namespace SideXP.Core
         /// <param name="onInstantiate">Called when a new object instance is required.</param>
         /// <param name="onInit">Called when a pooled or a created instance is reused. First parameter is the reused instance, second parameter
         /// is its index in the container.</param>
-        /// <param name="onDiscard">Called when an existing instance won't be reused. First parameter is the instance, seconds parameter is its
+        /// <param name="onDiscard">Called when an existing instance won't be reused. First parameter is the instance, second parameter is its
         /// index in the container.</param>
         public static void Pool<T>(Transform container, int expectedCount, Func<Transform, T> onInstantiate, Action<T, int> onInit, Action<T, int> onDiscard = null)
             where T : Component
@@ -149,6 +148,19 @@ namespace SideXP.Core
                     existingInstances[i].gameObject.SetActive(false);
                 }
             }
+        }
+
+        /// <summary>
+        /// Destroys a <see cref="GameObject"/> in a way that works both at edit time and at run time (using
+        /// <see cref="Object.DestroyImmediate(Object)"/> in edit mode, and <see cref="Object.Destroy(Object)"/> in play mode).
+        /// </summary>
+        /// <param name="gameObject">The object to destroy.</param>
+        private static void DestroyGameObject(GameObject gameObject)
+        {
+            if (Application.isPlaying)
+                Object.Destroy(gameObject);
+            else
+                Object.DestroyImmediate(gameObject);
         }
 
     }

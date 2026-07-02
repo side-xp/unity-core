@@ -9,61 +9,58 @@ namespace SideXP.Core
     public static class TimeUtility
     {
 
-#if !UNITY_6000_0_OR_NEWER
-        private static readonly DateTime UnixEpoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+#if UNITY_6000_0_OR_NEWER
+        // DateTime.UnixEpoch is only available on the newer .NET profile shipped with Unity 6+.
+        private static DateTime Epoch => DateTime.UnixEpoch;
+#else
+        private static readonly DateTime Epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 #endif
 
         /// <summary>
-        /// Gets the number of milliseconds since <see cref="DateTime.UnixEpoch"/> to <see cref="DateTime.UtcNow"/>.
+        /// Gets the number of milliseconds elapsed since the Unix epoch (1970-01-01 UTC) for the current time.
         /// </summary>
-        /// <param name="local">If enabled, get the timestamp to the local time instead of UTC (basically use <see cref="DateTime.Now"/>
-        /// instead of <see cref="DateTime.UtcNow"/>).</param>
-        /// <returns>Returns the number of milliseconds since <see cref="DateTime.UnixEpoch"/> to <see cref="DateTime.UtcNow"/>.</returns>
+        /// <param name="local">If enabled, computes the timestamp from local wall-clock time (<see cref="DateTime.Now"/>)
+        /// instead of UTC (<see cref="DateTime.UtcNow"/>).</param>
+        /// <returns>Returns the number of elapsed milliseconds.</returns>
         public static long GetTimestamp(bool local = false)
         {
             return local
-                ? ToTimestamp(DateTime.UtcNow)
-                : ToTimestamp(DateTime.Now);
+                ? ToTimestamp(DateTime.Now)
+                : ToTimestamp(DateTime.UtcNow);
         }
 
         /// <summary>
-        /// Gets the number of seconds since <see cref="DateTime.UnixEpoch"/> to <see cref="DateTime.UtcNow"/>.
+        /// Gets the number of seconds elapsed since the Unix epoch (1970-01-01 UTC) for the current time.
         /// </summary>
-        /// <returns>Returns the number of seconds since <see cref="DateTime.UnixEpoch"/> to <see cref="DateTime.UtcNow"/>.</returns>
+        /// <returns>Returns the number of elapsed seconds.</returns>
         /// <inheritdoc cref="GetTimestamp(bool)"/>
         public static long GetTimestampSeconds(bool local = false)
         {
             return local
-                ? ToTimestampSeconds(DateTime.UtcNow)
-                : ToTimestampSeconds(DateTime.Now);
+                ? ToTimestampSeconds(DateTime.Now)
+                : ToTimestampSeconds(DateTime.UtcNow);
         }
 
         /// <summary>
-        /// Converts a given time into a number of elapsed milliseconds since <see cref="DateTime.UnixEpoch"/>.
+        /// Converts a given time into the number of elapsed milliseconds since the Unix epoch (1970-01-01 UTC).<br/>
+        /// The <see cref="DateTime"/>'s wall-clock value is used as-is (its <see cref="DateTimeKind"/> is not normalized),
+        /// so pass a UTC value (e.g. <see cref="DateTime.UtcNow"/>) for a true Unix timestamp.
         /// </summary>
         /// <param name="time">The time to convert.</param>
-        /// <returns>Returns the number of elapsed milliseconds since <see cref="DateTime.UnixEpoch"/>.</returns>
+        /// <returns>Returns the number of elapsed milliseconds.</returns>
         public static long ToTimestamp(DateTime time)
         {
-#if UNITY_6000_0_OR_NEWER
-            return (long)time.Subtract(DateTime.UnixEpoch).TotalMilliseconds;
-#else
-            return (long)(time.ToUniversalTime() - UnixEpoch).TotalMilliseconds;
-#endif
+            return (long)(time - Epoch).TotalMilliseconds;
         }
 
         /// <summary>
-        /// Converts a given time into a number of elapsed seconds since <see cref="DateTime.UnixEpoch"/>.
+        /// Converts a given time into the number of elapsed seconds since the Unix epoch (1970-01-01 UTC).
         /// </summary>
-        /// <returns>Returns the number of elapsed seconds since <see cref="DateTime.UnixEpoch"/>.</returns>
+        /// <returns>Returns the number of elapsed seconds.</returns>
         /// <inheritdoc cref="ToTimestamp(DateTime)"/>
         public static long ToTimestampSeconds(DateTime time)
         {
-#if UNITY_6000_0_OR_NEWER
-            return (long)time.Subtract(DateTime.UnixEpoch).TotalSeconds;
-#else
-            return (long)(time.ToUniversalTime() - UnixEpoch).TotalSeconds;
-#endif
+            return (long)(time - Epoch).TotalSeconds;
         }
 
     }

@@ -79,7 +79,7 @@ namespace SideXP.Core
             TemporaryDataPath = ToPath(Application.temporaryCachePath);
 
 #if UNITY_EDITOR
-            ProjectPath = ToPath(DataPath.Substring(0, DataPath.Length - $"/{AssetsDirectory}".Length));
+            ProjectPath = ToPath(Path.GetDirectoryName(Application.dataPath));
 #else
             ProjectPath = PersistentDataPath;
 #endif
@@ -91,10 +91,16 @@ namespace SideXP.Core
         #region Public API
 
         /// <summary>
-        /// Converts the given string into a path, by removing forbidden characters and use the same character as directory separator.
+        /// Converts the given string into a path, by removing forbidden characters and using a single character as directory separator.
         /// </summary>
+        /// <example>
+        /// <code>
+        /// PathUtility.ToPath("Assets\\Foo\\Bar");                // "Assets/Foo/Bar"
+        /// PathUtility.ToPath("Assets/Foo/Bar", separator: '\\'); // "Assets\Foo\Bar"
+        /// </code>
+        /// </example>
         /// <param name="str">The string to convert.</param>
-        /// <param name="normalize">If enabled, the package names will be replaced by their actual folder name.</param>
+        /// <param name="normalize">If enabled, the path is resolved to its full path (in the editor, this also resolves <c>Packages/...</c> virtual paths to their actual folder).</param>
         /// <param name="separator">The character to use as directory separator.</param>
         /// <returns>Returns the converted string.</returns>
         public static string ToPath(string str, bool normalize = false, char separator = DefaultDirectorySeparator)
@@ -112,16 +118,14 @@ namespace SideXP.Core
 
             str = str.Trim();
 
-            // Remove invalid characters in path
-            foreach (char invalidChar in Path.GetInvalidPathChars())
-                str = str.Replace(invalidChar.ToString(), "");
+            // Remove invalid characters in path (Split breaks the string on any invalid char, Concat glues the parts back)
+            str = string.Concat(str.Split(Path.GetInvalidPathChars()));
 
             // Remove invalid characters in file name
             string fileName = Path.GetFileName(str);
             if (!string.IsNullOrEmpty(fileName))
             {
-                foreach (char invalidChar in Path.GetInvalidFileNameChars())
-                    fileName = fileName.Replace(invalidChar.ToString(), "");
+                fileName = string.Concat(fileName.Split(Path.GetInvalidFileNameChars()));
 
                 string dirName = Path.GetDirectoryName(str);
                 str = dirName;
@@ -137,9 +141,11 @@ namespace SideXP.Core
             if (normalize)
                 str = Path.GetFullPath(str);
 
-            // Use only 1 character as separator
-            str = str.Replace(Path.DirectorySeparatorChar, separator);
-            str = str.Replace(Path.AltDirectorySeparatorChar, separator);
+            // Use only one character as separator, normalizing both slash styles on every platform
+            // (Path.DirectorySeparatorChar/AltDirectorySeparatorChar are OS-dependent, so relying on them
+            // would leave backslashes untouched on non-Windows platforms).
+            str = str.Replace('\\', separator);
+            str = str.Replace('/', separator);
         }
 
         /// <summary>
@@ -157,8 +163,15 @@ namespace SideXP.Core
         }
 
         /// <summary>
-        /// If the given string represents a relative paths, it's combined with <see cref="ProjectPath"/> to make it abolute.
+        /// If the given string represents a relative path, it's combined with <see cref="ProjectPath"/> to make it absolute.
         /// </summary>
+        /// <example>
+        /// <code>
+        /// // Assuming the project is at "C:/dev/MyProject":
+        /// PathUtility.ToAbsolutePath("Assets/Foo"); // "C:/dev/MyProject/Assets/Foo"
+        /// PathUtility.ToAbsolutePath("");           // the project path
+        /// </code>
+        /// </example>
         /// <param name="path">The path string to convert. If that path is already absolute, this function returns it as is. If it's null or empty, this function returns the value of <see cref="ProjectPath"/>.</param>
         /// <returns>Returns the absolute path string.</returns>
         public static string ToAbsolutePath(string path)
@@ -188,6 +201,13 @@ namespace SideXP.Core
         /// <summary>
         /// If the given string represents an absolute path leading to this project, this function makes it relative to <see cref="ProjectPath"/>.
         /// </summary>
+        /// <example>
+        /// <code>
+        /// // Assuming the project is at "C:/dev/MyProject":
+        /// PathUtility.ToRelativePath("C:/dev/MyProject/Assets/Foo"); // "Assets/Foo"
+        /// PathUtility.ToRelativePath("Assets/Foo");                  // "Assets/Foo" (already relative)
+        /// </code>
+        /// </example>
         /// <param name="path">The path string to convert. If that path is already relative, this function returns it as is. If it's null or empty, this function returns an empty string.</param>
         /// <returns>Returns the relative path string.</returns>
         /// <inheritdoc cref="ToPath(ref string, bool, char)"/>
@@ -209,7 +229,7 @@ namespace SideXP.Core
 
             ToPath(ref path, normalize);
             // Cancel if the path is absolute but not related to the project
-            if (!path.StartsWith(ProjectPath))
+            if (!IsUnderProject(path))
                 return;
 
             // Resolve path, then re-use ToPath() to ensure separator character consistency
@@ -228,6 +248,13 @@ namespace SideXP.Core
         /// <summary>
         /// Checks if the given path leads to this project.
         /// </summary>
+        /// <example>
+        /// <code>
+        /// PathUtility.IsProjectPath("Assets/Foo");                  // true (relative paths are project paths)
+        /// PathUtility.IsProjectPath("C:/dev/MyProject/Assets/Foo"); // true
+        /// PathUtility.IsProjectPath("C:/Windows/System32");         // false
+        /// </code>
+        /// </example>
         /// <param name="path">The path string to check. If that path is relative this function returns true.</param>
         /// <returns>Returns true if the given path leads to this project.</returns>
         public static bool IsProjectPath(string path)
@@ -246,7 +273,27 @@ namespace SideXP.Core
             if (!Path.IsPathRooted(path))
                 return true;
 
-            return path.StartsWith(ProjectPath);
+            return IsUnderProject(path);
+        }
+
+        #endregion
+
+
+        #region Private API
+
+        /// <summary>
+        /// Checks if a normalized, absolute path is the project folder itself or a path inside it.
+        /// </summary>
+        /// <param name="path">The normalized, absolute path to check (using <see cref="DefaultDirectorySeparator"/>).</param>
+        /// <returns>Returns true if the path is the project folder or one of its descendants.</returns>
+        private static bool IsUnderProject(string path)
+        {
+            if (!path.StartsWith(ProjectPath))
+                return false;
+
+            // Require an exact match or a separator right after ProjectPath, so a sibling folder that
+            // merely shares the project's name prefix (e.g. "MyProjectSibling") is not treated as inside it.
+            return path.Length == ProjectPath.Length || path[ProjectPath.Length] == DefaultDirectorySeparator;
         }
 
         #endregion

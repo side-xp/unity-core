@@ -4,21 +4,21 @@ namespace SideXP.Core
 {
 
     /// <summary>
-    /// Extension functions for float values.
+    /// Extension functions for int values.
     /// </summary>
     public static class IntExtensions
     {
 
-        /// <inheritdoc cref="Math.Ratio(float, float, float)"/>
+        /// <inheritdoc cref="MathUtility.Ratio(float, float, float)"/>
         public static float Ratio(this int value, int min, int max)
         {
-            return Math.Ratio(value, min, max);
+            return MathUtility.Ratio(value, min, max);
         }
         
-        /// <inheritdoc cref="Math.Ratio(float, float, float)"/>
+        /// <inheritdoc cref="MathUtility.Ratio(float, float, float)"/>
         public static float Percents(this int value, int min, int max)
         {
-            return Math.Percents(value, min, max);
+            return MathUtility.Percents(value, min, max);
         }
 
         /// <summary>

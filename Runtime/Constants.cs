@@ -20,9 +20,12 @@ namespace SideXP.Core
         public const string CompanyWebsite = "https://sideways-experiments.com";
 
         /// <summary>
-        /// Base URL for online documentation of the SideXP Library. You must concatenate your own path starting with "/".
+        /// Base URL to the online documentation of this package. You must concatenate your own path starting with "/".
         /// </summary>
-        public const string BaseHelpUrl = "https://gitlab.com/sideways-experiments/frameworks/unity/library";
+        /// <remarks>
+        /// For a Component or ScriptableObject, the help link convention is <c>{BaseHelpUrl}/api/{namespace}/{type name}</c>.
+        /// </remarks>
+        public const string BaseHelpUrl = "https://side-xp.github.io/unity-core";
 
         // Menus
 

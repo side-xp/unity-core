@@ -14,7 +14,7 @@ namespace SideXP.Core
         /// </summary>
         /// <param name="rect">The <see cref="Rect"/> you want to hold in the given area.</param>
         /// <param name="area">The available area in which the given rect can be placed.</param>
-		public static void HoldInArea(this ref Rect rect, Rect area)
+        public static void HoldInArea(this ref Rect rect, Rect area)
         {
             if (rect.y + rect.height > area.y + area.height)
                 rect.y = area.y + area.height - rect.height;
@@ -32,8 +32,8 @@ namespace SideXP.Core
         /// <param name="rect">The <see cref="Rect"/> you want to hold in the screen space.</param>
         public static void HoldInScreenSpace(this ref Rect rect)
         {
-            Vector2 screeSize = new Vector2(Screen.currentResolution.width, Screen.currentResolution.height);
-            rect.HoldInArea(new Rect(Vector2.zero, screeSize));
+            Vector2 screenSize = new Vector2(Screen.currentResolution.width, Screen.currentResolution.height);
+            rect.HoldInArea(new Rect(Vector2.zero, screenSize));
         }
 
     }

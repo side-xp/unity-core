@@ -31,6 +31,9 @@ namespace SideXP.Core.Reflection
         /// <param name="memberInfo">The field or property to represent.</param>
         public FieldOrPropertyInfo(MemberInfo memberInfo)
         {
+            if (memberInfo == null)
+                throw new ArgumentNullException(nameof(memberInfo));
+
             if (memberInfo is FieldInfo fieldInfo)
             {
                 _fieldInfo = fieldInfo;
@@ -45,7 +48,13 @@ namespace SideXP.Core.Reflection
                     _fieldInfo = fieldOrPropertyInfo._fieldInfo;
                 else
                     _propertyInfo = fieldOrPropertyInfo._propertyInfo;
-            }    
+            }
+            else
+            {
+                throw new ArgumentException(
+                    $"A {nameof(FieldOrPropertyInfo)} can only represent a field or a property, but the given member is a {memberInfo.MemberType}.",
+                    nameof(memberInfo));
+            }
         }
 
         #endregion

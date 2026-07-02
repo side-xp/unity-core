@@ -19,15 +19,17 @@ namespace SideXP.Core
         /// <summary>
         /// Gets the bounds of a renderer.
         /// </summary>
-        /// <remarks>The bounds can technically be queried by using <see cref="Renderer.bounds"/>, but if the game is not running or the
-        /// object is a prefab, the renderer won't be setup. The only way to query the bounds then is to use that property from the "real"
-        /// type instead of <see cref="Renderer"/> directly.</remarks>
+        /// <remarks>
+        /// Contrary to colliders (see <see cref="ColliderExtensions.GetColliderBounds(Collider, out Bounds)"/>), a mesh renderer's
+        /// <see cref="Renderer.bounds"/> is populated even when the game is not running, so it can be read directly here.
+        /// </remarks>
         /// <param name="renderer">The renderer of which to query the bounds.</param>
         /// <param name="bounds">Outputs the renderer bounds.</param>
-        /// <returns>Returns true if the renderer type is supported.</returns>
+        /// <returns>Always returns true (every <see cref="Renderer"/> exposes bounds).</returns>
         public static bool GetRendererBounds(this Renderer renderer, out Bounds bounds)
         {
-            // @todo This requires testing for new Unity versions to check if the behavior for renderers is still the same as for colliders.
+            // Renderer.bounds is valid at edit time for mesh renderers (unlike Collider.bounds), so it's read directly.
+            // @todo Verify this still holds for other renderer types (skinned mesh, sprite, line, ...) if the need arises.
             bounds = renderer.bounds;
             return true;
         }

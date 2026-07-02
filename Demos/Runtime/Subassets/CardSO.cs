@@ -6,7 +6,7 @@ namespace SideXP.Core.Demos
     /// <summary>
     /// Illustrates usage of the Subassets features.
     /// </summary>
-    [HelpURL(Constants.BaseHelpUrl)]
+    [HelpURL(Constants.BaseHelpUrl + "/api/SideXP.Core.Demos/" + nameof(CardSO))]
     [CreateAssetMenu(fileName = "NewCard", menuName = Constants.CreateAssetMenuDemos + "/Card")]
     public class CardSO : ScriptableObject
     {

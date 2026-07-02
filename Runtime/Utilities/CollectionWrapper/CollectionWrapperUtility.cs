@@ -2,7 +2,7 @@ namespace SideXP.Core
 {
 
     /// <summary>
-    /// Miscellaneous valus & utilities for working with <see cref="ICollectionWrapper"/> implementations.
+    /// Miscellaneous values & utilities for working with <see cref="ICollectionWrapper"/> implementations.
     /// </summary>
     public class CollectionWrapperUtility
     {

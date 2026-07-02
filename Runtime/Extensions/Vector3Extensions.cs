@@ -46,7 +46,7 @@ namespace SideXP.Core
         /// Translates the given points.
         /// </summary>
         /// <param name="points">The points you want to translate.</param>
-        /// <param name="translation">The traslation vector.</param>
+        /// <param name="translation">The translation vector.</param>
         /// <param name="inPlace">If enabled, the input array is modified in-place, instead of returning a new array.</param>
         /// <returns>Returns the translated points.</returns>
         public static Vector3[] Translate(this Vector3[] points, Vector3 translation, bool inPlace = false)
@@ -95,7 +95,6 @@ namespace SideXP.Core
             foreach (Vector3 p in points)
             {
                 points2D[i++] = p;
-                i++;
             }
             return points2D;
         }

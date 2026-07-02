@@ -34,17 +34,23 @@ namespace SideXP.Core
         {
             Gradient newGradient = gradient.Clone();
 
-            newGradient.colorKeys = new GradientColorKey[gradient.colorKeys.Length];
-            for (int i = 0; i < gradient.colorKeys.Length; i++)
+            // Cache the source arrays: Unity's colorKeys/alphaKeys getters allocate a new array on every
+            // access, so reading them inside the loop would churn an array per iteration.
+            GradientColorKey[] colorKeys = gradient.colorKeys;
+            GradientColorKey[] newColorKeys = new GradientColorKey[colorKeys.Length];
+            for (int i = 0; i < colorKeys.Length; i++)
             {
-                newGradient.colorKeys[i] = new GradientColorKey(gradient.colorKeys[i].color, 1f - gradient.colorKeys[i].time);
+                newColorKeys[i] = new GradientColorKey(colorKeys[i].color, 1f - colorKeys[i].time);
             }
+            newGradient.colorKeys = newColorKeys;
 
-            newGradient.alphaKeys = new GradientAlphaKey[gradient.alphaKeys.Length];
-            for (int i = 0; i < gradient.alphaKeys.Length; i++)
+            GradientAlphaKey[] alphaKeys = gradient.alphaKeys;
+            GradientAlphaKey[] newAlphaKeys = new GradientAlphaKey[alphaKeys.Length];
+            for (int i = 0; i < alphaKeys.Length; i++)
             {
-                newGradient.alphaKeys[i] = new GradientAlphaKey(gradient.alphaKeys[i].alpha, 1f - gradient.alphaKeys[i].time);
+                newAlphaKeys[i] = new GradientAlphaKey(alphaKeys[i].alpha, 1f - alphaKeys[i].time);
             }
+            newGradient.alphaKeys = newAlphaKeys;
 
             return newGradient;
         }

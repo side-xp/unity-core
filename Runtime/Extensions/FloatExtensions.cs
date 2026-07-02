@@ -9,28 +9,28 @@ namespace SideXP.Core
     public static class FloatExtensions
     {
 
-        /// <inheritdoc cref="Math.Approximately(float, float)"/>
+        /// <inheritdoc cref="MathUtility.Approximately(float, float)"/>
         public static bool Approximately(this float a, float b)
         {
             return Mathf.Approximately(a, b);
         }
 
-        /// <inheritdoc cref="Math.Approximately(float, float, float)"/>
+        /// <inheritdoc cref="MathUtility.Approximately(float, float, float)"/>
         public static bool Approximately(this float a, float b, float epsilon)
         {
-            return a > b - epsilon && a < b + epsilon;
+            return MathUtility.Approximately(a, b, epsilon);
         }
 
-        /// <inheritdoc cref="Math.Ratio(float, float, float)"/>
+        /// <inheritdoc cref="MathUtility.Ratio(float, float, float)"/>
         public static float Ratio(this float value, float min, float max)
         {
-            return Math.Ratio(value, min, max);
+            return MathUtility.Ratio(value, min, max);
         }
         
-        /// <inheritdoc cref="Math.Ratio(float, float, float)"/>
+        /// <inheritdoc cref="MathUtility.Ratio(float, float, float)"/>
         public static float Percents(this float value, float min, float max)
         {
-            return Math.Percents(value, min, max);
+            return MathUtility.Percents(value, min, max);
         }
 
         /// <summary>

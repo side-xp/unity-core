@@ -249,22 +249,25 @@ namespace SideXP.Core
                         return Object.FindObjectOfType(type);
 #endif
 
-                    // For each Game Object in the scene with the given tag
-                    foreach (GameObject obj in GameObject.FindGameObjectsWithTag(name))
+                    if (!string.IsNullOrEmpty(name))
                     {
-                        // If no name is defined or the current object has the expected name
-                        if (string.IsNullOrEmpty(name) || obj.name == name)
+                        // For each Game Object in the scene with the given tag
+                        foreach (GameObject obj in GameObject.FindGameObjectsWithTag(name))
                         {
-                            // If the expected object type is a Component, try to get the component from the current object
-                            if (typeof(Component).IsAssignableFrom(type))
+                            // If the current object has the expected name
+                            if (obj.name == name)
                             {
-                                if (obj.TryGetComponent(type, out Component expectedComponent))
-                                    return expectedComponent;
-                            }
-                            // Else (if the expected type is a GameObject), return the current object
-                            else
-                            {
-                                return obj;
+                                // If the expected object type is a Component, try to get the component from the current object
+                                if (typeof(Component).IsAssignableFrom(type))
+                                {
+                                    if (obj.TryGetComponent(type, out Component expectedComponent))
+                                        return expectedComponent;
+                                }
+                                // Else (if the expected type is a GameObject), return the current object
+                                else
+                                {
+                                    return obj;
+                                }
                             }
                         }
                     }

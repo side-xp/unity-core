@@ -1,5 +1,4 @@
 using System;
-using System.Text.RegularExpressions;
 
 namespace SideXP.Core
 {
@@ -7,7 +6,6 @@ namespace SideXP.Core
     /// <summary>
     /// Miscellaneous functions for working with unique identifiers.
     /// </summary>
-    [System.Serializable]
     public static class IdUtility
     {
 
@@ -21,16 +19,15 @@ namespace SideXP.Core
         }
 
         /// <summary>
-        /// Creates a GUID of 22 characters using C# GUID converted to Base64.
+        /// Creates a 22-character GUID by encoding a C# GUID as URL-safe Base64.
         /// </summary>
         /// <returns><inheritdoc cref="GetGUID()"/></returns>
         public static string GetShortGUID()
         {
-            return
-                Regex.Replace(
-                    Convert.ToBase64String(
-                        Guid.NewGuid().ToByteArray()),
-                    "[/+=]", "");
+            return Convert.ToBase64String(Guid.NewGuid().ToByteArray())
+                .Replace('/', '_')
+                .Replace('+', '-')
+                .TrimEnd('=');
         }
 
     }

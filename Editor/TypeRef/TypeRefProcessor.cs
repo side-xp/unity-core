@@ -10,6 +10,11 @@ namespace SideXP.Core.EditorOnly
     public class TypeRefProcessor : AssetPostprocessor
     {
 
+        /// <summary>
+        /// Set once the "migrations not tracked" nudge has been logged, so it's shown once per session instead of on every asset import.
+        /// </summary>
+        private static bool s_didLogUntrackedWarning = false;
+
 #if UNITY_2021_2_OR_NEWER
         private static void OnPostprocessAllAssets(
             string[] importedAssets,
@@ -32,8 +37,11 @@ namespace SideXP.Core.EditorOnly
             foreach (FieldInfo fieldInfo in TypeCachePolyfill.GetFieldsWithAttribute<TypeRefAttribute>())
 #endif
             {
-                if (!CoreEditorConfig.I.TrackTypesMigrations)
+                if (!CoreEditorConfig.I.TrackTypesMigrations && !s_didLogUntrackedWarning)
+                {
+                    s_didLogUntrackedWarning = true;
                     Debug.Log($"A field marked with the [TypeRef] attribute has been found in your project, but type migrations are not tracked. You can enable this tracking from Edit > Project Settings > {Constants.CompanyName} > General > Track Types Migrations. Without this option enabled, renamed types won't be tracked, so the type stored in a [TypeRef] property may not be valid at some point.");
+                }
 
                 break;
             }

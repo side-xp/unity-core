@@ -31,6 +31,7 @@ namespace SideXP.Core.EditorOnly
 
             EditorGUI.DrawRect(rect, MoreEditorGUI.SeparatorColor);
 
+            rect.x = position.x;
             rect.width = position.width;
             rect.y += Space;
             rect.height = position.height - SeparatorTotalHeight;

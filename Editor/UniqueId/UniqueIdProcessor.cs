@@ -32,9 +32,9 @@ namespace SideXP.Core.EditorOnly
         {
             // Foreach field marked with [UniqueId] attribute in the project
 #if UNITY_2020_1_OR_NEWER
-            foreach (FieldInfo fieldInfo in TypeCache.GetFieldsWithAttribute<TypeRefAttribute>())
+            foreach (FieldInfo fieldInfo in TypeCache.GetFieldsWithAttribute<UniqueIdAttribute>())
 #else
-            foreach (FieldInfo fieldInfo in TypeCachePolyfill.GetFieldsWithAttribute<TypeRefAttribute>())
+            foreach (FieldInfo fieldInfo in TypeCachePolyfill.GetFieldsWithAttribute<UniqueIdAttribute>())
 #endif
             {
                 // If the current field is declared in a ScriptableObject class
@@ -43,9 +43,8 @@ namespace SideXP.Core.EditorOnly
                     // For each asset in the project of that type
                     foreach (Object asset in ObjectUtility.FindAssets(fieldInfo.DeclaringType))
                     {
-                        string guid = null;
                         // Try to get the GUID from file
-                        if (!AssetDatabase.TryGetGUIDAndLocalFileIdentifier(asset, out guid, out long localId) && !string.IsNullOrEmpty(guid) && localId != 0)
+                        if (!AssetDatabase.TryGetGUIDAndLocalFileIdentifier(asset, out string guid, out long localId) || string.IsNullOrEmpty(guid) || localId == 0)
                         {
                             Debug.LogWarning($"Failed to get the GUID of the asset of type {asset.GetType()}: as a fallback, {nameof(UniqueIdProcessor)} will assign a native C# GUID to its field {fieldInfo.DeclaringType}.{fieldInfo.Name} marked with {nameof(UniqueIdAttribute)}.", asset);
                             guid = Guid.NewGuid().ToString();
@@ -53,7 +52,11 @@ namespace SideXP.Core.EditorOnly
 
                         // Assign the id to the found field
                         SerializedObject assetObj = new SerializedObject(asset);
-                        assetObj.FindProperty(fieldInfo.Name).stringValue = guid;
+                        SerializedProperty prop = assetObj.FindProperty(fieldInfo.Name);
+                        if (prop == null)
+                            continue;
+
+                        prop.stringValue = guid;
                         assetObj.ApplyModifiedPropertiesWithoutUndo();
                     }
                 }

@@ -188,7 +188,7 @@ namespace SideXP.Core.EditorOnly
             // Cancel if the given object type doesn't use the [EditorSettings] attribute
             if (!typeof(TConfig).TryGetAttribute(out EditorConfigAttribute editorConfigAttribute))
             {
-                Debug.LogError($"Failed to load editor settings for an object of type {nameof(TConfig)}: That type doesn't use {nameof(EditorConfigAttribute)}, so the system can't load from the appropriate scope.");
+                Debug.LogError($"Failed to load editor settings for an object of type {typeof(TConfig).FullName}: That type doesn't use {nameof(EditorConfigAttribute)}, so the system can't load from the appropriate scope.");
                 instance = default;
                 return false;
             }
@@ -199,7 +199,7 @@ namespace SideXP.Core.EditorOnly
             // Cancel if the path is not valid
             if (string.IsNullOrWhiteSpace(path))
             {
-                Debug.LogError($"Failed to load editor config for an object of type {nameof(TConfig)}: Unsupported scope \"{editorConfigAttribute.Scope}\".");
+                Debug.LogError($"Failed to load editor config for an object of type {typeof(TConfig).FullName}: Unsupported scope \"{editorConfigAttribute.Scope}\".");
                 instance = default;
                 return false;
             }
@@ -226,7 +226,7 @@ namespace SideXP.Core.EditorOnly
                 catch (Exception e)
                 {
                     Debug.LogException(e);
-                    Debug.LogError($"Failed to load loading editor config for an object of type {nameof(TConfig)}. See previous logs for more info.");
+                    Debug.LogError($"Failed to load editor config for an object of type {typeof(TConfig).FullName}. See previous logs for more info.");
                     return false;
                 }
             }
@@ -234,6 +234,10 @@ namespace SideXP.Core.EditorOnly
             // Overwrite the created object instance
             if (!string.IsNullOrWhiteSpace(json))
                 EditorJsonUtility.FromJsonOverwrite(json, instance);
+
+            // Notify the config that it has been loaded, so it can post-process the deserialized data (even when no saved data
+            // existed and the instance holds its defaults).
+            instance.PostLoad();
 
             return true;
         }

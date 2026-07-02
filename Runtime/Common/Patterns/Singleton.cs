@@ -23,7 +23,7 @@ namespace SideXP.Core
         /// <summary>
         /// Used to make this Singleton thread-safe.
         /// </summary>
-        private static object s_padlock = new object();
+        private static readonly object s_padlock = new object();
 
         #endregion
 

@@ -33,7 +33,7 @@ namespace SideXP.Core
         }
 
         /// <summary>
-        /// Calculates the camera render extends using <see cref="GetExtentsOrthographic(Camera)"/> and double it to get bounds, using orthographic mode.
+        /// Calculates the camera render extents using <see cref="GetExtentsOrthographic(Camera)"/> and doubles them to get bounds, using orthographic mode.
         /// </summary>
         /// <param name="camera">The <see cref="Camera"/> of which you want to get the bounds.</param>
         /// <returns>Returns the computed bounds.</returns>

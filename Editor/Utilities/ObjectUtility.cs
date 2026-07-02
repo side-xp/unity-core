@@ -87,7 +87,7 @@ namespace SideXP.Core.EditorOnly
 
                 // Add the main asset to the list if it has the expected type.
                 // This check must be done because AssetDatabase.FindAssets() will also query assets that contains attached assets of the expected type.
-                if (type.IsAssignableFrom(mainAsset.GetType()))
+                if (mainAsset != null && type.IsAssignableFrom(mainAsset.GetType()))
                     assets.Add(mainAsset);
 
                 // If the query is extended to attached assets
@@ -96,7 +96,7 @@ namespace SideXP.Core.EditorOnly
                     // For each subasset
                     foreach (Object subasset in AssetDatabase.LoadAllAssetsAtPath(path))
                     {
-                        // Skkip if the subasset is broken
+                        // Skip if the subasset is broken
                         if (subasset == null)
                             continue;
 
@@ -229,7 +229,7 @@ namespace SideXP.Core.EditorOnly
             // For each sub object
             foreach (Object subasset in AssetDatabase.LoadAllAssetsAtPath(path))
             {
-                // Skkip if the subasset is broken
+                // Skip if the subasset is broken
                 if (subasset == null)
                     continue;
 
@@ -264,7 +264,14 @@ namespace SideXP.Core.EditorOnly
         public static Object FindAssetInHierarchy(Object asset, Type assetType)
         {
             string path = GetAssetPath(asset);
+            // Stop if the given object is not an asset (so it has no hierarchy to inspect)
+            if (string.IsNullOrEmpty(path))
+                return null;
+
             Object mainAsset = AssetDatabase.LoadAssetAtPath<Object>(path);
+            if (mainAsset == null)
+                return null;
+
             // Stop if the expected asset is the main one
             if (mainAsset.GetType() == assetType)
                 return mainAsset;
@@ -272,7 +279,7 @@ namespace SideXP.Core.EditorOnly
             // For each subasset
             foreach (Object subasset in AssetDatabase.LoadAllAssetsAtPath(path))
             {
-                // Skkip if the subasset is broken
+                // Skip if the subasset is broken
                 if (subasset == null)
                     continue;
 
@@ -377,7 +384,7 @@ namespace SideXP.Core.EditorOnly
                 name = basename;
 
                 int iteration = 0;
-                foreach (Object existingSubAsset in FindAssets(subAssetType, asset))
+                foreach (Object existingSubAsset in FindAllSubassetsOfType(asset, subAssetType))
                 {
                     if (existingSubAsset.name == name)
                     {
@@ -491,7 +498,7 @@ namespace SideXP.Core.EditorOnly
         /// Note that GUIDs are assigned only to assets, not to scene objects. So if this <see cref="Object"/> is a scene object or an object loaded only in memory, this function will return null.
         /// </summary>
         /// <param name="obj">The <see cref="Object"/> whose GUID you want to get.</param>
-        /// <returns>Returns the GUID string of this <see cref="Object"/>, or null if this <see cref="Object"/> is not an asset (meaning it's a scene object or an object loaded only i memory).</returns>
+        /// <returns>Returns the GUID string of this <see cref="Object"/>, or null if this <see cref="Object"/> is not an asset (meaning it's a scene object or an object loaded only in memory).</returns>
         public static string GetGUID(Object obj)
         {
             AssetDatabase.TryGetGUIDAndLocalFileIdentifier(obj, out string guid, out long localId);

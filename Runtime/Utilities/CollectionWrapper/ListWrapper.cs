@@ -7,7 +7,7 @@ namespace SideXP.Core
 {
 
     /// <summary>
-    /// Wraps an array in a container. This is useful to create custom property drawers for an entire list instead of each of its entries.
+    /// Wraps a list in a container. This is useful to create custom property drawers for an entire list instead of each of its entries.
     /// </summary>
     [System.Serializable]
     public class ListWrapper<T> : ICollectionWrapper<T>

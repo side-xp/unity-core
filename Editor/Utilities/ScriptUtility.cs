@@ -40,9 +40,16 @@ namespace SideXP.Core.EditorOnly
         public static readonly Regex NamespaceDeclarationPattern = new Regex(@"namespace (?<namespace>[A-Za-z0-9_.]+)");
 
         /// <summary>
-        /// Pattern used to extract the first class declared in a script, and its base type if applicable.
+        /// Pattern used to extract the first type declared in a script, and its base type if applicable.
         /// </summary>
-        public static readonly Regex ClassDeclarationPattern = new Regex(@"(?:public|internal) +(?:(?:static|abstract|sealed) +)?(?:class|struct|interface|enum) +(?<class>[A-Za-z0-9_]+)(?>\s+:\s+(?<base>[A-Za-z0-9_]+))?");
+        /// <remarks>
+        /// Captures the type name in the <c>class</c> group, its generic parameter list (if any) in the <c>generics</c> group, and its
+        /// base type in the <c>base</c> group. Requires at least one modifier before the type keyword (an access modifier such as
+        /// <c>public</c>/<c>private</c>, or another modifier such as <c>static</c>/<c>partial</c>), which keeps bare
+        /// <c>class Foo</c> occurrences in comments from matching. Supports <c>class</c>/<c>struct</c>/<c>interface</c>/<c>enum</c>
+        /// and <c>record</c> (including <c>record class</c>/<c>record struct</c>) declarations, in any modifier order.
+        /// </remarks>
+        public static readonly Regex ClassDeclarationPattern = new Regex(@"(?:(?:public|private|protected|internal|static|abstract|sealed|partial|readonly|ref|unsafe|new|file)\s+)+(?:record(?:\s+(?:class|struct))?|class|struct|interface|enum)\s+(?<class>[A-Za-z0-9_]+)(?<generics>\s*<[^>]*>)?(?:\s*:\s*(?<base>[A-Za-z0-9_]+))?");
 
         /// <summary>
         /// Gets the namespace that should be used for a file at a given path.
@@ -86,7 +93,7 @@ namespace SideXP.Core.EditorOnly
             return EditorSettings.projectGenerationRootNamespace;
         }
 
-        /// <param name="asset">The from which to extract the declared type.</param>
+        /// <param name="asset">The asset from which to extract the declared type.</param>
         /// <inheritdoc cref="TryGetDeclaredType(string, out Type)"/>
         public static bool TryGetDeclaredType(TextAsset asset, out Type type)
         {
@@ -147,10 +154,15 @@ namespace SideXP.Core.EditorOnly
                 return false;
             }
 
+            string className = match.Groups["class"].Value;
+            // For a generic type, the reflection name carries the arity (e.g. "Foo`2" for Foo<TKey, TValue>), so append it before resolving.
+            if (match.Groups["generics"].Success)
+                className += "`" + match.Groups["generics"].Value.Split(',').Length;
+
             Match namespaceMatch = NamespaceDeclarationPattern.Match(content);
             string namespaceValue = namespaceMatch.Success ? namespaceMatch.Groups["namespace"].Value : null;
 
-            if (!ReflectionUtility.FindType(match.Groups["class"].Value, namespaceValue, out type))
+            if (!ReflectionUtility.FindType(className, namespaceValue, out type))
                 type = null;
 
             return type != null;
@@ -213,7 +225,7 @@ namespace SideXP.Core.EditorOnly
                             if (!File.Exists(path))
                                 return null;
 
-                            _scriptContent = File.ReadAllText(_scriptPath);
+                            _scriptContent = File.ReadAllText(path);
                         }
                         catch (Exception e)
                         {
@@ -250,20 +262,10 @@ namespace SideXP.Core.EditorOnly
                 if (Path.GetExtension(_scriptPath) != CSExtension)
                     return _type;
 
-                Match match = ClassDeclarationPattern.Match(ScriptContent);
-
-                // Skip if no declared class or struct can be found in the script
-                if (!match.Success)
-                    return _type;
-
-                Match namespaceMatch = NamespaceDeclarationPattern.Match(ScriptContent);
-                string namespaceValue = namespaceMatch.Success ? namespaceMatch.Groups["namespace"].Value : null;
-
-                if (!ReflectionUtility.FindType(match.Groups["class"].Value, namespaceValue, out _type))
-                    _type = null;
-
-                // Write cache data for future operations
-                if (_type != null)
+                // Extract the declared type using the shared parsing engine. TryGetDeclaredType guards against null/empty content, so
+                // reading ScriptContent here can safely return null (e.g. a missing file) without feeding a null to the regex.
+                if (TryGetDeclaredType(ScriptContent, out _type))
+                    // Write cache data for future operations
                     ScriptCache.Set(_scriptPath, _type);
 
                 return _type;

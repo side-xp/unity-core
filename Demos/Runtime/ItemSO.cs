@@ -6,7 +6,7 @@ namespace SideXP.Core.Demos
     /// <summary>
     /// Generic asset used in editor features demos.
     /// </summary>
-    [HelpURL(Constants.BaseHelpUrl)]
+    [HelpURL(Constants.BaseHelpUrl + "/api/SideXP.Core.Demos/" + nameof(ItemSO))]
     [CreateAssetMenu(fileName = "NewItem", menuName = Constants.CreateAssetMenuDemos + "/Item")]
     public class ItemSO : ScriptableObject
     {
