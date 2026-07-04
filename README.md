@@ -46,7 +46,7 @@ As a general rule, this package is meant to be used as a foundation for our othe
 Complete documentation available at https://side-xp.github.io/unity-core
 
 <!-- docs:remove:end -->
-If you need help or just want to chat with the community and the *Sideways Experiments* core team, you're welcome to join our [Discord server](https://discord.gg/bMK2d47JaE)!
+If you need help or just want to chat with the community and the *Sideways Experiments* core team, you're welcome to join our [Discord server](https://discord.gg/G49RUZ9F2N)!
 
 ## Contributing
 
