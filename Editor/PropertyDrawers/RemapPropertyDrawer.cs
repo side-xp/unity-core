@@ -73,103 +73,103 @@ namespace SideXP.Core.EditorOnly
             switch (property.propertyType)
             {
                 case SerializedPropertyType.Integer:
-                    {
-                        property.intValue = (int)MathUtility.Remap(property.intValue, fromMin, fromMax, toMin, toMax);
-                        if (clamped)
-                            property.intValue = (int)Mathf.Clamp(property.intValue, toMin, toMax);
-                    }
-                    break;
+                {
+                    property.intValue = (int)MathUtility.Remap(property.intValue, fromMin, fromMax, toMin, toMax);
+                    if (clamped)
+                        property.intValue = (int)Mathf.Clamp(property.intValue, toMin, toMax);
+                }
+                break;
 
                 case SerializedPropertyType.Vector2:
+                {
+                    float x = MathUtility.Remap(property.vector2Value.x, fromMin, fromMax, toMin, toMax);
+                    float y = MathUtility.Remap(property.vector2Value.y, fromMin, fromMax, toMin, toMax);
+
+                    if (clamped)
                     {
-                        float x = MathUtility.Remap(property.vector2Value.x, fromMin, fromMax, toMin, toMax);
-                        float y = MathUtility.Remap(property.vector2Value.y, fromMin, fromMax, toMin, toMax);
-
-                        if (clamped)
-                        {
-                            x = Mathf.Clamp(x, toMin, toMax);
-                            y = Mathf.Clamp(y, toMin, toMax);
-                        }
-
-                        property.vector2Value = new Vector2(x, y);
+                        x = Mathf.Clamp(x, toMin, toMax);
+                        y = Mathf.Clamp(y, toMin, toMax);
                     }
-                    break;
+
+                    property.vector2Value = new Vector2(x, y);
+                }
+                break;
 
                 case SerializedPropertyType.Vector2Int:
+                {
+                    int x = (int)MathUtility.Remap(property.vector2IntValue.x, fromMin, fromMax, toMin, toMax);
+                    int y = (int)MathUtility.Remap(property.vector2IntValue.y, fromMin, fromMax, toMin, toMax);
+
+                    if (clamped)
                     {
-                        int x = (int)MathUtility.Remap(property.vector2IntValue.x, fromMin, fromMax, toMin, toMax);
-                        int y = (int)MathUtility.Remap(property.vector2IntValue.y, fromMin, fromMax, toMin, toMax);
-
-                        if (clamped)
-                        {
-                            x = (int)Mathf.Clamp(x, toMin, toMax);
-                            y = (int)Mathf.Clamp(y, toMin, toMax);
-                        }
-
-                        property.vector2IntValue = new Vector2Int(x, y);
+                        x = (int)Mathf.Clamp(x, toMin, toMax);
+                        y = (int)Mathf.Clamp(y, toMin, toMax);
                     }
-                    break;
+
+                    property.vector2IntValue = new Vector2Int(x, y);
+                }
+                break;
 
                 case SerializedPropertyType.Vector3:
+                {
+                    float x = MathUtility.Remap(property.vector3Value.x, fromMin, fromMax, toMin, toMax);
+                    float y = MathUtility.Remap(property.vector3Value.y, fromMin, fromMax, toMin, toMax);
+                    float z = MathUtility.Remap(property.vector3Value.z, fromMin, fromMax, toMin, toMax);
+
+                    if (clamped)
                     {
-                        float x = MathUtility.Remap(property.vector3Value.x, fromMin, fromMax, toMin, toMax);
-                        float y = MathUtility.Remap(property.vector3Value.y, fromMin, fromMax, toMin, toMax);
-                        float z = MathUtility.Remap(property.vector3Value.z, fromMin, fromMax, toMin, toMax);
-
-                        if (clamped)
-                        {
-                            x = Mathf.Clamp(x, toMin, toMax);
-                            y = Mathf.Clamp(y, toMin, toMax);
-                            z = Mathf.Clamp(z, toMin, toMax);
-                        }
-
-                        property.vector3Value = new Vector3(x, y, z);
+                        x = Mathf.Clamp(x, toMin, toMax);
+                        y = Mathf.Clamp(y, toMin, toMax);
+                        z = Mathf.Clamp(z, toMin, toMax);
                     }
-                    break;
+
+                    property.vector3Value = new Vector3(x, y, z);
+                }
+                break;
 
                 case SerializedPropertyType.Vector3Int:
+                {
+                    int x = (int)MathUtility.Remap(property.vector3IntValue.x, fromMin, fromMax, toMin, toMax);
+                    int y = (int)MathUtility.Remap(property.vector3IntValue.y, fromMin, fromMax, toMin, toMax);
+                    int z = (int)MathUtility.Remap(property.vector3IntValue.z, fromMin, fromMax, toMin, toMax);
+
+                    if (clamped)
                     {
-                        int x = (int)MathUtility.Remap(property.vector3IntValue.x, fromMin, fromMax, toMin, toMax);
-                        int y = (int)MathUtility.Remap(property.vector3IntValue.y, fromMin, fromMax, toMin, toMax);
-                        int z = (int)MathUtility.Remap(property.vector3IntValue.z, fromMin, fromMax, toMin, toMax);
-
-                        if (clamped)
-                        {
-                            x = (int)Mathf.Clamp(x, toMin, toMax);
-                            y = (int)Mathf.Clamp(y, toMin, toMax);
-                            z = (int)Mathf.Clamp(z, toMin, toMax);
-                        }
-
-                        property.vector3IntValue = new Vector3Int(x, y, z);
+                        x = (int)Mathf.Clamp(x, toMin, toMax);
+                        y = (int)Mathf.Clamp(y, toMin, toMax);
+                        z = (int)Mathf.Clamp(z, toMin, toMax);
                     }
-                    break;
+
+                    property.vector3IntValue = new Vector3Int(x, y, z);
+                }
+                break;
 
                 case SerializedPropertyType.Vector4:
+                {
+                    float x = MathUtility.Remap(property.vector4Value.x, fromMin, fromMax, toMin, toMax);
+                    float y = MathUtility.Remap(property.vector4Value.y, fromMin, fromMax, toMin, toMax);
+                    float z = MathUtility.Remap(property.vector4Value.z, fromMin, fromMax, toMin, toMax);
+                    float w = MathUtility.Remap(property.vector4Value.w, fromMin, fromMax, toMin, toMax);
+
+                    if (clamped)
                     {
-                        float x = MathUtility.Remap(property.vector4Value.x, fromMin, fromMax, toMin, toMax);
-                        float y = MathUtility.Remap(property.vector4Value.y, fromMin, fromMax, toMin, toMax);
-                        float z = MathUtility.Remap(property.vector4Value.z, fromMin, fromMax, toMin, toMax);
-                        float w = MathUtility.Remap(property.vector4Value.w, fromMin, fromMax, toMin, toMax);
-
-                        if (clamped)
-                        {
-                            x = Mathf.Clamp(x, toMin, toMax);
-                            y = Mathf.Clamp(y, toMin, toMax);
-                            z = Mathf.Clamp(z, toMin, toMax);
-                            w = Mathf.Clamp(w, toMin, toMax);
-                        }
-
-                        property.vector4Value = new Vector4(x, y, z, w);
+                        x = Mathf.Clamp(x, toMin, toMax);
+                        y = Mathf.Clamp(y, toMin, toMax);
+                        z = Mathf.Clamp(z, toMin, toMax);
+                        w = Mathf.Clamp(w, toMin, toMax);
                     }
-                    break;
+
+                    property.vector4Value = new Vector4(x, y, z, w);
+                }
+                break;
 
                 default:
-                    {
-                        property.floatValue = MathUtility.Remap(property.floatValue, fromMin, fromMax, toMin, toMax);
-                        if (clamped)
-                            property.floatValue = Mathf.Clamp(property.floatValue, toMin, toMax);
-                    }
-                    break;
+                {
+                    property.floatValue = MathUtility.Remap(property.floatValue, fromMin, fromMax, toMin, toMax);
+                    if (clamped)
+                        property.floatValue = Mathf.Clamp(property.floatValue, toMin, toMax);
+                }
+                break;
             }
         }
 

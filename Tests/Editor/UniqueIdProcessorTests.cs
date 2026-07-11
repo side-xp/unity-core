@@ -3,8 +3,6 @@ using NUnit.Framework;
 using UnityEngine;
 using UnityEditor;
 
-using SideXP.Core;
-
 namespace SideXP.Core.Tests
 {
 
@@ -19,17 +17,17 @@ namespace SideXP.Core.Tests
     public class UniqueIdProcessorTests
     {
 
-        private const string TempFolderName = "__UniqueIdProcessorTest__";
-        private const string TempDir = "Assets/" + TempFolderName;
+        private const string s_tempFolderName = "__UniqueIdProcessorTest__";
+        private const string s_tempDir = "Assets/" + s_tempFolderName;
 
         [Test]
         public void OnImport_UniqueSO_AssignsAssetGuidToUniqueIdField()
         {
-            if (AssetDatabase.IsValidFolder(TempDir))
-                AssetDatabase.DeleteAsset(TempDir);
-            AssetDatabase.CreateFolder("Assets", TempFolderName);
+            if (AssetDatabase.IsValidFolder(s_tempDir))
+                AssetDatabase.DeleteAsset(s_tempDir);
+            AssetDatabase.CreateFolder("Assets", s_tempFolderName);
 
-            string path = TempDir + "/Unique.asset";
+            string path = s_tempDir + "/Unique.asset";
             try
             {
                 UniqueSO instance = ScriptableObject.CreateInstance<UniqueSO>();
@@ -45,7 +43,7 @@ namespace SideXP.Core.Tests
             }
             finally
             {
-                AssetDatabase.DeleteAsset(TempDir);
+                AssetDatabase.DeleteAsset(s_tempDir);
             }
         }
 

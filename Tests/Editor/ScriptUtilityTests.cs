@@ -51,7 +51,8 @@ namespace SideXP.Core.Tests
 
             foreach (string path in _tempFiles)
             {
-                try { if (File.Exists(path)) File.Delete(path); }
+                try
+                { if (File.Exists(path)) File.Delete(path); }
                 catch { /* best-effort cleanup */ }
             }
             _tempFiles.Clear();

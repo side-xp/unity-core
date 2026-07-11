@@ -802,7 +802,7 @@ namespace SideXP.Core.EditorOnly
         public static string FolderPathField(Rect position, GUIContent label, string path, string title, string defaultName, bool allowExternal = false)
         {
             Rect rect = new Rect(position);
-            
+
             // Draw text field with label
             rect.width = position.width - MoreGUI.WidthS - MoreGUI.HMargin;
             path = EditorGUI.TextField(rect, label, path);
