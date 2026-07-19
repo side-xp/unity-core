@@ -197,7 +197,8 @@ namespace SideXP.Core.EditorOnly
         /// - Object<br/>
         /// - Vector2<br/>
         /// - Vector3<br/>
-        /// - Vector4
+        /// - Vector4<br/>
+        /// - Quaternion
         /// </remarks>
         /// <param name="obj">The object that owns the field.</param>
         /// <param name="position">Rectangle on the screen to use for the field.</param>
@@ -226,6 +227,8 @@ namespace SideXP.Core.EditorOnly
                 return DrawFieldAndSetValue(() => Vector3Field(position, (Vector3)field.GetValue(obj), label));
             else if (field.FieldType == typeof(Vector4))
                 return DrawFieldAndSetValue(() => Vector4Field(position, (Vector4)field.GetValue(obj), label));
+            else if (field.FieldType == typeof(Quaternion))
+                return DrawFieldAndSetValue(() => QuaternionField(position, (Quaternion)field.GetValue(obj), label));
 
             // Fallback: draw warning to state that the field type is not supported
             Rect rect = new Rect(position);
@@ -756,6 +759,61 @@ namespace SideXP.Core.EditorOnly
         public static Vector4 Vector4Field(Vector4 value)
         {
             return Vector4Field(value, null as GUIContent);
+        }
+
+        /// <summary>
+        /// Makes an X, Y and Z field for entering a <see cref="Quaternion"/> as euler angles.
+        /// </summary>
+        /// <inheritdoc cref="FloatField(Rect, float, GUIContent, GUIStyle)"/>
+        /// <inheritdoc cref="PropertyField(object, Rect, FieldInfo, GUIContent)"/>
+        public static Quaternion QuaternionField(Rect position, Quaternion value, GUIContent label)
+        {
+            Rect rect = new Rect(position);
+
+            if (HasLabel(label))
+            {
+                rect.width = EditorGUIUtility.labelWidth;
+                EditorGUI.LabelField(rect, label);
+
+                rect.x += rect.width;
+                rect.width = position.width - rect.width;
+            }
+
+            Vector3 euler = value.eulerAngles;
+            float[] values = { euler.x, euler.y, euler.z };
+            EditorGUI.MultiFloatField(rect, s_vector3SubLabels, values);
+            return Quaternion.Euler(values[0], values[1], values[2]);
+        }
+
+        /// <inheritdoc cref="QuaternionField(Rect, Quaternion, GUIContent)"/>
+        public static Quaternion QuaternionField(Rect position, Quaternion value, string label)
+        {
+            return QuaternionField(position, value, new GUIContent(label));
+        }
+
+        /// <inheritdoc cref="QuaternionField(Rect, Quaternion, GUIContent)"/>
+        public static Quaternion QuaternionField(Rect position, Quaternion value)
+        {
+            return QuaternionField(position, value, null as GUIContent);
+        }
+
+        /// <inheritdoc cref="QuaternionField(Rect, Quaternion, GUIContent)"/>
+        /// <inheritdoc cref="PropertyField(object, FieldInfo, GUIContent)" path="/remarks"/>
+        public static Quaternion QuaternionField(Quaternion value, GUIContent label)
+        {
+            return QuaternionField(EditorGUILayout.GetControlRect(), value, label);
+        }
+
+        /// <inheritdoc cref="QuaternionField(Quaternion, GUIContent)"/>
+        public static Quaternion QuaternionField(Quaternion value, string label)
+        {
+            return QuaternionField(value, new GUIContent(label));
+        }
+
+        /// <inheritdoc cref="QuaternionField(Quaternion, GUIContent)"/>
+        public static Quaternion QuaternionField(Quaternion value)
+        {
+            return QuaternionField(value, null as GUIContent);
         }
 
         /// <summary>
