@@ -196,7 +196,7 @@ namespace SideXP.Core.EditorOnly
                 return DrawFieldAndSetValue(() => ToggleField(position, (bool)field.GetValue(obj), label));
             else if (field.FieldType == typeof(string))
                 return DrawFieldAndSetValue(() => TextField(position, (string)field.GetValue(obj), label));
-            else if (field.FieldType == typeof(Enum))
+            else if (field.FieldType.IsEnum)
                 return DrawFieldAndSetValue(() => EnumPopupField(position, (Enum)field.GetValue(obj), label));
             else if (field.FieldType.Is<Object>())
                 return DrawFieldAndSetValue(() => ObjectField(position, (Object)field.GetValue(obj), field.FieldType, label, false));
