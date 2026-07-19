@@ -21,7 +21,7 @@ namespace SideXP.Core
         /// </summary>
         /// <remarks>
         /// While the game is running, the physics system provides accurate world bounds through <see cref="Collider.bounds"/>. At edit
-        /// time (or for a prefab) that representation isn't baked, and reading it — even through the concrete collider type — returns a
+        /// time (or for a prefab) that representation isn't baked, and reading it (even through the concrete collider type) returns a
         /// zeroed value. In that case the bounds are computed from the collider's geometry (center/size/radius/mesh) transformed into
         /// world space instead. Note: for a rotated non-box collider the computed AABB is slightly looser than the physics one.
         /// </remarks>
