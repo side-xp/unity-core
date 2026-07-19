@@ -55,6 +55,23 @@ namespace SideXP.Core.EditorOnly
         /// </summary>
         private static GUIStyle s_titleLabelStyle = null;
 
+        // Vector fields
+
+        /// <summary>
+        /// The sub-labels used to draw the X and Y components of a <see cref="Vector2"/> field on a single line.
+        /// </summary>
+        private static readonly GUIContent[] s_vector2SubLabels = { new GUIContent("X"), new GUIContent("Y") };
+
+        /// <summary>
+        /// The sub-labels used to draw the X, Y and Z components of a <see cref="Vector3"/> field on a single line.
+        /// </summary>
+        private static readonly GUIContent[] s_vector3SubLabels = { new GUIContent("X"), new GUIContent("Y"), new GUIContent("Z") };
+
+        /// <summary>
+        /// The sub-labels used to draw the X, Y, Z and W components of a <see cref="Vector4"/> field on a single line.
+        /// </summary>
+        private static readonly GUIContent[] s_vector4SubLabels = { new GUIContent("X"), new GUIContent("Y"), new GUIContent("Z"), new GUIContent("W") };
+
         #endregion
 
 
@@ -177,7 +194,10 @@ namespace SideXP.Core.EditorOnly
         /// - bool<br/>
         /// - string<br/>
         /// - enum<br/>
-        /// - Object
+        /// - Object<br/>
+        /// - Vector2<br/>
+        /// - Vector3<br/>
+        /// - Vector4
         /// </remarks>
         /// <param name="obj">The object that owns the field.</param>
         /// <param name="position">Rectangle on the screen to use for the field.</param>
@@ -200,6 +220,12 @@ namespace SideXP.Core.EditorOnly
                 return DrawFieldAndSetValue(() => EnumPopupField(position, (Enum)field.GetValue(obj), label));
             else if (field.FieldType.Is<Object>())
                 return DrawFieldAndSetValue(() => ObjectField(position, (Object)field.GetValue(obj), field.FieldType, label, false));
+            else if (field.FieldType == typeof(Vector2))
+                return DrawFieldAndSetValue(() => Vector2Field(position, (Vector2)field.GetValue(obj), label));
+            else if (field.FieldType == typeof(Vector3))
+                return DrawFieldAndSetValue(() => Vector3Field(position, (Vector3)field.GetValue(obj), label));
+            else if (field.FieldType == typeof(Vector4))
+                return DrawFieldAndSetValue(() => Vector4Field(position, (Vector4)field.GetValue(obj), label));
 
             // Fallback: draw warning to state that the field type is not supported
             Rect rect = new Rect(position);
@@ -568,6 +594,168 @@ namespace SideXP.Core.EditorOnly
         public static Object ObjectField(Object value, Type type, bool allowSceneObjects = true)
         {
             return ObjectField(value, type, null as GUIContent, allowSceneObjects);
+        }
+
+        /// <summary>
+        /// Makes an X and Y field for entering a <see cref="Vector2"/>.
+        /// </summary>
+        /// <inheritdoc cref="FloatField(Rect, float, GUIContent, GUIStyle)"/>
+        /// <inheritdoc cref="PropertyField(object, Rect, FieldInfo, GUIContent)"/>
+        public static Vector2 Vector2Field(Rect position, Vector2 value, GUIContent label)
+        {
+            Rect rect = new Rect(position);
+
+            if (HasLabel(label))
+            {
+                rect.width = EditorGUIUtility.labelWidth;
+                EditorGUI.LabelField(rect, label);
+
+                rect.x += rect.width;
+                rect.width = position.width - rect.width;
+            }
+
+            float[] values = { value.x, value.y };
+            EditorGUI.MultiFloatField(rect, s_vector2SubLabels, values);
+            return new Vector2(values[0], values[1]);
+        }
+
+        /// <inheritdoc cref="Vector2Field(Rect, Vector2, GUIContent)"/>
+        public static Vector2 Vector2Field(Rect position, Vector2 value, string label)
+        {
+            return Vector2Field(position, value, new GUIContent(label));
+        }
+
+        /// <inheritdoc cref="Vector2Field(Rect, Vector2, GUIContent)"/>
+        public static Vector2 Vector2Field(Rect position, Vector2 value)
+        {
+            return Vector2Field(position, value, null as GUIContent);
+        }
+
+        /// <inheritdoc cref="Vector2Field(Rect, Vector2, GUIContent)"/>
+        /// <inheritdoc cref="PropertyField(object, FieldInfo, GUIContent)" path="/remarks"/>
+        public static Vector2 Vector2Field(Vector2 value, GUIContent label)
+        {
+            return Vector2Field(EditorGUILayout.GetControlRect(), value, label);
+        }
+
+        /// <inheritdoc cref="Vector2Field(Vector2, GUIContent)"/>
+        public static Vector2 Vector2Field(Vector2 value, string label)
+        {
+            return Vector2Field(value, new GUIContent(label));
+        }
+
+        /// <inheritdoc cref="Vector2Field(Vector2, GUIContent)"/>
+        public static Vector2 Vector2Field(Vector2 value)
+        {
+            return Vector2Field(value, null as GUIContent);
+        }
+
+        /// <summary>
+        /// Makes an X, Y and Z field for entering a <see cref="Vector3"/>.
+        /// </summary>
+        /// <inheritdoc cref="FloatField(Rect, float, GUIContent, GUIStyle)"/>
+        /// <inheritdoc cref="PropertyField(object, Rect, FieldInfo, GUIContent)"/>
+        public static Vector3 Vector3Field(Rect position, Vector3 value, GUIContent label)
+        {
+            Rect rect = new Rect(position);
+
+            if (HasLabel(label))
+            {
+                rect.width = EditorGUIUtility.labelWidth;
+                EditorGUI.LabelField(rect, label);
+
+                rect.x += rect.width;
+                rect.width = position.width - rect.width;
+            }
+
+            float[] values = { value.x, value.y, value.z };
+            EditorGUI.MultiFloatField(rect, s_vector3SubLabels, values);
+            return new Vector3(values[0], values[1], values[2]);
+        }
+
+        /// <inheritdoc cref="Vector3Field(Rect, Vector3, GUIContent)"/>
+        public static Vector3 Vector3Field(Rect position, Vector3 value, string label)
+        {
+            return Vector3Field(position, value, new GUIContent(label));
+        }
+
+        /// <inheritdoc cref="Vector3Field(Rect, Vector3, GUIContent)"/>
+        public static Vector3 Vector3Field(Rect position, Vector3 value)
+        {
+            return Vector3Field(position, value, null as GUIContent);
+        }
+
+        /// <inheritdoc cref="Vector3Field(Rect, Vector3, GUIContent)"/>
+        /// <inheritdoc cref="PropertyField(object, FieldInfo, GUIContent)" path="/remarks"/>
+        public static Vector3 Vector3Field(Vector3 value, GUIContent label)
+        {
+            return Vector3Field(EditorGUILayout.GetControlRect(), value, label);
+        }
+
+        /// <inheritdoc cref="Vector3Field(Vector3, GUIContent)"/>
+        public static Vector3 Vector3Field(Vector3 value, string label)
+        {
+            return Vector3Field(value, new GUIContent(label));
+        }
+
+        /// <inheritdoc cref="Vector3Field(Vector3, GUIContent)"/>
+        public static Vector3 Vector3Field(Vector3 value)
+        {
+            return Vector3Field(value, null as GUIContent);
+        }
+
+        /// <summary>
+        /// Makes an X, Y, Z and W field for entering a <see cref="Vector4"/>.
+        /// </summary>
+        /// <inheritdoc cref="FloatField(Rect, float, GUIContent, GUIStyle)"/>
+        /// <inheritdoc cref="PropertyField(object, Rect, FieldInfo, GUIContent)"/>
+        public static Vector4 Vector4Field(Rect position, Vector4 value, GUIContent label)
+        {
+            Rect rect = new Rect(position);
+
+            if (HasLabel(label))
+            {
+                rect.width = EditorGUIUtility.labelWidth;
+                EditorGUI.LabelField(rect, label);
+
+                rect.x += rect.width;
+                rect.width = position.width - rect.width;
+            }
+
+            float[] values = { value.x, value.y, value.z, value.w };
+            EditorGUI.MultiFloatField(rect, s_vector4SubLabels, values);
+            return new Vector4(values[0], values[1], values[2], values[3]);
+        }
+
+        /// <inheritdoc cref="Vector4Field(Rect, Vector4, GUIContent)"/>
+        public static Vector4 Vector4Field(Rect position, Vector4 value, string label)
+        {
+            return Vector4Field(position, value, new GUIContent(label));
+        }
+
+        /// <inheritdoc cref="Vector4Field(Rect, Vector4, GUIContent)"/>
+        public static Vector4 Vector4Field(Rect position, Vector4 value)
+        {
+            return Vector4Field(position, value, null as GUIContent);
+        }
+
+        /// <inheritdoc cref="Vector4Field(Rect, Vector4, GUIContent)"/>
+        /// <inheritdoc cref="PropertyField(object, FieldInfo, GUIContent)" path="/remarks"/>
+        public static Vector4 Vector4Field(Vector4 value, GUIContent label)
+        {
+            return Vector4Field(EditorGUILayout.GetControlRect(), value, label);
+        }
+
+        /// <inheritdoc cref="Vector4Field(Vector4, GUIContent)"/>
+        public static Vector4 Vector4Field(Vector4 value, string label)
+        {
+            return Vector4Field(value, new GUIContent(label));
+        }
+
+        /// <inheritdoc cref="Vector4Field(Vector4, GUIContent)"/>
+        public static Vector4 Vector4Field(Vector4 value)
+        {
+            return Vector4Field(value, null as GUIContent);
         }
 
         /// <summary>
