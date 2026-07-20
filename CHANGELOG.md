@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.4.0](https://github.com/side-xp/unity-core/compare/v1.3.1...v1.4.0) (2026-07-20)
+
+
+### Features
+
+* add support for quaternion fields in `PropertyField()` ([eb4cb57](https://github.com/side-xp/unity-core/commit/eb4cb571630cbb47a742d52c9f28c0aabc2e971e))
+* add support for vector (int) fields in `PropertyField()` ([10d27c2](https://github.com/side-xp/unity-core/commit/10d27c2280992af93b706676c0df389bb6cbf16e))
+* add support for vector fields in `PropertyField()` ([bf31cd4](https://github.com/side-xp/unity-core/commit/bf31cd4a0c5ccb2d66ff7834e9f8452c3278cfc0))
+
+
+### Bug Fixes
+
+* fixed enum property fields ([e5ba0cd](https://github.com/side-xp/unity-core/commit/e5ba0cdc61a8cbba55034a92cd0414957c96325d))
+
 ## [1.3.1](https://github.com/side-xp/unity-core/compare/v1.3.0...v1.3.1) (2026-07-04)
 
 
