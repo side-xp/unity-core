@@ -14,7 +14,7 @@ namespace SideXP.Core
         {
             return MathUtility.Ratio(value, min, max);
         }
-        
+
         /// <inheritdoc cref="MathUtility.Ratio(float, float, float)"/>
         public static float Percents(this int value, int min, int max)
         {

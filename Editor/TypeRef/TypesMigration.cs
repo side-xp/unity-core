@@ -161,7 +161,7 @@ namespace SideXP.Core.EditorOnly
                 data.Update();
 
             // Renames only happen across a recompile (which reloads the domain and resets this static), so a single pass per session is
-            // enough — mark it done so repeated calls (e.g. from the asset postprocessor on every import) become no-ops.
+            // enough. Mark it done so repeated calls (e.g. from the asset postprocessor on every import) become no-ops.
             s_didReload = true;
         }
 

@@ -157,7 +157,7 @@ namespace SideXP.Core.EditorOnly
         {
             List<EditorBuildSettingsScene> sceneInfoList = new List<EditorBuildSettingsScene>(EditorBuildSettings.scenes);
             int index = sceneInfoList.FindIndex(i => i.path == scenePath);
-            
+
             if (index < 0)
                 return false;
 

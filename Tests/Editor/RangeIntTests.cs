@@ -81,8 +81,10 @@ namespace SideXP.Core.Tests
             for (int i = 0; i < 500; i++)
             {
                 int value = range.Random;
-                if (value == 2) sawMin = true;
-                if (value == 5) sawMax = true;
+                if (value == 2)
+                    sawMin = true;
+                if (value == 5)
+                    sawMax = true;
             }
 
             Assert.IsTrue(sawMin, "The minimum bound was never produced.");

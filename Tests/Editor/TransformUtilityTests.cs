@@ -268,8 +268,10 @@ namespace SideXP.Core.Tests
             int active = 0, inactive = 0;
             foreach (Marker m in container.GetComponentsInChildren<Marker>(true, true))
             {
-                if (m.gameObject.activeSelf) active++;
-                else inactive++;
+                if (m.gameObject.activeSelf)
+                    active++;
+                else
+                    inactive++;
             }
             Assert.AreEqual(2, active);
             Assert.AreEqual(3, inactive);

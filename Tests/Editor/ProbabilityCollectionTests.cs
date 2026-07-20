@@ -111,8 +111,10 @@ namespace SideXP.Core.Tests
             for (int i = 0; i < samples; i++)
             {
                 Assert.IsTrue(collection.Get(out object data));
-                if ((string)data == "A") countA++;
-                else if ((string)data == "B") countB++;
+                if ((string)data == "A")
+                    countA++;
+                else if ((string)data == "B")
+                    countB++;
             }
 
             Assert.AreEqual(samples, countA + countB);
@@ -133,8 +135,10 @@ namespace SideXP.Core.Tests
             for (int i = 0; i < samples; i++)
             {
                 collection.Get(out object data);
-                if ((string)data == "A") countA++;
-                else if ((string)data == "C") countC++;
+                if ((string)data == "A")
+                    countA++;
+                else if ((string)data == "C")
+                    countC++;
             }
 
             Assert.AreEqual(collection.GetProbabilityPercents("A") / 100f, (float)countA / samples, 0.03f);

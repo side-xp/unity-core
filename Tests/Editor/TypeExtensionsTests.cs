@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-
 using NUnit.Framework;
 
 namespace SideXP.Core.Tests

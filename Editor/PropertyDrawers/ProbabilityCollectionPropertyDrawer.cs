@@ -26,7 +26,7 @@ namespace SideXP.Core.EditorOnly
 
         private ProbabilityCollection _collection = null;
         private ReorderableList _itemsList = null;
-    
+
         /// <inheritdoc cref="PropertyDrawer.OnGUI(Rect, SerializedProperty, GUIContent)"/>
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
