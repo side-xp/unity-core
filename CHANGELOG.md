@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.4.1](https://github.com/side-xp/unity-core/compare/v1.4.0...v1.4.1) (2026-09-19)
+
+
+### Bug Fixes
+
+* allow creating subasset of base type ([81b32e4](https://github.com/side-xp/unity-core/commit/81b32e4ba1fca039c93de156199e95031fbcd657))
+* fixed `SubassetsListOptions` attribute usage ([7180dfe](https://github.com/side-xp/unity-core/commit/7180dfefc0dafef258c9dd3631579ff14f276506))
+* improved subassets inspector behavior ([5d863ac](https://github.com/side-xp/unity-core/commit/5d863ac53d57f0e39d812fa882f3e61bb5cef45f))
+
 ## [1.4.0](https://github.com/side-xp/unity-core/compare/v1.3.1...v1.4.0) (2026-07-20)
 
 
