@@ -116,3 +116,17 @@ public SubassetsList<CardEffectBase> effects = new SubassetsList<CardEffectBase>
 ```
 
 > If no type is available, clicking the `+` button logs a warning in the console, and no subasset is created.
+
+## List options
+
+You can customize how a `SubassetsList<T>` field is displayed in the inspector by adding the `[SubassetsListOptions]` attribute to it:
+
+```cs
+[SubassetsListOptions(DisallowRename = true, Unique = true)]
+public SubassetsList<CardEffectBase> effects = new SubassetsList<CardEffectBase>();
+```
+
+- **`DisallowRename`**: By default, each subasset in the list displays a text field to rename it. If enabled, the subasset's name is displayed as a label and can't be edited from the list.
+- **`Unique`**: By default, the list can contain several subassets of the same type. If enabled, the list can contain only one subasset of each type.
+
+> `Unique` compares exact types, so inheritors of a base types will be considered different from the base type itself.

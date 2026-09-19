@@ -12,7 +12,7 @@ namespace SideXP.Core
         /// <summary>
         /// By default, subassets can be renamed from the inspector. If enabled, subassets can't be renamed at all.
         /// </summary>
-        public bool DisllowRename { get; set; } = false;
+        public bool DisallowRename { get; set; } = false;
 
         /// <summary>
         /// By default, the list is allowed to contain several instances of the same subasset type.<br/>

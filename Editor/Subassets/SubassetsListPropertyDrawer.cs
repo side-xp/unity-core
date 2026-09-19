@@ -36,6 +36,34 @@ namespace SideXP.Core.EditorOnly
         /// </summary>
         private ReorderableList _subassetsReorderableList = null;
 
+        /// <summary>
+        /// Caches the options attribute declared on the inspected field, if any.
+        /// </summary>
+        private SubassetsListOptionsAttribute _options = null;
+
+        /// <summary>
+        /// Checks if the options attribute has already been queried from the inspected field.
+        /// </summary>
+        private bool _optionsQueried = false;
+
+        /// <summary>
+        /// Gets the options attribute declared on the inspected field, or null if there's none.
+        /// </summary>
+        /// <remarks>This attribute has no drawer of its own, so Unity doesn't assign it to <see cref="PropertyDrawer.attribute"/>. It's
+        /// read from the field declaration instead.</remarks>
+        private SubassetsListOptionsAttribute Options
+        {
+            get
+            {
+                if (!_optionsQueried)
+                {
+                    _options = fieldInfo.GetCustomAttribute<SubassetsListOptionsAttribute>();
+                    _optionsQueried = true;
+                }
+                return _options;
+            }
+        }
+
         /// <inheritdoc cref="PropertyDrawer.OnGUI(Rect, SerializedProperty, GUIContent)"/>
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
@@ -131,7 +159,7 @@ namespace SideXP.Core.EditorOnly
                 // Disable the add button if the base type already exists in the list but unique mode is enabled
                 _subassetsReorderableList.onCanAddCallback = (list) =>
                 {
-                    SubassetsListOptionsAttribute optionsAttribute = attribute as SubassetsListOptionsAttribute;
+                    SubassetsListOptionsAttribute optionsAttribute = Options;
                     return optionsAttribute == null || !optionsAttribute.Unique || !ContainsSubassetOfType(list.serializedProperty, subassetsBaseType);
                 };
             }
@@ -147,7 +175,7 @@ namespace SideXP.Core.EditorOnly
                         return;
                     }
 
-                    SubassetsListOptionsAttribute optionsAttribute = attribute as SubassetsListOptionsAttribute;
+                    SubassetsListOptionsAttribute optionsAttribute = Options;
                     GenericMenu menu = new GenericMenu();
 
                     // For each allowed subasset type
@@ -252,9 +280,9 @@ namespace SideXP.Core.EditorOnly
 
                 Rect tmpRect = rect;
 
-                SubassetsListOptionsAttribute optionsAttribute = attribute as SubassetsListOptionsAttribute;
+                SubassetsListOptionsAttribute optionsAttribute = Options;
                 // If renaming subassets is allowed, draw only the foldout icon and a text field
-                if (optionsAttribute == null || !optionsAttribute.DisllowRename)
+                if (optionsAttribute == null || !optionsAttribute.DisallowRename)
                 {
                     Rect headerRect = tmpRect;
                     headerRect.width = MiniFoldoutWidth;
