@@ -97,3 +97,22 @@ public class CardEffect_AddEffectToCards : CardEffectBase
 You will be able to create a new Card asset from `Assets > Create > Create Card Asset`.
 
 ![Subassets usage demo](../img/utilities_subassets.gif)
+
+## Adding subassets to a list
+
+The types you can create from the `+` button of a `SubassetsList<T>` are `T` itself and all the types that inherit from it, excluding abstract and generic ones.
+
+The `+` button behaves differently depending on these types:
+
+- If `T` is the only type available, the `+` button creates a subasset of type `T` right away.
+- Otherwise, the `+` button opens a dropdown menu to select the type of the subasset to create. This applies when `T` is abstract (even if a single class inherits from it, like `CardEffectBase` in the example above), or when several types are available.
+
+```cs
+// T is the only type available: the + button creates a CardData subasset right away
+public SubassetsList<CardData> data = new SubassetsList<CardData>();
+
+// T is abstract: the + button always opens a dropdown menu
+public SubassetsList<CardEffectBase> effects = new SubassetsList<CardEffectBase>();
+```
+
+> If no type is available, clicking the `+` button logs a warning in the console, and no subasset is created.
