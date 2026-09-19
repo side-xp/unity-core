@@ -36,6 +36,34 @@ namespace SideXP.Core.EditorOnly
         /// </summary>
         private ReorderableList _subassetsReorderableList = null;
 
+        /// <summary>
+        /// Caches the options attribute declared on the inspected field, if any.
+        /// </summary>
+        private SubassetsListOptionsAttribute _options = null;
+
+        /// <summary>
+        /// Checks if the options attribute has already been queried from the inspected field.
+        /// </summary>
+        private bool _optionsQueried = false;
+
+        /// <summary>
+        /// Gets the options attribute declared on the inspected field, or null if there's none.
+        /// </summary>
+        /// <remarks>This attribute has no drawer of its own, so Unity doesn't assign it to <see cref="PropertyDrawer.attribute"/>. It's
+        /// read from the field declaration instead.</remarks>
+        private SubassetsListOptionsAttribute Options
+        {
+            get
+            {
+                if (!_optionsQueried)
+                {
+                    _options = fieldInfo.GetCustomAttribute<SubassetsListOptionsAttribute>();
+                    _optionsQueried = true;
+                }
+                return _options;
+            }
+        }
+
         /// <inheritdoc cref="PropertyDrawer.OnGUI(Rect, SerializedProperty, GUIContent)"/>
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
@@ -118,57 +146,62 @@ namespace SideXP.Core.EditorOnly
                 EditorGUI.LabelField(rect, label, EditorStyles.boldLabel);
             };
 
-            // Add item behavior
-            _subassetsReorderableList.onAddDropdownCallback = (rect, list) =>
+            Dictionary<Type, GUIContent> allowedSubassets = GetAllowedSubassets(subassetsBaseType);
+
+            // If the expected base type is the only allowed subasset type, add item instantly
+            if (allowedSubassets.Count == 1 && allowedSubassets.TryGetValue(subassetsBaseType, out GUIContent baseTypeLabel))
             {
-                Dictionary<Type, GUIContent> allowedSubassets = GetAllowedSubassets(subassetsBaseType);
-                // Cancel if there's no available subasset type to select
-                if (allowedSubassets.Count <= 0)
+                _subassetsReorderableList.onAddCallback = (list) =>
                 {
-                    Debug.LogWarning($"No implementation of the expected subasset type ({subassetsBaseType}) found for the property {list.serializedProperty.serializedObject.targetObject.GetType()}.{list.serializedProperty.propertyPath}.", list.serializedProperty.serializedObject.targetObject);
-                    return;
-                }
+                    CreateAndAddSubasset(innerListProp, subassetsBaseType, baseTypeLabel.text);
+                };
 
-                SubassetsListOptionsAttribute optionsAttribute = attribute as SubassetsListOptionsAttribute;
-                GenericMenu menu = new GenericMenu();
-
-                // For each allowed subasset type
-#if UNITY_2023_1_OR_NEWER
-                foreach ((Type t, GUIContent itemLabel) in allowedSubassets)
+                // Disable the add button if the base type already exists in the list but unique mode is enabled
+                _subassetsReorderableList.onCanAddCallback = (list) =>
                 {
-#else
-                foreach (KeyValuePair<Type, GUIContent> item in allowedSubassets)
+                    SubassetsListOptionsAttribute optionsAttribute = Options;
+                    return optionsAttribute == null || !optionsAttribute.Unique || !ContainsSubassetOfType(list.serializedProperty, subassetsBaseType);
+                };
+            }
+            // Else, add item from a dropdown menu to select the subasset type to create
+            else
+            {
+                _subassetsReorderableList.onAddDropdownCallback = (rect, list) =>
                 {
-                    Type t = item.Key;
-                    GUIContent itemLabel = item.Value;
-#endif
-                    // Check if another subasset with the same type already exists in the list
-                    bool containsItem = false;
-                    for (int i = 0; i < list.serializedProperty.arraySize; i++)
+                    // Cancel if there's no available subasset type to select
+                    if (allowedSubassets.Count <= 0)
                     {
-                        SerializedProperty itemProp = list.serializedProperty.GetArrayElementAtIndex(i);
-                        if (itemProp.objectReferenceValue != null && itemProp.objectReferenceValue.GetType() == t)
-                        {
-                            containsItem = true;
-                            break;
-                        }
-                    }
-
-                    // If another subasset of the current type exists in the list but unique mode is enabled
-                    if (containsItem && optionsAttribute != null && optionsAttribute.Unique)
-                    {
-                        menu.AddDisabledItem(itemLabel, true);
+                        Debug.LogWarning($"No implementation of the expected subasset type ({subassetsBaseType}) found for the property {list.serializedProperty.serializedObject.targetObject.GetType()}.{list.serializedProperty.propertyPath}.", list.serializedProperty.serializedObject.targetObject);
                         return;
                     }
-                    // Else, add menu item
-                    else
-                    {
-                        menu.AddItem(itemLabel, containsItem, () => CreateAndAddSubasset(innerListProp, t, itemLabel.text));
-                    }
-                }
 
-                menu.ShowAsContext();
-            };
+                    SubassetsListOptionsAttribute optionsAttribute = Options;
+                    GenericMenu menu = new GenericMenu();
+
+                    // For each allowed subasset type
+#if UNITY_2023_1_OR_NEWER
+                    foreach ((Type t, GUIContent itemLabel) in allowedSubassets)
+                    {
+#else
+                    foreach (KeyValuePair<Type, GUIContent> item in allowedSubassets)
+                    {
+                        Type t = item.Key;
+                        GUIContent itemLabel = item.Value;
+#endif
+                        // Check if another subasset with the same type already exists in the list
+                        bool containsItem = ContainsSubassetOfType(list.serializedProperty, t);
+
+                        // If another subasset of the current type exists in the list but unique mode is enabled
+                        if (containsItem && optionsAttribute != null && optionsAttribute.Unique)
+                            menu.AddDisabledItem(itemLabel, true);
+                        // Else, add menu item
+                        else
+                            menu.AddItem(itemLabel, containsItem, () => CreateAndAddSubasset(innerListProp, t, itemLabel.text));
+                    }
+
+                    menu.ShowAsContext();
+                };
+            }
 
             // Remove item behavior
             _subassetsReorderableList.onRemoveCallback = (list) =>
@@ -247,9 +280,9 @@ namespace SideXP.Core.EditorOnly
 
                 Rect tmpRect = rect;
 
-                SubassetsListOptionsAttribute optionsAttribute = attribute as SubassetsListOptionsAttribute;
+                SubassetsListOptionsAttribute optionsAttribute = Options;
                 // If renaming subassets is allowed, draw only the foldout icon and a text field
-                if (optionsAttribute == null || !optionsAttribute.DisllowRename)
+                if (optionsAttribute == null || !optionsAttribute.DisallowRename)
                 {
                     Rect headerRect = tmpRect;
                     headerRect.width = MiniFoldoutWidth;
@@ -321,6 +354,23 @@ namespace SideXP.Core.EditorOnly
 
             _allowedSubassetTypes = SubassetsEditorUtility.GetAllowedSubassetsInfos(subassetsBaseType);
             return _allowedSubassetTypes;
+        }
+
+        /// <summary>
+        /// Checks if the given list property contains a subasset of the given type.
+        /// </summary>
+        /// <param name="innerListProp">The inner serialized list property from the inspected <see cref="SubassetsList{T}"/>.</param>
+        /// <param name="subassetType">The exact type of the subasset to find.</param>
+        /// <returns>Returns true if the list contains a subasset of the given type.</returns>
+        private static bool ContainsSubassetOfType(SerializedProperty innerListProp, Type subassetType)
+        {
+            for (int i = 0; i < innerListProp.arraySize; i++)
+            {
+                Object item = innerListProp.GetArrayElementAtIndex(i).objectReferenceValue;
+                if (item != null && item.GetType() == subassetType)
+                    return true;
+            }
+            return false;
         }
 
         /// <summary>

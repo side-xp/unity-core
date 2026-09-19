@@ -33,7 +33,8 @@ namespace SideXP.Core.EditorOnly
             // Filter only relevant subasset types
             using (var list = new ListPoolScope<(Type type, GUIContent label)>())
             {
-                foreach (Type t in TypeCache.GetTypesDerivedFrom(subassetsBaseType))
+                // Include the base type itself, since TypeCache only returns the types derived from it
+                foreach (Type t in GetSelfAndDerivedTypes(subassetsBaseType))
                 {
                     if (t.IsAbstract || t.IsInterface || t.IsGenericType || t.GenericTypeArguments.Length > 0)
                         continue;
@@ -54,6 +55,18 @@ namespace SideXP.Core.EditorOnly
             }
 
             return allowedSubassetTypes;
+        }
+
+        /// <summary>
+        /// Enumerates the given type, followed by all the types that derive from it.
+        /// </summary>
+        /// <param name="baseType">The type to enumerate along with its derived types.</param>
+        /// <returns>Returns the given type and its derived types.</returns>
+        private static IEnumerable<Type> GetSelfAndDerivedTypes(Type baseType)
+        {
+            yield return baseType;
+            foreach (Type t in TypeCache.GetTypesDerivedFrom(baseType))
+                yield return t;
         }
 
     }
