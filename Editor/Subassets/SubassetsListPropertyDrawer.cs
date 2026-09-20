@@ -23,7 +23,7 @@ namespace SideXP.Core.EditorOnly
         private const float ItemRowPadding = 2f;
         private const float FoldoutIndent = 12f;
         private const float MiniFoldoutWidth = 4f;
-        private const float NameFieldWidthRatio = .75f;
+        private const float SubassetFieldWidthRatio = .25f;
         private const float NotEditableIndent = 4f;
         private const string SubassetsListProp = "_subassetsList";
         private const string ScriptProp = "m_Script";
@@ -280,17 +280,11 @@ namespace SideXP.Core.EditorOnly
 
                     // If renaming subassets is allowed, split the row between a text field and the object field
                     if (!optionsAttribute.DisallowRename)
-                    {
-                        Rect nameRect = rect;
-                        nameRect.width = rect.width * NameFieldWidthRatio - MoreGUI.HMargin / 2;
-                        DrawRenameField(nameRect, itemProp);
+                        DrawRenameField(DrawSubassetField(rect, itemProp), itemProp);
+                    // Else, the object field uses the whole row
+                    else
+                        DrawSubassetField(rect, itemProp, 1f);
 
-                        rect.x += nameRect.width + MoreGUI.HMargin;
-                        rect.width -= nameRect.width + MoreGUI.HMargin;
-                    }
-
-                    using (new EnabledScope(false))
-                        EditorGUI.ObjectField(rect, itemProp.objectReferenceValue, itemProp.objectReferenceValue.GetType(), false);
                     return;
                 }
 
@@ -305,7 +299,8 @@ namespace SideXP.Core.EditorOnly
                 rect.x += FoldoutIndent;
                 rect.width -= FoldoutIndent;
 
-                Rect tmpRect = rect;
+                // Draw the subasset field on the right of the row, so the asset can still be highlighted or selected
+                Rect tmpRect = DrawSubassetField(rect, itemProp);
 
                 // If renaming subassets is allowed, draw only the foldout icon and a text field
                 if (optionsAttribute == null || !optionsAttribute.DisallowRename)
@@ -372,6 +367,27 @@ namespace SideXP.Core.EditorOnly
 
             _allowedSubassetTypes = SubassetsEditorUtility.GetAllowedSubassetsInfos(subassetsBaseType);
             return _allowedSubassetTypes;
+        }
+
+        /// <summary>
+        /// Draws a disabled object field on the right of a list item's row, so the subasset can still be highlighted or selected from the
+        /// list.
+        /// </summary>
+        /// <param name="position">The position and size of the whole item's row.</param>
+        /// <param name="itemProp">The item property from the inner subassets list. Assumes that it references a valid asset.</param>
+        /// <param name="widthRatio">The part of the row's width used by the object field.</param>
+        /// <returns>Returns the remaining space on the left of the object field.</returns>
+        private static Rect DrawSubassetField(Rect position, SerializedProperty itemProp, float widthRatio = SubassetFieldWidthRatio)
+        {
+            Rect fieldRect = position;
+            fieldRect.width = position.width * widthRatio;
+            fieldRect.x = position.xMax - fieldRect.width;
+
+            using (new EnabledScope(false))
+                EditorGUI.ObjectField(fieldRect, itemProp.objectReferenceValue, itemProp.objectReferenceValue.GetType(), false);
+
+            position.width -= fieldRect.width + MoreGUI.HMargin;
+            return position;
         }
 
         /// <summary>
