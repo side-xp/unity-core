@@ -23,6 +23,8 @@ namespace SideXP.Core.EditorOnly
         private const float ItemRowPadding = 2f;
         private const float FoldoutIndent = 12f;
         private const float MiniFoldoutWidth = 4f;
+        private const float NameFieldWidthRatio = .75f;
+        private const float NotEditableIndent = 4f;
         private const string SubassetsListProp = "_subassetsList";
         private const string ScriptProp = "m_Script";
 
@@ -228,7 +230,7 @@ namespace SideXP.Core.EditorOnly
             _subassetsReorderableList.elementHeightCallback = (index) =>
             {
                 SerializedProperty itemProp = _subassetsReorderableList.serializedProperty.GetArrayElementAtIndex(index);
-                if (itemProp.objectReferenceValue == null || !itemProp.isExpanded)
+                if (itemProp.objectReferenceValue == null || !itemProp.isExpanded || (Options != null && Options.NotEditable))
                     return EditorGUIUtility.singleLineHeight + ItemRowPadding * 2;
 
                 // Header row + vertical padding
@@ -267,6 +269,31 @@ namespace SideXP.Core.EditorOnly
                     return;
                 }
 
+                SubassetsListOptionsAttribute optionsAttribute = Options;
+
+                // If the subassets are not meant to be edited from the list, just draw a disabled object field
+                if (optionsAttribute != null && optionsAttribute.NotEditable)
+                {
+                    // Indent the whole rect so the first field doesn't merge with the drag icon of the Reorderable List GUI
+                    rect.x += NotEditableIndent;
+                    rect.width -= NotEditableIndent;
+
+                    // If renaming subassets is allowed, split the row between a text field and the object field
+                    if (!optionsAttribute.DisallowRename)
+                    {
+                        Rect nameRect = rect;
+                        nameRect.width = rect.width * NameFieldWidthRatio - MoreGUI.HMargin / 2;
+                        DrawRenameField(nameRect, itemProp);
+
+                        rect.x += nameRect.width + MoreGUI.HMargin;
+                        rect.width -= nameRect.width + MoreGUI.HMargin;
+                    }
+
+                    using (new EnabledScope(false))
+                        EditorGUI.ObjectField(rect, itemProp.objectReferenceValue, itemProp.objectReferenceValue.GetType(), false);
+                    return;
+                }
+
                 SubassetLabelAttribute subassetLabelAttribute = itemProp.objectReferenceValue.GetType().GetCustomAttribute<SubassetLabelAttribute>();
 
                 // Get subasset label
@@ -280,7 +307,6 @@ namespace SideXP.Core.EditorOnly
 
                 Rect tmpRect = rect;
 
-                SubassetsListOptionsAttribute optionsAttribute = Options;
                 // If renaming subassets is allowed, draw only the foldout icon and a text field
                 if (optionsAttribute == null || !optionsAttribute.DisallowRename)
                 {
@@ -290,15 +316,7 @@ namespace SideXP.Core.EditorOnly
 
                     headerRect.x += headerRect.width;
                     headerRect.width = tmpRect.width - headerRect.width;
-                    using (var scope = new EditorGUI.ChangeCheckScope())
-                    {
-                        string newName = EditorGUI.DelayedTextField(headerRect, itemProp.objectReferenceValue.name);
-                        if (scope.changed)
-                        {
-                            itemProp.objectReferenceValue.name = newName;
-                            AssetDatabase.SaveAssets();
-                        }
-                    }
+                    DrawRenameField(headerRect, itemProp);
 
                     // Fix offset to make sure all the fields are aligned with the text field
                     rect.x += MiniFoldoutWidth;
@@ -354,6 +372,24 @@ namespace SideXP.Core.EditorOnly
 
             _allowedSubassetTypes = SubassetsEditorUtility.GetAllowedSubassetsInfos(subassetsBaseType);
             return _allowedSubassetTypes;
+        }
+
+        /// <summary>
+        /// Draws a text field to rename the subasset referenced by the given item property.
+        /// </summary>
+        /// <param name="position">The position and size of the text field.</param>
+        /// <param name="itemProp">The item property from the inner subassets list. Assumes that it references a valid asset.</param>
+        private static void DrawRenameField(Rect position, SerializedProperty itemProp)
+        {
+            using (var scope = new EditorGUI.ChangeCheckScope())
+            {
+                string newName = EditorGUI.DelayedTextField(position, itemProp.objectReferenceValue.name);
+                if (scope.changed)
+                {
+                    itemProp.objectReferenceValue.name = newName;
+                    AssetDatabase.SaveAssets();
+                }
+            }
         }
 
         /// <summary>

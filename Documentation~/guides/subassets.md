@@ -127,6 +127,9 @@ public SubassetsList<CardEffectBase> effects = new SubassetsList<CardEffectBase>
 ```
 
 - **`DisallowRename`**: By default, each subasset in the list displays a text field to rename it. If enabled, the subasset's name is displayed as a label and can't be edited from the list.
+- **`NotEditable`**: By default, each subasset can be expanded in the list to edit its properties. If enabled, each item is displayed as a disabled object field instead. You can still double-click on that field to select the subasset and edit it from the inspector.
 - **`Unique`**: By default, the list can contain several subassets of the same type. If enabled, the list can contain only one subasset of each type.
 
 > `Unique` compares exact types, so inheritors of a base types will be considered different from the base type itself.
+
+> Use `NotEditable` if the subassets of your list have `SubassetsList<T>` properties themselves: nesting these lists makes the inspector compute wrong GUI heights, so the items are not displayed properly.
