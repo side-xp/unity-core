@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.4.2](https://github.com/side-xp/unity-core/compare/v1.4.1...v1.4.2) (2026-09-20)
+
+
+### Bug Fixes
+
+* added `NotEditable` option for subassets ([d5ca793](https://github.com/side-xp/unity-core/commit/d5ca793f7479b7b73fe166c3be7b3d78ca0353ee))
+
 ## [1.4.1](https://github.com/side-xp/unity-core/compare/v1.4.0...v1.4.1) (2026-09-19)
 
 
