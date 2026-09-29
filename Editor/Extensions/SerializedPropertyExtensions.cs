@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 
 using UnityEditor;
 using UnityEngine;
@@ -78,7 +79,47 @@ namespace SideXP.Core.EditorOnly
         {
             // Unity always represents an array/list element with a ".Array.data[i]" path segment. Matching that exact marker
             // (rather than a bare "Array") avoids false positives for fields whose name merely contains "Array".
-            return property.propertyPath.Contains(".Array.data[");
+            return property.propertyPath.Contains(ReflectionUtility.ArrayDataMarker);
+        }
+
+        /// <summary>
+        /// Gets the path of the array or list that contains the given property, and the index of the property in that collection.
+        /// </summary>
+        /// <remarks>
+        /// Unlike <see cref="IsArrayElement(SerializedProperty)"/>, this function only succeeds if the property is directly an element of
+        /// the collection (like "myContainer.Array.data[3]"), not if it's nested in an element (like "myContainer.Array.data[3].myField").
+        /// </remarks>
+        /// <param name="property">The property to check.</param>
+        /// <param name="arrayPath">
+        /// Outputs the path of the array or list that contains the property (usable with
+        /// <see cref="SerializedObject.FindProperty(string)"/>), or null if the property is not directly an element of a collection.
+        /// </param>
+        /// <param name="index">
+        /// Outputs the index of the property in its collection, or -1 if it's not directly an element of a collection.
+        /// </param>
+        /// <returns>Returns true if the property is directly an element of an array or a list.</returns>
+        public static bool TryGetArrayElementInfo(this SerializedProperty property, out string arrayPath, out int index)
+        {
+            arrayPath = null;
+            index = -1;
+
+            // Only direct elements end with the index segment
+            string path = property.propertyPath;
+            if (!path.EndsWith("]", StringComparison.Ordinal))
+                return false;
+
+            int markerIndex = path.LastIndexOf(ReflectionUtility.ArrayDataMarker, StringComparison.Ordinal);
+            if (markerIndex < 0)
+                return false;
+
+            int indexStart = markerIndex + ReflectionUtility.ArrayDataMarker.Length;
+            string indexString = path.Substring(indexStart, path.Length - indexStart - 1);
+            if (!int.TryParse(indexString, NumberStyles.None, CultureInfo.InvariantCulture, out int parsedIndex))
+                return false;
+
+            arrayPath = path.Substring(0, markerIndex);
+            index = parsedIndex;
+            return true;
         }
 
         #endregion
