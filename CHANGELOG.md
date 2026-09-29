@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.5.0](https://github.com/side-xp/unity-core/compare/v1.4.2...v1.5.0) (2026-09-29)
+
+
+### Features
+
+* added `ValueModifier` property drawer ([4520ad1](https://github.com/side-xp/unity-core/commit/4520ad150fba44c74565e7054a22f8e5a5d20a82))
+* improved serialized property extensions ([005dc3f](https://github.com/side-xp/unity-core/commit/005dc3f9cd657b940ef195a44648628407a15df1))
+* value modifiers ([849fde2](https://github.com/side-xp/unity-core/commit/849fde24c9b530a7704b4ca6bc7a9bdfc96bc8e9))
+
 ## [1.4.2](https://github.com/side-xp/unity-core/compare/v1.4.1...v1.4.2) (2026-09-20)
 
 
