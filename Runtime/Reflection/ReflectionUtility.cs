@@ -25,6 +25,12 @@ namespace SideXP.Core.Reflection
         public const BindingFlags StaticFlags = BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic;
 
         /// <summary>
+        /// The path segment Unity uses to represent an element of an array or a list in a serialized property path, followed by the
+        /// element index and "]" (like myContainer.Array.data[3]).
+        /// </summary>
+        public const string ArrayDataMarker = ".Array.data[";
+
+        /// <summary>
         /// The name of the assemblies that are included in Unity C# subset, but are not part of the project.
         /// </summary>
         public static readonly string[] NonProjectAssemblies =
@@ -454,7 +460,7 @@ namespace SideXP.Core.Reflection
         public static FieldOrPropertyInfo GetFieldOrPropertyFromPath(Type type, string path, bool inherited = false, BindingFlags bindingFlags = InstanceFlags)
         {
             // Deal specific array representation from a Unity property path, as you can get it from SerializedProperty
-            path = path.Replace(".Array.data[", "[");
+            path = path.Replace(ArrayDataMarker, "[");
             // Split the property path
             string[] propertyPathSplit = path.Split('.');
 
@@ -507,7 +513,7 @@ namespace SideXP.Core.Reflection
         public static object GetNestedObject(object source, string propertyPath)
         {
             // Deal specific array representation from a Unity property path, as you can get it from SerializedProperty
-            propertyPath = propertyPath.Replace(".Array.data[", "[");
+            propertyPath = propertyPath.Replace(ArrayDataMarker, "[");
             // Split the property path
             string[] propertyPathSplit = propertyPath.Split('.');
             // For each part in the property path

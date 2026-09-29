@@ -20,6 +20,12 @@ namespace SideXP.Core.Tests
             public float value = 1.5f;
         }
 
+        [Serializable]
+        private class ContainerData
+        {
+            public int[] values = { 7, 8, 9 };
+        }
+
         private class SampleSO : ScriptableObject
         {
             public int number = 5;
@@ -27,6 +33,7 @@ namespace SideXP.Core.Tests
             public NestedData nested = new NestedData();
             public int[] numbers = { 1, 2, 3 };
             public List<NestedData> list = new List<NestedData> { new NestedData() };
+            public List<ContainerData> containers = new List<ContainerData> { new ContainerData(), new ContainerData() };
             // A non-array field whose name merely contains "Array" — must NOT be treated as an array element.
             public int scoreArray = 0;
         }
@@ -182,6 +189,66 @@ namespace SideXP.Core.Tests
         {
             // Regression: a bare Contains("Array") used to report true for any field whose name contains "Array".
             Assert.IsFalse(_serializedObject.FindProperty(nameof(SampleSO.scoreArray)).IsArrayElement());
+        }
+
+        #endregion
+
+
+        #region TryGetArrayElementInfo
+
+        [Test]
+        public void TryGetArrayElementInfo_ArrayElement_ReturnsPathAndIndex()
+        {
+            SerializedProperty element = _serializedObject.FindProperty(nameof(SampleSO.numbers)).GetArrayElementAtIndex(2);
+            Assert.IsTrue(element.TryGetArrayElementInfo(out string arrayPath, out int index));
+            Assert.AreEqual("numbers", arrayPath);
+            Assert.AreEqual(2, index);
+        }
+
+        [Test]
+        public void TryGetArrayElementInfo_ListElement_ReturnsPathAndIndex()
+        {
+            SerializedProperty element = _serializedObject.FindProperty(nameof(SampleSO.list)).GetArrayElementAtIndex(0);
+            Assert.IsTrue(element.TryGetArrayElementInfo(out string arrayPath, out int index));
+            Assert.AreEqual("list", arrayPath);
+            Assert.AreEqual(0, index);
+        }
+
+        [Test]
+        public void TryGetArrayElementInfo_ElementOfNestedArray_ReturnsInnermostPathAndIndex()
+        {
+            SerializedProperty element = _serializedObject
+                .FindProperty(nameof(SampleSO.containers))
+                .GetArrayElementAtIndex(1)
+                .FindPropertyRelative(nameof(ContainerData.values))
+                .GetArrayElementAtIndex(2);
+            Assert.IsTrue(element.TryGetArrayElementInfo(out string arrayPath, out int index));
+            Assert.AreEqual("containers.Array.data[1].values", arrayPath);
+            Assert.AreEqual(2, index);
+
+            // The returned path must lead back to the containing array
+            Assert.AreEqual(3, _serializedObject.FindProperty(arrayPath).arraySize);
+        }
+
+        [Test]
+        public void TryGetArrayElementInfo_FieldNestedInElement_ReturnsFalse()
+        {
+            // Unlike IsArrayElement(), a field nested in an array element is not considered as an element itself
+            SerializedProperty nestedField = _serializedObject
+                .FindProperty(nameof(SampleSO.list))
+                .GetArrayElementAtIndex(0)
+                .FindPropertyRelative(nameof(NestedData.value));
+            Assert.IsFalse(nestedField.TryGetArrayElementInfo(out string arrayPath, out int index));
+            Assert.IsNull(arrayPath);
+            Assert.AreEqual(-1, index);
+        }
+
+        [Test]
+        public void TryGetArrayElementInfo_NonElements_ReturnFalse()
+        {
+            Assert.IsFalse(_serializedObject.FindProperty(nameof(SampleSO.number)).TryGetArrayElementInfo(out _, out _));
+            Assert.IsFalse(_serializedObject.FindProperty(nameof(SampleSO.numbers)).TryGetArrayElementInfo(out _, out _));
+            Assert.IsFalse(_serializedObject.FindProperty(nameof(SampleSO.scoreArray)).TryGetArrayElementInfo(out _, out _));
         }
 
         #endregion
