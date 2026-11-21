@@ -11,7 +11,7 @@ namespace SideXP.Core.EditorOnly
     /// Utility class for tracking changes on scripts and implemented types.
     /// </summary>
     [EditorConfig(EEditorConfigScope.Project)]
-    public class TypesMigration : ScriptableObject, IEditorConfig
+    public class TypesMigration : EditorConfig<TypesMigration>
     {
 
         #region Subclasses
@@ -140,14 +140,6 @@ namespace SideXP.Core.EditorOnly
         #region Public API
 
         /// <summary>
-        /// Gets the loaded config or load them from disk if not already.
-        /// </summary>
-        public static TypesMigration Instance => EditorConfigUtility.Get<TypesMigration>();
-
-        /// <inheritdoc cref="Instance"/>
-        public static TypesMigration I => Instance;
-
-        /// <summary>
         /// Reloads the tracked types data to sync potential name changes.
         /// </summary>
         public static void Reload()
@@ -210,7 +202,7 @@ namespace SideXP.Core.EditorOnly
                     // Add the new tracked type data to the list and save it
                     TypeMigrationHistory data = new TypeMigrationHistory(type, guid);
                     I._trackedTypes.Add(data);
-                    EditorConfigUtility.Save(I);
+                    I.Save();
                     return type;
                 }
             }
@@ -239,9 +231,6 @@ namespace SideXP.Core.EditorOnly
             Resolve(type.AssemblyQualifiedName);
             return type.AssemblyQualifiedName;
         }
-
-        /// <inheritdoc cref="IEditorConfig.PostLoad"/>
-        public void PostLoad() { }
 
         #endregion
 

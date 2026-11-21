@@ -20,8 +20,8 @@ namespace SideXP.Core.Tests
     /// <remarks>
     /// A cache entry is only <c>IsValid</c> when both its path resolves to a real <see cref="MonoScript"/> asset and its type name
     /// resolves — so the fixtures use a real project script (<see cref="SampleScriptableObject"/>) and its type. All mutations stay
-    /// in-memory: <see cref="EditorConfigUtility"/>'s loaded-config cache is cleared before and after each test (via reflection), so the
-    /// User-scoped <see cref="ScriptCache"/> instance we mutate is dropped and never written back to <c>UserSettings</c>.
+    /// in-memory: the loaded <see cref="ScriptCache"/> is unloaded before and after each test (see <c>EditorConfigUtility.Unload</c>),
+    /// so the User-scoped instance we mutate is dropped and never written back to <c>UserSettings</c>.
     /// </remarks>
     public class ScriptCacheTests
     {
@@ -54,14 +54,11 @@ namespace SideXP.Core.Tests
         }
 
         /// <summary>
-        /// Empties <c>EditorConfigUtility.s_loadedConfigs</c> via reflection.
+        /// Unloads the <see cref="ScriptCache"/> without saving it.
         /// </summary>
         private static void ClearLoadedConfigs()
         {
-            FieldInfo field = typeof(EditorConfigUtility).GetField("s_loadedConfigs", BindingFlags.NonPublic | BindingFlags.Static);
-            if (field == null)
-                return;
-            ((IList)field.GetValue(null)).Clear();
+            EditorConfigUtility.Unload(typeof(ScriptCache));
         }
 
         #region Get / Set

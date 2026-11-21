@@ -11,7 +11,7 @@ namespace SideXP.Core.EditorOnly
     /// Cache data for <see cref="ScriptUtility"/>.
     /// </summary>
     [EditorConfig(EEditorConfigScope.User)]
-    internal class ScriptCache : ScriptableObject, IEditorConfig
+    internal class ScriptCache : EditorConfig<ScriptCache>
     {
 
         #region Subclasses
@@ -114,14 +114,6 @@ namespace SideXP.Core.EditorOnly
         #region Public API
 
         /// <summary>
-        /// Gets the loaded cache or load them from disk if not already.
-        /// </summary>
-        public static ScriptCache Instance => EditorConfigUtility.Get<ScriptCache>();
-
-        /// <inheritdoc cref="Instance"/>
-        public static ScriptCache I => Instance;
-
-        /// <summary>
         /// Gets the cached data for the script at the given path.
         /// </summary>
         /// <param name="path">The path of the script.</param>
@@ -184,9 +176,6 @@ namespace SideXP.Core.EditorOnly
         {
             Set(AssetDatabase.GetAssetPath(script), type);
         }
-
-        /// <inheritdoc cref="IEditorConfig.PostLoad"/>
-        public void PostLoad() { }
 
         #endregion
 

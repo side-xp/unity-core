@@ -77,15 +77,11 @@ namespace SideXP.Core.Tests
         }
 
         /// <summary>
-        /// Empties <c>EditorConfigUtility.s_loadedConfigs</c> via reflection so any config loaded during a test (e.g. the ScriptCache)
-        /// is dropped before it can be saved.
+        /// Unloads the <see cref="ScriptCache"/> (which may be loaded during a test) so it's dropped before it can be saved.
         /// </summary>
         private static void ClearLoadedConfigs()
         {
-            FieldInfo field = typeof(EditorConfigUtility).GetField("s_loadedConfigs", BindingFlags.NonPublic | BindingFlags.Static);
-            if (field == null)
-                return;
-            ((IList)field.GetValue(null)).Clear();
+            EditorConfigUtility.Unload(typeof(ScriptCache));
         }
 
         #region ClassDeclarationPattern

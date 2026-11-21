@@ -13,19 +13,49 @@ namespace SideXP.Core.EditorOnly
 {
 
     /// <summary>
-    /// Utility class for working with editor configs.
+    /// Utility class for loading and saving editor configs.
     /// </summary>
+    /// <remarks>
+    /// Editor configs should inherit from <see cref="EditorConfig{T}"/>, which uses this utility to load and save their data.
+    /// </remarks>
     public static class EditorConfigUtility
     {
+
+        #region Subclasses
+
+        /// <summary>
+        /// Groups a loaded editor config with the data last read from or written to its storage.
+        /// </summary>
+        private class LoadedConfig
+        {
+
+            /// <summary>
+            /// The loaded config instance.
+            /// </summary>
+            public object Config = null;
+
+            /// <summary>
+            /// The serialized data of the config as it was last read from or written to its storage, or null if nothing has been
+            /// stored yet.
+            /// </summary>
+            public string StoredJson = null;
+
+        }
+
+        #endregion
+
 
         #region Fields
 
         private const string EditorPrefsKeyPrefix = "EditorConfigs_";
+        private const string FileExtension = ".json";
+
+        private const string ObsoleteMessage = "Inherit from EditorConfig<T> instead, and use its Instance property and Save() function.";
 
         /// <summary>
         /// The list of the loaded editor configs.
         /// </summary>
-        private static List<IEditorConfig> s_loadedConfigs = new List<IEditorConfig>();
+        private static List<LoadedConfig> s_loadedConfigs = new List<LoadedConfig>();
 
         #endregion
 
@@ -33,10 +63,11 @@ namespace SideXP.Core.EditorOnly
         #region Public API
 
         /// <summary>
-        /// Get the loaded configs for a given type, or load it if it's not already loaded.
+        /// Gets the loaded config for a given type, or loads it if it's not already loaded.
         /// </summary>
         /// <typeparam name="TConfig">The type of the editor config to get or load.</typeparam>
         /// <returns>Returns the loaded editor config.</returns>
+        [Obsolete(ObsoleteMessage)]
         public static TConfig Get<TConfig>()
             where TConfig : IEditorConfig
         {
@@ -46,88 +77,35 @@ namespace SideXP.Core.EditorOnly
         /// <param name="instance">Outputs the loaded editor config.</param>
         /// <returns>Returns true if the expected object has been loaded successfully.</returns>
         /// <inheritdoc cref="Get{T}()"/>
+        [Obsolete(ObsoleteMessage)]
         public static bool Get<TConfig>(out TConfig instance)
             where TConfig : IEditorConfig
         {
-            CleanDisposedConfigs();
-            foreach (IEditorConfig config in s_loadedConfigs.ToArray())
-            {
-                if (config is TConfig typedConfig)
-                {
-                    instance = typedConfig;
-                    return true;
-                }
-            }
-
-            if (!TryLoad(out instance))
-                return false;
-
-            s_loadedConfigs.Add(instance);
-            return true;
+            return GetOrLoad(out instance, config => config.PostLoad());
         }
 
         /// <summary>
-        /// Saves the given editor config on disk.
+        /// Saves the given editor config to its storage.
         /// </summary>
         /// <param name="config">The config to save.</param>
         /// <returns>Returns true if the object has been saved successfully.</returns>
+        [Obsolete(ObsoleteMessage)]
         public static bool Save(IEditorConfig config)
         {
-            // Cancel if the given object type doesn't use the [EditorConfig] attribute
-            if (!config.GetType().TryGetAttribute(out EditorConfigAttribute editorConfigAttribute))
-            {
-                Debug.LogError($"Failed to save editor settings for an object of type {config.GetType().FullName}: That type doesn't use {nameof(EditorConfigAttribute)}, so the system can't save using the appropriate scope.");
-                return false;
-            }
-
-            string json = EditorJsonUtility.ToJson(config, true);
-            // Consider the operation valid if there's no data to save
-            if (string.IsNullOrWhiteSpace(json))
-                return true;
-
-            // Compute the path to the stored data file (or the prefs key)
-            string path = GetConfigFilePath(config.GetType(), editorConfigAttribute.Scope);
-
-            // If the config is meant to be stored in EditorPrefs
-            if (editorConfigAttribute.Scope == EEditorConfigScope.Editor)
-            {
-                EditorPrefs.SetString(path, json);
-            }
-            // Else, write the config into a file
-            else
-            {
-                // Cancel if the path is not valid
-                if (string.IsNullOrWhiteSpace(path))
-                {
-                    Debug.LogError($"Failed to save editor config for an object of type {config.GetType().FullName}: Unsupported scope \"{editorConfigAttribute.Scope}\".");
-                    return false;
-                }
-
-                try
-                {
-                    File.WriteAllText(path, json);
-                }
-                catch (Exception e)
-                {
-                    Debug.LogException(e);
-                    Debug.LogError($"Failed to save editor config for an object of type {config.GetType().FullName}. See previous logs for more info.", config is Object obj ? obj : null);
-                    return false;
-                }
-            }
-
-            return true;
+            return Write(config, true);
         }
 
         /// <summary>
-        /// Saves all the loaded editor configs.
+        /// Saves all the loaded editor configs that have changed since they were last read or written.
         /// </summary>
-        /// <returns>Returns true if all the editor configs object have been saved successfully.</returns>
+        /// <returns>Returns true if all the editor configs have been saved successfully.</returns>
         public static bool SaveAll()
         {
+            CleanDisposedConfigs();
             bool success = true;
-            foreach (IEditorConfig config in s_loadedConfigs.ToArray())
+            foreach (LoadedConfig loadedConfig in s_loadedConfigs.ToArray())
             {
-                if (!Save(config))
+                if (!Write(loadedConfig.Config, false))
                     success = false;
             }
             return success;
@@ -136,93 +114,203 @@ namespace SideXP.Core.EditorOnly
         #endregion
 
 
+        #region Internal API
+
+        /// <summary>
+        /// Gets the loaded config for a given type, or loads it if it's not already loaded.
+        /// </summary>
+        /// <typeparam name="TConfig">The type of the editor config to get or load.</typeparam>
+        /// <param name="instance">Outputs the loaded editor config.</param>
+        /// <param name="onLoaded">Called once when the config has just been loaded, after it has been registered.</param>
+        /// <returns>Returns true if the expected object has been found or loaded successfully.</returns>
+        internal static bool GetOrLoad<TConfig>(out TConfig instance, Action<TConfig> onLoaded)
+        {
+            CleanDisposedConfigs();
+            foreach (LoadedConfig loadedConfig in s_loadedConfigs)
+            {
+                if (loadedConfig.Config is TConfig typedConfig)
+                {
+                    instance = typedConfig;
+                    return true;
+                }
+            }
+
+            if (!TryLoad(out instance, out string json))
+                return false;
+
+            // Register the config before notifying it, so the callback can use the config's instance getter without loading it again
+            s_loadedConfigs.Add(new LoadedConfig { Config = instance, StoredJson = json });
+            onLoaded?.Invoke(instance);
+            return true;
+        }
+
+        /// <summary>
+        /// Writes the given editor config to its storage.
+        /// </summary>
+        /// <param name="config">The config to save.</param>
+        /// <param name="force">
+        /// If enabled, the config is written even if its data didn't change since it was last read or written.
+        /// </param>
+        /// <returns>Returns true if the object has been saved successfully, or if there was nothing to save.</returns>
+        internal static bool Write(object config, bool force)
+        {
+            if (config == null)
+                return false;
+
+            Type configType = config.GetType();
+            if (!TryGetStorage(configType, "save", out EEditorConfigScope scope, out string path))
+                return false;
+
+            string json = EditorJsonUtility.ToJson(config, true);
+            // Consider the operation valid if there's no data to save
+            if (string.IsNullOrWhiteSpace(json))
+                return true;
+
+            LoadedConfig loadedConfig = s_loadedConfigs.Find(i => ReferenceEquals(i.Config, config));
+            // Skip if the data didn't change, so the storage isn't rewritten each time Unity saves the project
+            if (!force && loadedConfig != null && loadedConfig.StoredJson == json)
+                return true;
+
+            if (scope == EEditorConfigScope.Editor)
+            {
+                EditorPrefs.SetString(path, json);
+            }
+            else
+            {
+                try
+                {
+                    // The target directory may not exist (as the /UserSettings directory in older Unity versions)
+                    Directory.CreateDirectory(Path.GetDirectoryName(path));
+                    File.WriteAllText(path, json);
+                }
+                catch (Exception e)
+                {
+                    Debug.LogException(e);
+                    Debug.LogError($"Failed to save editor config for an object of type {configType.FullName}. See previous logs for more info.", config as Object);
+                    return false;
+                }
+            }
+
+            if (loadedConfig != null)
+                loadedConfig.StoredJson = json;
+
+            return true;
+        }
+
+        /// <summary>
+        /// Removes the loaded configs of a given type from the loaded list, and destroys them, without saving them.
+        /// </summary>
+        /// <remarks>
+        /// The next access to a config of that type will load it again from its storage.
+        /// </remarks>
+        /// <param name="configType">The type of the configs to unload. Configs of derived types are also unloaded.</param>
+        internal static void Unload(Type configType)
+        {
+            for (int i = s_loadedConfigs.Count - 1; i >= 0; i--)
+            {
+                object config = s_loadedConfigs[i].Config;
+                if (!configType.IsInstanceOfType(config))
+                    continue;
+
+                s_loadedConfigs.RemoveAt(i);
+                Destroy(config);
+            }
+        }
+
+        /// <summary>
+        /// Removes all the loaded configs from the loaded list, and destroys them, without saving them.
+        /// </summary>
+        /// <remarks>
+        /// Configs are created with <see cref="HideFlags.DontSave"/> so Unity doesn't unload them on scene changes. But that also makes
+        /// them survive script reloads, so they must be destroyed manually before that happens, or they would leak.
+        /// </remarks>
+        internal static void UnloadAll()
+        {
+            foreach (LoadedConfig loadedConfig in s_loadedConfigs)
+                Destroy(loadedConfig.Config);
+
+            s_loadedConfigs.Clear();
+        }
+
+        #endregion
+
+
         #region Private API
 
         /// <summary>
-        /// Gets the path to the stored editor config file on disk, depending on the scope.
+        /// Gets the storage location of an editor config type, as defined by its <see cref="EditorConfigAttribute"/>.
         /// </summary>
-        /// <remarks>If the target scope is <see cref="EEditorConfigScope.Editor"/>, this function returns the <see cref="EditorPrefs"/>
-        /// key instead of a file path.</remarks>
-        /// <param name="configType">The type of the editor config object of which to get the path.</param>
-        /// <param name="scope">The scope for which the editor config is stored.</param>
-        /// <returns>Returns the computed path, or an empty string if the scope is not valid.</returns>
-        private static string GetConfigFilePath(Type configType, EEditorConfigScope scope)
+        /// <param name="configType">The type of the editor config of which to get the storage location.</param>
+        /// <param name="operation">The name of the operation being done, used in error messages.</param>
+        /// <param name="scope">Outputs the scope in which the config is stored.</param>
+        /// <param name="path">
+        /// Outputs the absolute path to the file that stores the config, or the <see cref="EditorPrefs"/> key if the scope is
+        /// <see cref="EEditorConfigScope.Editor"/>.
+        /// </param>
+        /// <returns>Returns true if the storage location has been computed successfully.</returns>
+        private static bool TryGetStorage(Type configType, string operation, out EEditorConfigScope scope, out string path)
         {
-            string path;
+            scope = default;
+            path = null;
+
+            if (!configType.TryGetAttribute(out EditorConfigAttribute editorConfigAttribute))
+            {
+                Debug.LogError($"Failed to {operation} editor config for an object of type {configType.FullName}: That type doesn't use {nameof(EditorConfigAttribute)}, so the system can't {operation} it using the appropriate scope.");
+                return false;
+            }
+
+            scope = editorConfigAttribute.Scope;
+            string key = !string.IsNullOrWhiteSpace(editorConfigAttribute.Key)
+                ? editorConfigAttribute.Key
+                : configType.FullName;
+
             switch (scope)
             {
                 case EEditorConfigScope.Project:
-                    path = $"{PathEditorUtility.ProjectSettingsPath}";
-                    break;
+                    path = $"{PathEditorUtility.ProjectSettingsPath}/{key}{FileExtension}";
+                    return true;
+
                 case EEditorConfigScope.User:
-                    path = $"{PathEditorUtility.UserSettingsPath}";
-                    break;
+                    path = $"{PathEditorUtility.UserSettingsPath}/{key}{FileExtension}";
+                    return true;
+
                 case EEditorConfigScope.Editor:
-                    path = $"{EditorPrefsKeyPrefix}{configType}";
-                    break;
+                    path = $"{EditorPrefsKeyPrefix}{key}";
+                    return true;
+
                 default:
-                    path = string.Empty;
-                    break;
+                    Debug.LogError($"Failed to {operation} editor config for an object of type {configType.FullName}: Unsupported scope \"{scope}\".");
+                    return false;
             }
-
-            return path + $"/{configType.FullName}.json";
-        }
-
-        /// <typeparam name="TConfig"><inheritdoc cref="GetConfigFilePath(Type, EEditorConfigScope)" path="/param[@name='configType']"/></typeparam>
-        /// <inheritdoc cref="GetConfigFilePath(Type, EEditorConfigScope)"/>
-        private static string GetConfigFilePath<TConfig>(EEditorConfigScope scope)
-            where TConfig : IEditorConfig
-        {
-            return GetConfigFilePath(typeof(TConfig), scope);
         }
 
         /// <summary>
-        /// Tries to load the serialized config for a given type.
+        /// Tries to load the stored config for a given type.
         /// </summary>
         /// <typeparam name="TConfig">The type of the editor config to load.</typeparam>
         /// <param name="instance">Outputs a created object of the given type with the loaded data.</param>
+        /// <param name="json">Outputs the data read from the config's storage, or null if nothing has been stored yet.</param>
         /// <returns>Returns true if the object has been loaded successfully.</returns>
-        private static bool TryLoad<TConfig>(out TConfig instance)
-            where TConfig : IEditorConfig
+        private static bool TryLoad<TConfig>(out TConfig instance, out string json)
         {
-            // Cancel if the given object type doesn't use the [EditorSettings] attribute
-            if (!typeof(TConfig).TryGetAttribute(out EditorConfigAttribute editorConfigAttribute))
-            {
-                Debug.LogError($"Failed to load editor settings for an object of type {typeof(TConfig).FullName}: That type doesn't use {nameof(EditorConfigAttribute)}, so the system can't load from the appropriate scope.");
-                instance = default;
+            instance = default;
+            json = null;
+
+            if (!TryGetStorage(typeof(TConfig), "load", out EEditorConfigScope scope, out string path))
                 return false;
-            }
 
-            // Compute the path to the stored data file
-            string path = GetConfigFilePath<TConfig>(editorConfigAttribute.Scope);
-
-            // Cancel if the path is not valid
-            if (string.IsNullOrWhiteSpace(path))
-            {
-                Debug.LogError($"Failed to load editor config for an object of type {typeof(TConfig).FullName}: Unsupported scope \"{editorConfigAttribute.Scope}\".");
-                instance = default;
-                return false;
-            }
-
-            // Create an instance of the config object
-            instance = typeof(TConfig).Is<ScriptableObject>()
-                ? (TConfig)(object)ScriptableObject.CreateInstance(typeof(TConfig))
-                : Activator.CreateInstance<TConfig>();
-
-            string json = null;
-            if (editorConfigAttribute.Scope == EEditorConfigScope.Editor)
+            if (scope == EEditorConfigScope.Editor)
             {
                 json = EditorPrefs.GetString(path, null);
             }
             else
             {
-                // Read data file if it exists
                 try
                 {
-                    json = File.ReadAllText(path);
+                    // A missing file is not considered as an error
+                    if (File.Exists(path))
+                        json = File.ReadAllText(path);
                 }
-                // A missing file is not considered as an error
-                catch (FileNotFoundException) { }
                 catch (Exception e)
                 {
                     Debug.LogException(e);
@@ -231,27 +319,57 @@ namespace SideXP.Core.EditorOnly
                 }
             }
 
-            // Overwrite the created object instance
-            if (!string.IsNullOrWhiteSpace(json))
-                EditorJsonUtility.FromJsonOverwrite(json, instance);
+            if (string.IsNullOrWhiteSpace(json))
+                json = null;
 
-            // Notify the config that it has been loaded, so it can post-process the deserialized data (even when no saved data
-            // existed and the instance holds its defaults).
-            instance.PostLoad();
+            instance = CreateInstance<TConfig>();
+            // Overwrite the default values of the created instance with the stored data
+            if (json != null)
+                EditorJsonUtility.FromJsonOverwrite(json, instance);
 
             return true;
         }
 
         /// <summary>
-        /// Removes the loaded config assets that have been disabled or disposed.
+        /// Creates a new instance of an editor config type, with its default values.
         /// </summary>
-        /// <remarks>Loaded configs may be disabled or disposed automatically by Unity when it restores the "last opened scene" when it
-        /// launches, or when the current scene change in the editor.</remarks>
+        /// <typeparam name="TConfig">The type of the editor config to create.</typeparam>
+        /// <returns>Returns the created instance.</returns>
+        private static TConfig CreateInstance<TConfig>()
+        {
+            if (!typeof(TConfig).Is<ScriptableObject>())
+                return Activator.CreateInstance<TConfig>();
+
+            ScriptableObject scriptableObject = ScriptableObject.CreateInstance(typeof(TConfig));
+            scriptableObject.name = typeof(TConfig).Name;
+            // Prevent Unity from unloading the instance (which happens on scene changes if nothing else references it)
+            scriptableObject.hideFlags = HideFlags.DontSave;
+            return (TConfig)(object)scriptableObject;
+        }
+
+        /// <summary>
+        /// Destroys a config instance if it's a Unity object that hasn't been destroyed yet.
+        /// </summary>
+        /// <param name="config">The config to destroy.</param>
+        private static void Destroy(object config)
+        {
+            if (config is Object obj && obj != null)
+                Object.DestroyImmediate(obj);
+        }
+
+        /// <summary>
+        /// Removes the loaded configs that have been destroyed from the loaded list.
+        /// </summary>
+        /// <remarks>
+        /// Loaded configs can't be unloaded by Unity since they use <see cref="HideFlags.DontSave"/>, but they can still be destroyed
+        /// explicitly by any script.
+        /// </remarks>
         private static void CleanDisposedConfigs()
         {
             for (int i = s_loadedConfigs.Count - 1; i >= 0; i--)
             {
-                if (s_loadedConfigs[i] == null || (s_loadedConfigs[i] is Object obj && obj == null))
+                object config = s_loadedConfigs[i].Config;
+                if (config == null || (config is Object obj && obj == null))
                     s_loadedConfigs.RemoveAt(i);
             }
         }

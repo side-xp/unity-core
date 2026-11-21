@@ -7,7 +7,7 @@ namespace SideXP.Core.EditorOnly
     /// Editor config for the Core package features.
     /// </summary>
     [EditorConfig(EEditorConfigScope.Project)]
-    public class CoreEditorConfig : ScriptableObject, IEditorConfig
+    public class CoreEditorConfig : EditorConfig<CoreEditorConfig>
     {
 
         #region Fields
@@ -40,8 +40,8 @@ namespace SideXP.Core.EditorOnly
 
         #region Lifecycle
 
-        /// <inheritdoc cref="IEditorConfig.PostLoad"/>
-        public void PostLoad()
+        /// <inheritdoc/>
+        protected override void OnLoaded()
         {
             DemosEnabledForCurrentPlatform = _enableDemos;
         }
@@ -50,14 +50,6 @@ namespace SideXP.Core.EditorOnly
 
 
         #region Public API
-
-        /// <summary>
-        /// Gets the loaded settings or load them from disk if not already.
-        /// </summary>
-        public static CoreEditorConfig Instance => EditorConfigUtility.Get<CoreEditorConfig>();
-
-        /// <inheritdoc cref="Instance"/>
-        public static CoreEditorConfig I => Instance;
 
         /// <inheritdoc cref="_enableDemos"/>
         public bool EnableDemos
