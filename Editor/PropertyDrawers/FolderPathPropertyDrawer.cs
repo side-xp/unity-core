@@ -25,7 +25,15 @@ namespace SideXP.Core.EditorOnly
             FolderPathAttribute attr = attribute as FolderPathAttribute;
 
             EditorGUI.BeginChangeCheck();
-            property.stringValue = MoreEditorGUI.FolderPathField(position, property.IsArrayElement() ? GUIContent.none : label, property.stringValue, attr.Title, attr.DefaultName, attr.AllowExternal);
+            property.stringValue = MoreEditorGUI.FolderPathField(
+                position,
+                property.IsArrayElement() ? GUIContent.none : label,
+                property.stringValue,
+                attr.Title,
+                attr.DefaultName,
+                attr.AllowExternal,
+                attr.IsDelayed
+            );
             if (EditorGUI.EndChangeCheck())
                 property.serializedObject.ApplyModifiedProperties();
         }

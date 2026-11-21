@@ -1158,14 +1158,19 @@ namespace SideXP.Core.EditorOnly
         /// <param name="allowExternal">By default, this function only allow user to select a path to a directory inside the current
         /// project. If enabled, the user can select a path outside the current project. Note that the path won't be converted into a
         /// relative path if it's outside of the project.</param>
+        /// <param name="isDelayed">
+        /// If enabled, a path typed in the text field is only returned when pressing Enter or when the field loses focus.
+        /// </param>
         /// <returns>Returns the selected directory path.</returns>
-        public static string FolderPathField(Rect position, GUIContent label, string path, string title, string defaultName, bool allowExternal = false)
+        public static string FolderPathField(Rect position, GUIContent label, string path, string title, string defaultName, bool allowExternal = false, bool isDelayed = false)
         {
             Rect rect = new Rect(position);
 
             // Draw text field with label
             rect.width = position.width - MoreGUI.WidthS - MoreGUI.HMargin;
-            path = EditorGUI.TextField(rect, label, path);
+            path = isDelayed
+                ? EditorGUI.DelayedTextField(rect, label, path)
+                : EditorGUI.TextField(rect, label, path);
 
             // Draw browse button
             rect.x += rect.width + MoreGUI.HMargin;
@@ -1184,7 +1189,7 @@ namespace SideXP.Core.EditorOnly
                     return path;
 
                 // Cancel if the selected path doesn't target the current project
-                if (allowExternal && !PathUtility.IsProjectPath(tmpPath))
+                if (!allowExternal && !PathUtility.IsProjectPath(tmpPath))
                 {
                     Debug.LogWarning("The selected folder must be in this project.");
                     return path;
@@ -1196,24 +1201,24 @@ namespace SideXP.Core.EditorOnly
             return path;
         }
 
-        /// <inheritdoc cref="FolderPathField(Rect, GUIContent, string, string, string, bool)"/>
-        public static string FolderPathField(Rect position, string label, string path, string title, string defaultName, bool allowExternal = false)
+        /// <inheritdoc cref="FolderPathField(Rect, GUIContent, string, string, string, bool, bool)"/>
+        public static string FolderPathField(Rect position, string label, string path, string title, string defaultName, bool allowExternal = false, bool isDelayed = false)
         {
-            return FolderPathField(position, new GUIContent(label), path, title, defaultName, allowExternal);
+            return FolderPathField(position, new GUIContent(label), path, title, defaultName, allowExternal, isDelayed);
         }
 
-        /// <inheritdoc cref="FolderPathField(Rect, GUIContent, string, string, string, bool)"/>
-        public static string FolderPathField(GUIContent label, string path, string title, string defaultName, bool allowExternal = false)
+        /// <inheritdoc cref="FolderPathField(Rect, GUIContent, string, string, string, bool, bool)"/>
+        public static string FolderPathField(GUIContent label, string path, string title, string defaultName, bool allowExternal = false, bool isDelayed = false)
         {
             Rect rect = EditorGUILayout.GetControlRect(true);
             rect = EditorGUI.IndentedRect(rect);
-            return FolderPathField(rect, label, path, title, defaultName, allowExternal);
+            return FolderPathField(rect, label, path, title, defaultName, allowExternal, isDelayed);
         }
 
-        /// <inheritdoc cref="FolderPathField(Rect, GUIContent, string, string, string, bool)"/>
-        public static string FolderPathField(string label, string path, string title, string defaultName, bool allowExternal = false)
+        /// <inheritdoc cref="FolderPathField(Rect, GUIContent, string, string, string, bool, bool)"/>
+        public static string FolderPathField(string label, string path, string title, string defaultName, bool allowExternal = false, bool isDelayed = false)
         {
-            return FolderPathField(new GUIContent(label), path, title, defaultName, allowExternal);
+            return FolderPathField(new GUIContent(label), path, title, defaultName, allowExternal, isDelayed);
         }
 
         #endregion
