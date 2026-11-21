@@ -344,6 +344,77 @@ namespace SideXP.Core.Tests
 
         #endregion
 
+
+        #region Downloaded icons
+
+        /// <summary>
+        /// Creates an index file and the files of two icons, in two categories, plus temporary files left by interrupted writes.
+        /// </summary>
+        private void CreateDownloadedIcons()
+        {
+            File.WriteAllText(IconStorage.IndexFilePath, "{}");
+            File.WriteAllText($"{IconStorage.IndexFilePath}.0123{IconStorage.TempFileExtension}", "partial index");
+            IconStorage.WriteFileAtomic(IconStorage.GetIconFilePath("home", "Buildings", 16, EIconStyle.Outline), new byte[10], false);
+            IconStorage.WriteFileAtomic(IconStorage.GetIconFilePath("home", "Buildings", 16, EIconStyle.Filled), new byte[20], false);
+            IconStorage.WriteFileAtomic(IconStorage.GetIconFilePath("user", "System", 32, EIconStyle.Outline), new byte[30], false);
+            File.WriteAllText($"{IconStorage.GetIconFolderPath("user", "System")}/user_64_outline.png.0123.tmp", "partial icon");
+        }
+
+        /// <summary>
+        /// Only the icon files are measured: not the index, nor the temporary files.
+        /// </summary>
+        [Test]
+        public void MeasureDownloadedIcons_CountsIconFilesOnly()
+        {
+            CreateDownloadedIcons();
+
+            IconStorage.MeasureDownloadedIcons(out int fileCount, out long byteCount);
+
+            Assert.AreEqual(3, fileCount);
+            Assert.AreEqual(60, byteCount);
+        }
+
+        /// <summary>
+        /// Without shared folder, there's nothing to measure.
+        /// </summary>
+        [Test]
+        public void MeasureDownloadedIcons_MissingFolder_IsEmpty()
+        {
+            IconStorage.RootFolderOverride = $"{_tempFolder}/missing";
+
+            IconStorage.MeasureDownloadedIcons(out int fileCount, out long byteCount);
+
+            Assert.AreEqual(0, fileCount);
+            Assert.AreEqual(0, byteCount);
+        }
+
+        /// <summary>
+        /// Deleting the downloaded icons deletes every category folder and temporary file, but keeps the index.
+        /// </summary>
+        [Test]
+        public void DeleteDownloadedIcons_DeletesIconsAndKeepsIndex()
+        {
+            CreateDownloadedIcons();
+
+            List<string> errors = IconStorage.DeleteDownloadedIcons();
+
+            Assert.IsEmpty(errors, string.Join("\n", errors));
+            Assert.IsEmpty(Directory.GetDirectories(_tempFolder));
+            CollectionAssert.AreEqual(new[] { IconStorage.IndexFilePath }, NormalizePaths(Directory.GetFiles(_tempFolder)));
+        }
+
+        /// <summary>
+        /// Normalizes paths returned by the file system, so they can be compared with the paths built by <see cref="IconStorage"/>.
+        /// </summary>
+        /// <param name="paths">The paths to normalize.</param>
+        /// <returns>Returns the normalized paths.</returns>
+        private static string[] NormalizePaths(string[] paths)
+        {
+            return Array.ConvertAll(paths, IconStorage.NormalizePath);
+        }
+
+        #endregion
+
     }
 
 }

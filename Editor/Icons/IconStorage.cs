@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -457,6 +458,70 @@ namespace SideXP.Core.EditorOnly
                 return true;
 
             return false;
+        }
+
+        #endregion
+
+
+        #region Downloaded icons
+
+        /// <summary>
+        /// Measures the icon files stored in the shared folder.
+        /// </summary>
+        /// <param name="fileCount">Outputs the number of icon files.</param>
+        /// <param name="byteCount">Outputs the total size of the icon files, in bytes.</param>
+        /// <exception cref="IOException">Thrown if the shared folder can't be read.</exception>
+        internal static void MeasureDownloadedIcons(out int fileCount, out long byteCount)
+        {
+            fileCount = 0;
+            byteCount = 0;
+
+            var rootFolder = new DirectoryInfo(RootFolder);
+            if (!rootFolder.Exists)
+                return;
+
+            // Icon files are only in category folders, the root folder only contains the index
+            foreach (DirectoryInfo categoryFolder in rootFolder.EnumerateDirectories())
+            {
+                foreach (FileInfo file in categoryFolder.EnumerateFiles($"*{IconFileExtension}", SearchOption.AllDirectories))
+                {
+                    fileCount++;
+                    byteCount += file.Length;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Deletes all the icon files stored in the shared folder, so they're downloaded again when requested. The index is kept.
+        /// </summary>
+        /// <remarks>
+        /// Every folder in the shared folder is deleted, since the shared folder only contains the index and the category folders.
+        /// A folder that can't be deleted (for example if another editor is using one of its files) doesn't stop the others.
+        /// </remarks>
+        /// <returns>Returns the errors for the folders that couldn't be deleted, or an empty list if all of them have been.</returns>
+        internal static List<string> DeleteDownloadedIcons()
+        {
+            var errors = new List<string>();
+            if (!Directory.Exists(RootFolder))
+                return errors;
+
+            foreach (string folder in Directory.GetDirectories(RootFolder))
+            {
+                try
+                {
+                    Directory.Delete(folder, true);
+                }
+                catch (Exception exception) when (exception is IOException || exception is UnauthorizedAccessException)
+                {
+                    errors.Add($"{folder}: {exception.Message}");
+                }
+            }
+
+            // Temporary files left by an interrupted write of the index
+            foreach (string file in Directory.GetFiles(RootFolder, $"*{TempFileExtension}"))
+                TryDeleteFile(file);
+
+            return errors;
         }
 
         #endregion

@@ -69,7 +69,7 @@ namespace SideXP.Core.EditorOnly
         /// </summary>
         /// <remarks>
         /// A change that fails doesn't stop the others. Its files stay in place, which is harmless: an icon is only considered available
-        /// if its file exists where the new index expects it, and the files left behind are deleted when the cache is cleared.
+        /// if its file exists where the new index expects it, and the files left behind are deleted with the downloaded icons.
         /// </remarks>
         /// <param name="changes">The changes to apply, in order.</param>
         /// <returns>Returns the errors of the changes that failed, or an empty list if all of them succeeded.</returns>
