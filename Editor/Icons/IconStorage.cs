@@ -27,7 +27,7 @@ namespace SideXP.Core.EditorOnly
         /// <remarks>
         /// Uses <see cref="PathUtility.DefaultDirectorySeparator"/> like every path in this class, which is supported by every OS.
         /// </remarks>
-        internal const string DefaultRelativeFolder = "SideXP/Icons";
+        internal const string DefaultRelativeFolder = "Sideways Experiments/Icons";
 
         /// <summary>
         /// Name of the index file, at the root of the shared folder.
@@ -58,6 +58,15 @@ namespace SideXP.Core.EditorOnly
         /// Extension of the temporary files written before being moved into place.
         /// </summary>
         internal const string TempFileExtension = ".tmp";
+
+        /// <summary>
+        /// The sizes in which icon files are stored, in pixels, from the smallest.
+        /// </summary>
+        /// <remarks>
+        /// Each icon size on screen at 100% and 200% display scale. The intermediate sizes also cover 150%, and avoid drawing a
+        /// larger file smaller, which blurs thin strokes.
+        /// </remarks>
+        internal static readonly int[] StoredSizes = { 16, 24, 32, 48, 64 };
 
         /// <summary>
         /// Matches a valid icon name. Tabler icon names only use these characters, which also prevents a name from pointing outside
