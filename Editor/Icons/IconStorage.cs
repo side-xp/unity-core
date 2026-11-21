@@ -418,6 +418,47 @@ namespace SideXP.Core.EditorOnly
             catch (UnauthorizedAccessException) { }
         }
 
+        /// <summary>
+        /// Deletes a folder if it's empty, ignoring errors.
+        /// </summary>
+        /// <param name="folder">The absolute path to the folder to delete.</param>
+        /// <returns>Returns true if the folder has been deleted, or didn't exist.</returns>
+        internal static bool TryDeleteEmptyFolder(string folder)
+        {
+            if (!Directory.Exists(folder))
+                return true;
+
+            try
+            {
+                if (HasEntries(folder))
+                    return false;
+
+                Directory.Delete(folder);
+                return true;
+            }
+            catch (IOException) { }
+            catch (UnauthorizedAccessException) { }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Checks if a folder contains at least one file or subfolder.
+        /// </summary>
+        /// <param name="folder">The absolute path to the folder to check.</param>
+        /// <returns>Returns true if the folder exists and is not empty.</returns>
+        internal static bool HasEntries(string folder)
+        {
+            if (!Directory.Exists(folder))
+                return false;
+
+            // The enumeration stops at the first entry, and foreach disposes the enumerator
+            foreach (string _ in Directory.EnumerateFileSystemEntries(folder))
+                return true;
+
+            return false;
+        }
+
         #endregion
 
     }

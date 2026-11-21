@@ -66,7 +66,7 @@ namespace SideXP.Core.EditorOnly
                 return false;
             }
 
-            if (HasEntries(targetFolder) && !File.Exists($"{targetFolder}/{IconStorage.IndexFileName}"))
+            if (IconStorage.HasEntries(targetFolder) && !File.Exists($"{targetFolder}/{IconStorage.IndexFileName}"))
             {
                 error = "The selected folder is not empty, and doesn't contain icons. "
                     + "Select an empty folder, or an existing icons folder.";
@@ -258,7 +258,7 @@ namespace SideXP.Core.EditorOnly
                 DeleteEmptyFolders(subfolder, true);
 
             if (deleteFolder)
-                TryDeleteEmptyFolder(folder);
+                IconStorage.TryDeleteEmptyFolder(folder);
         }
 
         /// <summary>
@@ -271,52 +271,11 @@ namespace SideXP.Core.EditorOnly
             string parent = Path.GetDirectoryName(folder);
             for (int i = 0; i < count && !string.IsNullOrEmpty(parent); i++)
             {
-                if (!TryDeleteEmptyFolder(parent))
+                if (!IconStorage.TryDeleteEmptyFolder(parent))
                     return;
 
                 parent = Path.GetDirectoryName(parent);
             }
-        }
-
-        /// <summary>
-        /// Deletes a folder if it's empty, ignoring errors.
-        /// </summary>
-        /// <param name="folder">The absolute path to the folder to delete.</param>
-        /// <returns>Returns true if the folder has been deleted, or didn't exist.</returns>
-        private static bool TryDeleteEmptyFolder(string folder)
-        {
-            if (!Directory.Exists(folder))
-                return true;
-
-            try
-            {
-                if (HasEntries(folder))
-                    return false;
-
-                Directory.Delete(folder);
-                return true;
-            }
-            catch (IOException) { }
-            catch (UnauthorizedAccessException) { }
-
-            return false;
-        }
-
-        /// <summary>
-        /// Checks if a folder contains at least one file or subfolder.
-        /// </summary>
-        /// <param name="folder">The absolute path to the folder to check.</param>
-        /// <returns>Returns true if the folder exists and is not empty.</returns>
-        private static bool HasEntries(string folder)
-        {
-            if (!Directory.Exists(folder))
-                return false;
-
-            // The enumeration stops at the first entry, and foreach disposes the enumerator
-            foreach (string _ in Directory.EnumerateFileSystemEntries(folder))
-                return true;
-
-            return false;
         }
 
         /// <summary>
