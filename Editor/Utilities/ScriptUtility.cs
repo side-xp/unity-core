@@ -430,9 +430,9 @@ namespace SideXP.Core.EditorOnly
             s_scriptRefs = new List<ScriptRef>();
 
             // Convert excluded directories to absolute paths
-            string[] excludedDirectories = new string[CoreEditorConfig.I.ExcludedDirectories.Length];
+            string[] excludedDirectories = new string[CoreProjectSettings.I.ExcludedDirectories.Length];
             for (int i = 0; i < excludedDirectories.Length; i++)
-                excludedDirectories[i] = CoreEditorConfig.I.ExcludedDirectories[i].ToAbsolutePath();
+                excludedDirectories[i] = CoreProjectSettings.I.ExcludedDirectories[i].ToAbsolutePath();
 
             // For each script in the project
             foreach (MonoScript scriptAsset in ObjectUtility.FindAssets<MonoScript>())
@@ -476,11 +476,11 @@ namespace SideXP.Core.EditorOnly
             bool IsFromExcludedAssembly(Type type)
             {
                 // Cancel if no excluded assembly defined
-                if (CoreEditorConfig.I.ExcludedAssembliesNames.Length <= 0)
+                if (CoreProjectSettings.I.ExcludedAssembliesNames.Length <= 0)
                     return false;
 
                 string assemblyName = type.Assembly.GetName().Name;
-                foreach (string excludedAssembly in CoreEditorConfig.I.ExcludedAssembliesNames)
+                foreach (string excludedAssembly in CoreProjectSettings.I.ExcludedAssembliesNames)
                 {
                     if (assemblyName == excludedAssembly)
                         return true;

@@ -37,7 +37,7 @@ namespace SideXP.Core.EditorOnly
             foreach (FieldInfo fieldInfo in TypeCachePolyfill.GetFieldsWithAttribute<TypeRefAttribute>())
 #endif
             {
-                if (!CoreEditorConfig.I.TrackTypesMigrations && !s_didLogUntrackedWarning)
+                if (!CoreProjectSettings.I.TrackTypesMigrations && !s_didLogUntrackedWarning)
                 {
                     s_didLogUntrackedWarning = true;
                     Debug.Log($"A field marked with the [TypeRef] attribute has been found in your project, but type migrations are not tracked. You can enable this tracking from Edit > Project Settings > {Constants.CompanyName} > General > Track Types Migrations. Without this option enabled, renamed types won't be tracked, so the type stored in a [TypeRef] property may not be valid at some point.");
@@ -46,7 +46,7 @@ namespace SideXP.Core.EditorOnly
                 break;
             }
 
-            if (CoreEditorConfig.I.TrackTypesMigrations)
+            if (CoreProjectSettings.I.TrackTypesMigrations)
                 TypesMigration.Reload();
         }
 

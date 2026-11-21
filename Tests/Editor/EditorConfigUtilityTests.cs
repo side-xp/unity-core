@@ -21,7 +21,7 @@ namespace SideXP.Core.Tests
     /// All tests use <see cref="EEditorConfigScope.Editor"/>-scoped configs, which are backed by <see cref="EditorPrefs"/> rather than
     /// a file, so the round-trip stays entirely off the filesystem (no <c>ProjectSettings</c>/<c>UserSettings</c> writes) and cleans up
     /// with a single <see cref="EditorPrefs.DeleteKey(string)"/>. We never call <see cref="EditorConfigUtility.SaveAll"/> here: it would
-    /// flush every loaded config, including the editor's real <c>CoreEditorConfig</c>, to disk.
+    /// flush every loaded config, including the editor's real <c>CoreProjectSettings</c>, to disk.
     /// </remarks>
     public class EditorConfigUtilityTests
     {
