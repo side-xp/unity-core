@@ -6,19 +6,27 @@ namespace SideXP.Core.EditorOnly
     /// <summary>
     /// Generate menus to edit the Core package editor config.
     /// </summary>
-    public class CoreEditorConfigProvider : DefaultConfigSettingsProvider
+    public static class CoreEditorConfigProvider
     {
 
+        /// <summary>
+        /// Registers the menu to edit the Core package settings from the Project Settings window.
+        /// </summary>
+        /// <returns>Returns the created settings provider.</returns>
         [SettingsProvider]
         private static SettingsProvider RegisterProjectSettingsMenu()
         {
-            return MakeSettingsProvider(CoreEditorConfig.I, EditorConstants.ProjectSettings + "/General", SettingsScope.Project);
+            return EditorConfigSettingsProvider.Create<CoreEditorConfig>(EditorConstants.ProjectSettings + "/General", SettingsScope.Project);
         }
 
+        /// <summary>
+        /// Registers the menu to edit the Core package settings from the Preferences window.
+        /// </summary>
+        /// <returns>Returns the created settings provider.</returns>
         [SettingsProvider]
         private static SettingsProvider RegisterUserSettingsMenu()
         {
-            return MakeSettingsProvider(CoreEditorConfig.I, EditorConstants.Preferences + "/General", SettingsScope.User);
+            return EditorConfigSettingsProvider.Create<CoreEditorConfig>(EditorConstants.Preferences + "/General", SettingsScope.User);
         }
 
     }
