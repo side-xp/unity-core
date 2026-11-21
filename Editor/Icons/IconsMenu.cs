@@ -77,7 +77,7 @@ namespace SideXP.Core.EditorOnly
         [MenuItem(DeleteIconsMenu)]
         private static void DeleteDownloadedIcons()
         {
-            // @todo Pause icon downloads while deleting, once the download queue exists.
+            // Icon downloads in progress don't need to be paused (see IconDownloads)
             string folder = IconStorage.RootFolder;
             int fileCount;
             long byteCount;

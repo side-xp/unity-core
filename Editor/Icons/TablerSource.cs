@@ -60,6 +60,16 @@ namespace SideXP.Core.EditorOnly
         private const string CatalogPath = "icons.json";
 
         /// <summary>
+        /// Name of the npm package that contains the Tabler PNG files.
+        /// </summary>
+        private const string PngPackage = "@tabler/icons-png";
+
+        /// <summary>
+        /// Path to the folder of the PNG files in their package, which contains a folder per style.
+        /// </summary>
+        private const string PngFolder = "icons";
+
+        /// <summary>
         /// Matches a valid package version (as <c>3.52.0</c>, or <c>3.52.0-beta.1</c>). Versions are inserted in URLs and stored in the
         /// index, so anything else is rejected.
         /// </summary>
@@ -92,6 +102,26 @@ namespace SideXP.Core.EditorOnly
                 throw new ArgumentException($"Invalid Tabler version \"{version}\".", nameof(version));
 
             return $"{CdnBaseUrl}/{CatalogPackage}@{version}/{CatalogPath}";
+        }
+
+        /// <summary>
+        /// Gets the URL of the PNG file of an icon.
+        /// </summary>
+        /// <param name="version">The Tabler version, which must be the version of the index.</param>
+        /// <param name="name">The name of the icon.</param>
+        /// <param name="style">The style of the icon.</param>
+        /// <returns>Returns the URL of the PNG file.</returns>
+        /// <exception cref="ArgumentException">Thrown if the version or the icon name is not valid.</exception>
+        internal static string GetIconUrl(string version, string name, EIconStyle style)
+        {
+            if (!IsValidVersion(version))
+                throw new ArgumentException($"Invalid Tabler version \"{version}\".", nameof(version));
+
+            if (!IconStorage.IsValidIconName(name))
+                throw new ArgumentException($"Invalid icon name \"{name}\".", nameof(name));
+
+            string styleFolder = IconStorage.GetStyleName(style);
+            return $"{CdnBaseUrl}/{PngPackage}@{version}/{PngFolder}/{styleFolder}/{name}{IconStorage.IconFileExtension}";
         }
 
         /// <summary>

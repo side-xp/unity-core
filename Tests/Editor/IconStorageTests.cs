@@ -25,7 +25,7 @@ namespace SideXP.Core.Tests
         /// <summary>
         /// Path to the expected icons folder, relative to the user's cache folder.
         /// </summary>
-        private const string DefaultSubfolder = "SideXP/Icons";
+        private const string DefaultSubfolder = "Sideways Experiments/Icons";
 
         private string _tempFolder = null;
 
@@ -358,6 +358,24 @@ namespace SideXP.Core.Tests
             IconStorage.WriteFileAtomic(IconStorage.GetIconFilePath("home", "Buildings", 16, EIconStyle.Filled), new byte[20], false);
             IconStorage.WriteFileAtomic(IconStorage.GetIconFilePath("user", "System", 32, EIconStyle.Outline), new byte[30], false);
             File.WriteAllText($"{IconStorage.GetIconFolderPath("user", "System")}/user_64_outline.png.0123.tmp", "partial icon");
+        }
+
+        /// <summary>
+        /// A style of an icon is stored only if its file exists for every stored size.
+        /// </summary>
+        [Test]
+        public void IsStored_RequiresEveryStoredSize()
+        {
+            Assert.IsFalse(IconStorage.IsStored("home", "Buildings", EIconStyle.Outline));
+
+            foreach (int size in IconStorage.StoredSizes)
+            {
+                Assert.IsFalse(IconStorage.IsStored("home", "Buildings", EIconStyle.Outline));
+                IconStorage.WriteFileAtomic(IconStorage.GetIconFilePath("home", "Buildings", size, EIconStyle.Outline), new byte[1], false);
+            }
+
+            Assert.IsTrue(IconStorage.IsStored("home", "Buildings", EIconStyle.Outline));
+            Assert.IsFalse(IconStorage.IsStored("home", "Buildings", EIconStyle.Filled));
         }
 
         /// <summary>

@@ -56,6 +56,32 @@ namespace SideXP.Core.Tests
         }
 
         /// <summary>
+        /// The PNG URL uses the given version of the Tabler PNG package, and a folder per style.
+        /// </summary>
+        [Test]
+        public void GetIconUrl_UsesVersionAndStyleFolder()
+        {
+            Assert.AreEqual(
+                "https://cdn.jsdelivr.net/npm/@tabler/icons-png@3.52.0/icons/outline/home.png",
+                TablerSource.GetIconUrl("3.52.0", "home", EIconStyle.Outline)
+            );
+            Assert.AreEqual(
+                "https://cdn.jsdelivr.net/npm/@tabler/icons-png@3.52.0/icons/filled/home.png",
+                TablerSource.GetIconUrl("3.52.0", "home", EIconStyle.Filled)
+            );
+        }
+
+        /// <summary>
+        /// An invalid version or icon name can't be used in a URL.
+        /// </summary>
+        [Test]
+        public void GetIconUrl_InvalidVersionOrName_Throws()
+        {
+            Assert.Throws<ArgumentException>(() => TablerSource.GetIconUrl("latest", "home", EIconStyle.Outline));
+            Assert.Throws<ArgumentException>(() => TablerSource.GetIconUrl("3.52.0", "../home", EIconStyle.Outline));
+        }
+
+        /// <summary>
         /// The version is read from a response shaped like the real one.
         /// </summary>
         [Test]

@@ -220,6 +220,22 @@ namespace SideXP.Core.Tests
         }
 
         /// <summary>
+        /// Given up downloads are listed, and can be given up again, as when restored after a domain reload.
+        /// </summary>
+        [Test]
+        public void GiveUp_IsListedInGivenUpKeys()
+        {
+            var policy = new IconRetryPolicy();
+            policy.ReportFailure(Key, EIconDownloadStatus.NotFound, StartTime);
+            policy.ReportFailure("star", EIconDownloadStatus.Failed, StartTime);
+
+            policy.GiveUp(OtherKey);
+
+            CollectionAssert.AreEquivalent(new[] { Key, OtherKey }, policy.GivenUpKeys);
+            Assert.IsFalse(policy.CanAttempt(OtherKey, StartTime));
+        }
+
+        /// <summary>
         /// Clearing the policy forgets every failure and the network pause.
         /// </summary>
         [Test]

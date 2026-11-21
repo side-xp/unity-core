@@ -82,7 +82,7 @@ namespace SideXP.Core.EditorOnly
         /// <param name="targetFolder">The absolute path to the folder where to move the icons.</param>
         private static void ChangeFolder(CorePreferences preferences, string targetFolder)
         {
-            // @todo Pause icon downloads while moving, once the download queue exists.
+            // Icon downloads in progress don't need to be paused (see IconDownloads)
             string sourceFolder = IconStorage.ConfiguredRootFolder;
             if (!IconFolderMover.CanMove(sourceFolder, targetFolder, out string error))
             {

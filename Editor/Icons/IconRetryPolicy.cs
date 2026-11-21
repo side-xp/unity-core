@@ -187,6 +187,30 @@ namespace SideXP.Core.EditorOnly
         }
 
         /// <summary>
+        /// The keys of the icon downloads that have been given up.
+        /// </summary>
+        internal IEnumerable<string> GivenUpKeys
+        {
+            get
+            {
+                foreach (KeyValuePair<string, IconFailures> failures in _failures)
+                {
+                    if (failures.Value.IsGivenUp)
+                        yield return failures.Key;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gives up the download of an icon, as when restoring the downloads given up before a domain reload.
+        /// </summary>
+        /// <param name="key">The key of the icon download.</param>
+        internal void GiveUp(string key)
+        {
+            GetOrAddFailures(key).IsGivenUp = true;
+        }
+
+        /// <summary>
         /// Forgets all failures and the network pause, so every download can be attempted again.
         /// </summary>
         internal void Clear()

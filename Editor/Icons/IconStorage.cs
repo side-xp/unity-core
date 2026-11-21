@@ -475,6 +475,24 @@ namespace SideXP.Core.EditorOnly
         #region Downloaded icons
 
         /// <summary>
+        /// Checks if the files of an icon are stored for a given style, in every stored size.
+        /// </summary>
+        /// <param name="name">The name of the icon.</param>
+        /// <param name="category">The category of the icon, as written in the index.</param>
+        /// <param name="style">The style of the icon.</param>
+        /// <returns>Returns true if a file exists for each of <see cref="StoredSizes"/>.</returns>
+        /// <exception cref="ArgumentException">Thrown if the icon name is not valid.</exception>
+        internal static bool IsStored(string name, string category, EIconStyle style)
+        {
+            foreach (int size in StoredSizes)
+            {
+                if (!File.Exists(GetIconFilePath(name, category, size, style)))
+                    return false;
+            }
+            return true;
+        }
+
+        /// <summary>
         /// Measures the icon files stored in the shared folder.
         /// </summary>
         /// <param name="fileCount">Outputs the number of icon files.</param>
