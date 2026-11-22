@@ -36,6 +36,11 @@ namespace SideXP.Core.EditorOnly
         private static bool s_isInteractive = false;
 
         /// <summary>
+        /// Whether the failure of the refresh in progress is logged when it's not interactive.
+        /// </summary>
+        private static bool s_shouldLogFailure = false;
+
+        /// <summary>
         /// The task of the refresh in progress in the Background Tasks window, or null if none.
         /// </summary>
         private static EditorProgressTask s_task = null;
@@ -60,16 +65,21 @@ namespace SideXP.Core.EditorOnly
         /// </summary>
         /// <param name="isInteractive">
         /// If enabled, displays the outcome in a dialog, and a cancellable progress bar if Background Tasks are not supported. Meant
-        /// for refreshes asked by the user. Otherwise, only failures are logged. If a refresh is already running, this makes it
-        /// interactive.
+        /// for refreshes asked by the user. Otherwise, only failures are logged (see <paramref name="isSilent"/>). If a refresh is
+        /// already running, this makes it interactive.
         /// </param>
         /// <param name="onComplete">Called when the refresh is done, whether it succeeded or not. Can be null.</param>
-        internal static void Refresh(bool isInteractive, Action<IconIndexRefresh> onComplete = null)
+        /// <param name="isSilent">
+        /// If enabled, a failure of a refresh that is not interactive is not logged, as when the caller reports it itself. If a
+        /// refresh is already running, its failure is still logged if another caller didn't ask for silence.
+        /// </param>
+        internal static void Refresh(bool isInteractive, Action<IconIndexRefresh> onComplete = null, bool isSilent = false)
         {
             if (onComplete != null)
                 s_callbacks.Add(onComplete);
 
             s_isInteractive |= isInteractive;
+            s_shouldLogFailure |= !isSilent;
             if (s_job != null)
                 return;
 
@@ -152,10 +162,12 @@ namespace SideXP.Core.EditorOnly
             IconIndexRefresh job = s_job;
             EditorProgressTask task = s_task;
             bool isInteractive = s_isInteractive;
+            bool shouldLogFailure = s_shouldLogFailure;
             Action<IconIndexRefresh>[] callbacks = s_callbacks.ToArray();
             s_job = null;
             s_task = null;
             s_isInteractive = false;
+            s_shouldLogFailure = false;
             s_callbacks.Clear();
 
             if (IsUsingProgressBar(isInteractive))
@@ -168,7 +180,7 @@ namespace SideXP.Core.EditorOnly
             else
                 task.Fail(job.Error);
 
-            Report(job, isInteractive);
+            Report(job, isInteractive, shouldLogFailure);
             foreach (Action<IconIndexRefresh> callback in callbacks)
                 callback(job);
         }
@@ -178,7 +190,8 @@ namespace SideXP.Core.EditorOnly
         /// </summary>
         /// <param name="job">The completed refresh.</param>
         /// <param name="isInteractive">If enabled, displays the outcome in a dialog. Otherwise, only failures are logged.</param>
-        private static void Report(IconIndexRefresh job, bool isInteractive)
+        /// <param name="shouldLogFailure">If disabled, the failure of a refresh that is not interactive is not logged.</param>
+        private static void Report(IconIndexRefresh job, bool isInteractive, bool shouldLogFailure)
         {
             if (job.CleanUpErrors.Count > 0)
             {
@@ -194,7 +207,7 @@ namespace SideXP.Core.EditorOnly
             {
                 if (isInteractive)
                     EditorUtility.DisplayDialog(Title, job.Error, "OK");
-                else
+                else if (shouldLogFailure)
                     Debug.LogWarning($"The icons index couldn't be refreshed: {job.Error}");
 
                 return;

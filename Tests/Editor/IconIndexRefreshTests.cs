@@ -179,6 +179,7 @@ namespace SideXP.Core.Tests
             IconIndexRefresh job = RunToCompletion();
 
             Assert.IsTrue(job.IsSuccess, job.Error);
+            Assert.AreEqual(EWebDownloadStatus.Success, job.FailureStatus);
             Assert.IsFalse(job.IsUpToDate);
             Assert.AreEqual(LatestVersion, job.Version);
             CollectionAssert.AreEqual(
@@ -265,6 +266,7 @@ namespace SideXP.Core.Tests
             IconIndexRefresh job = RunToCompletion();
 
             Assert.IsFalse(job.IsSuccess);
+            Assert.AreEqual(EWebDownloadStatus.NetworkError, job.FailureStatus);
             StringAssert.Contains("Cannot resolve host", job.Error);
             AssertOldIndexKept();
         }
@@ -280,6 +282,7 @@ namespace SideXP.Core.Tests
             IconIndexRefresh job = RunToCompletion();
 
             Assert.IsFalse(job.IsSuccess);
+            Assert.AreEqual(EWebDownloadStatus.Failed, job.FailureStatus);
             Assert.AreEqual(1, _downloads.Count);
             Assert.IsFalse(File.Exists(IconStorage.IndexFilePath));
         }
@@ -296,6 +299,7 @@ namespace SideXP.Core.Tests
             IconIndexRefresh job = RunToCompletion();
 
             Assert.IsFalse(job.IsSuccess);
+            Assert.AreEqual(EWebDownloadStatus.NotFound, job.FailureStatus);
             AssertOldIndexKept();
             Assert.IsTrue(Directory.Exists(starFolder));
         }
@@ -312,6 +316,7 @@ namespace SideXP.Core.Tests
             IconIndexRefresh job = RunToCompletion();
 
             Assert.IsFalse(job.IsSuccess);
+            Assert.AreEqual(EWebDownloadStatus.Failed, job.FailureStatus);
             AssertOldIndexKept();
             Assert.IsTrue(Directory.Exists(starFolder));
         }
@@ -334,6 +339,7 @@ namespace SideXP.Core.Tests
             Assert.IsTrue(job.IsDone);
             Assert.IsFalse(job.IsSuccess);
             Assert.IsTrue(job.IsCancelled);
+            Assert.AreEqual(EWebDownloadStatus.Aborted, job.FailureStatus);
             Assert.IsTrue(catalogDownload.IsAborted);
             AssertOldIndexKept();
             Assert.IsTrue(Directory.Exists(starFolder));

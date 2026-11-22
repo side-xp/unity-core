@@ -103,6 +103,13 @@ namespace SideXP.Core.EditorOnly
         internal string Error { get; private set; } = null;
 
         /// <summary>
+        /// Why the job failed, so the caller can decide if and when to try again: the status of the failed download,
+        /// <see cref="EWebDownloadStatus.Aborted"/> if the job has been cancelled, or <see cref="EWebDownloadStatus.Failed"/> if the
+        /// downloaded files couldn't be read or written. <see cref="EWebDownloadStatus.Success"/> if the job didn't fail.
+        /// </summary>
+        internal EWebDownloadStatus FailureStatus { get; private set; } = EWebDownloadStatus.Success;
+
+        /// <summary>
         /// The latest Tabler version, or null if it's not resolved yet.
         /// </summary>
         internal string Version { get; private set; } = null;
@@ -209,7 +216,7 @@ namespace SideXP.Core.EditorOnly
 
             _download = null;
             IsCancelled = true;
-            Fail("The icons index refresh has been cancelled.");
+            Fail("The icons index refresh has been cancelled.", EWebDownloadStatus.Aborted);
         }
 
         #endregion
@@ -226,7 +233,7 @@ namespace SideXP.Core.EditorOnly
         {
             if (!result.IsSuccess)
             {
-                Fail($"The latest Tabler version couldn't be resolved: {result.Error}");
+                Fail($"The latest Tabler version couldn't be resolved: {result.Error}", result.Status);
                 return;
             }
 
@@ -256,7 +263,7 @@ namespace SideXP.Core.EditorOnly
         {
             if (!result.IsSuccess)
             {
-                Fail($"The Tabler {Version} catalog couldn't be downloaded: {result.Error}");
+                Fail($"The Tabler {Version} catalog couldn't be downloaded: {result.Error}", result.Status);
                 return;
             }
 
@@ -299,6 +306,7 @@ namespace SideXP.Core.EditorOnly
         {
             IsSuccess = true;
             Error = null;
+            FailureStatus = EWebDownloadStatus.Success;
             Step = EStep.Done;
         }
 
@@ -306,10 +314,15 @@ namespace SideXP.Core.EditorOnly
         /// Ends the job with an error.
         /// </summary>
         /// <param name="error">The reason why the job failed.</param>
-        private void Fail(string error)
+        /// <param name="status">
+        /// Why the job failed (see <see cref="FailureStatus"/>). <see cref="EWebDownloadStatus.Success"/> is replaced by
+        /// <see cref="EWebDownloadStatus.Failed"/>.
+        /// </param>
+        private void Fail(string error, EWebDownloadStatus status = EWebDownloadStatus.Failed)
         {
             IsSuccess = false;
             Error = error;
+            FailureStatus = status != EWebDownloadStatus.Success ? status : EWebDownloadStatus.Failed;
             Step = EStep.Done;
         }
 

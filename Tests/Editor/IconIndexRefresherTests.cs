@@ -174,6 +174,40 @@ namespace SideXP.Core.Tests
             Assert.IsFalse(File.Exists(IconStorage.IndexFilePath));
         }
 
+        /// <summary>
+        /// A failed refresh that is silent is not logged, so its caller can report it.
+        /// </summary>
+        /// <returns>Returns the test coroutine.</returns>
+        [UnityTest]
+        public IEnumerator Refresh_FailedAndSilent_LogsNothing()
+        {
+            _isCatalogMissing = true;
+
+            IconIndexRefresh completedJob = null;
+            IconIndexRefresher.Refresh(false, job => completedJob = job, true);
+
+            yield return WaitForRefresh();
+
+            Assert.IsFalse(completedJob.IsSuccess);
+            LogAssert.NoUnexpectedReceived();
+        }
+
+        /// <summary>
+        /// A silent refresh joined by a caller that is not silent logs its failure.
+        /// </summary>
+        /// <returns>Returns the test coroutine.</returns>
+        [UnityTest]
+        public IEnumerator Refresh_SilentJoinedByNotSilent_LogsWarning()
+        {
+            _isCatalogMissing = true;
+            LogAssert.Expect(LogType.Warning, new Regex("couldn't be refreshed"));
+
+            IconIndexRefresher.Refresh(false, null, true);
+            IconIndexRefresher.Refresh(false);
+
+            yield return WaitForRefresh();
+        }
+
         #endregion
 
 

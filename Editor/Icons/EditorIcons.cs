@@ -41,9 +41,31 @@ namespace SideXP.Core.EditorOnly
         private const double IndexCheckInterval = 1;
 
         /// <summary>
-        /// Minimum time between two automatic downloads of the index after a failure, in seconds.
+        /// Delay before downloading the index again automatically after a first failure, in seconds. Doubles after each failure.
+        /// Long enough not to request the server on each repaint of a window drawing icons.
         /// </summary>
-        private const double AutoRefreshRetryDelay = 60;
+        private const double IndexFirstRetryDelay = 60;
+
+        /// <summary>
+        /// Maximum pause of the automatic downloads of the index after consecutive network errors, in seconds. Network errors are
+        /// never given up, since the index downloads again once the connection is back.
+        /// </summary>
+        private const double IndexMaxNetworkPause = 900;
+
+        /// <summary>
+        /// Key of the automatic downloads of the index in <see cref="s_indexRetryPolicy"/>.
+        /// </summary>
+        private const string IndexRetryKey = "index";
+
+        /// <summary>
+        /// Key in <see cref="SessionState"/> of whether the automatic downloads of the index have been given up.
+        /// </summary>
+        private const string IndexGivenUpSessionKey = "SideXP.Core.EditorOnly.EditorIcons.IndexGivenUp";
+
+        /// <summary>
+        /// Key in <see cref="SessionState"/> of whether a failed automatic download of the index has already been logged.
+        /// </summary>
+        private const string IndexWarnedSessionKey = "SideXP.Core.EditorOnly.EditorIcons.IndexWarned";
 
         /// <summary>
         /// URL of the Tabler icons catalog, mentioned in warnings.
@@ -76,9 +98,13 @@ namespace SideXP.Core.EditorOnly
         private static double s_lastIndexCheckTime = double.MinValue;
 
         /// <summary>
-        /// The last time the index has been downloaded automatically.
+        /// Decides when the index can be downloaded again automatically after a failure.
         /// </summary>
-        private static double s_lastAutoRefreshTime = double.MinValue;
+        /// <remarks>
+        /// Its failures and pauses are lost on domain reload, so the index is downloaded again once after each reload. Only giving
+        /// up is remembered until the editor is closed (see <see cref="IndexGivenUpSessionKey"/>).
+        /// </remarks>
+        private static readonly DownloadRetryPolicy s_indexRetryPolicy = CreateIndexRetryPolicy();
 
         /// <summary>
         /// The names for which a warning has been logged, so it's logged only once.
@@ -299,16 +325,16 @@ namespace SideXP.Core.EditorOnly
         internal static bool IsAutoRefreshEnabled { get; set; } = true;
 
         /// <summary>
-        /// Forgets the index in use and the warnings already logged, so the next request starts from a clean state. Meant for tests,
-        /// along with <see cref="IconDownloads.Reset"/>.
+        /// Forgets the index in use, the failed automatic downloads of the index and the warnings already logged, so the next
+        /// request starts from a clean state. Meant for tests, along with <see cref="IconDownloads.Reset"/>.
         /// </summary>
         internal static void ResetState()
         {
             SetIndex(null);
             s_lastIndexCheckTime = double.MinValue;
-            s_lastAutoRefreshTime = double.MinValue;
             s_warnedNames.Clear();
             s_namesToCheck.Clear();
+            ForgetIndexFailures();
         }
 
         /// <summary>
@@ -358,11 +384,12 @@ namespace SideXP.Core.EditorOnly
             {
                 if (IconIndexRefresher.IsRefreshing)
                 {
+                    // Silent, so the failure is reported as decided by the caller that started the refresh
                     IconIndexRefresher.Refresh(false, job =>
                     {
                         if (job.IsSuccess)
                             LoadIcon(name, onLoaded, style, color, pointSize);
-                    });
+                    }, true);
                 }
                 return;
             }
@@ -469,16 +496,17 @@ namespace SideXP.Core.EditorOnly
         }
 
         /// <summary>
-        /// Starts downloading the index in the background, unless it's already being downloaded, or a download failed recently.
+        /// Starts downloading the index in the background, unless it's already being downloaded, or the retry policy doesn't allow it
+        /// yet after a failure.
         /// </summary>
         /// <param name="time">The current time, in seconds.</param>
         private static void RequestIndex(double time)
         {
-            if (!IsAutoRefreshEnabled || IconIndexRefresher.IsRefreshing || time - s_lastAutoRefreshTime < AutoRefreshRetryDelay)
+            if (!IsAutoRefreshEnabled || IconIndexRefresher.IsRefreshing || !s_indexRetryPolicy.CanAttempt(IndexRetryKey, time))
                 return;
 
-            s_lastAutoRefreshTime = time;
-            IconIndexRefresher.Refresh(false, OnIndexRefreshed);
+            // Silent, since the failures of automatic downloads are reported by this class (see OnIndexAutoRefreshed())
+            IconIndexRefresher.Refresh(false, OnIndexAutoRefreshed, true);
         }
 
         /// <summary>
@@ -490,9 +518,73 @@ namespace SideXP.Core.EditorOnly
             if (!job.IsSuccess)
                 return;
 
+            ForgetIndexFailures();
+
             // Check the new index file right away, and draw the icons that were waiting for it
             s_lastIndexCheckTime = double.MinValue;
             InternalEditorUtility.RepaintAllViews();
+        }
+
+        /// <summary>
+        /// Called when an automatic download of the index is done: reports a failure to the retry policy, and logs it at most twice
+        /// per session (on the first failure, and when giving up).
+        /// </summary>
+        /// <param name="job">The completed refresh.</param>
+        private static void OnIndexAutoRefreshed(IconIndexRefresh job)
+        {
+            if (job.IsSuccess)
+            {
+                OnIndexRefreshed(job);
+                return;
+            }
+
+            // Cancelled by the user or by a domain reload, which is not a failure of the download
+            if (job.IsCancelled)
+                return;
+
+            s_indexRetryPolicy.ReportFailure(IndexRetryKey, job.FailureStatus, EditorApplication.timeSinceStartup);
+            if (s_indexRetryPolicy.IsGivenUp(IndexRetryKey))
+            {
+                SessionState.SetBool(IndexGivenUpSessionKey, true);
+                Debug.LogWarning("The icons index couldn't be downloaded, so editor icons are not available. "
+                    + $"Use {IconsMenu.RefreshIndexMenu} to try again.\n{job.Error}");
+            }
+            else if (!SessionState.GetBool(IndexWarnedSessionKey, false))
+            {
+                SessionState.SetBool(IndexWarnedSessionKey, true);
+                Debug.LogWarning("The icons index couldn't be downloaded, so editor icons show placeholders. "
+                    + $"It will be downloaded again automatically, or use {IconsMenu.RefreshIndexMenu} to try now.\n{job.Error}");
+            }
+        }
+
+        /// <summary>
+        /// Creates the retry policy of the automatic downloads of the index, with the giving up remembered in the session.
+        /// </summary>
+        /// <returns>Returns the created policy.</returns>
+        private static DownloadRetryPolicy CreateIndexRetryPolicy()
+        {
+            var policy = new DownloadRetryPolicy(new DownloadRetrySettings
+            {
+                FirstRetryDelay = IndexFirstRetryDelay,
+                FirstNetworkPause = IndexFirstRetryDelay,
+                MaxNetworkPause = IndexMaxNetworkPause,
+            });
+
+            if (SessionState.GetBool(IndexGivenUpSessionKey, false))
+                policy.GiveUp(IndexRetryKey);
+
+            return policy;
+        }
+
+        /// <summary>
+        /// Forgets the failed automatic downloads of the index, including the ones remembered in the session, so the index can be
+        /// downloaded again right away, and a new failure is logged.
+        /// </summary>
+        private static void ForgetIndexFailures()
+        {
+            s_indexRetryPolicy.Clear();
+            SessionState.EraseBool(IndexGivenUpSessionKey);
+            SessionState.EraseBool(IndexWarnedSessionKey);
         }
 
         /// <summary>

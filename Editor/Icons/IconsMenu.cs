@@ -26,7 +26,7 @@ namespace SideXP.Core.EditorOnly
         /// <summary>
         /// Path of the menu that refreshes the icons index.
         /// </summary>
-        private const string RefreshIndexMenu = MenuPath + "/Refresh Icons Index";
+        internal const string RefreshIndexMenu = MenuPath + "/Refresh Icons Index";
 
         /// <summary>
         /// Path of the menu that deletes the downloaded icons.

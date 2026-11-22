@@ -156,6 +156,8 @@ Icons come from the [Tabler Icons](https://tabler.io/icons) npm packages, served
 
 The downloads are displayed in the *Background Tasks* window (from Unity 2020.1). If the network is not available, the editor keeps working: icons already downloaded are displayed, and the others show their placeholder until the connection is back. Icons are downloaded with the [web downloads](web-downloads.md) feature of the package, which you can also use in your own tools.
 
+If the index can't be downloaded, a warning is logged once, and the download is attempted again automatically, with a longer delay after each failure. If it still fails after a few attempts, it's given up until the editor is closed, but you can still try again from the menu below.
+
 The index keeps the Tabler version it comes from, and icons are always downloaded in that version. Use `Tools > Sideways Experiments > Icons > Refresh Icons Index` to update to the latest Tabler version.
 
 ### The icons folder

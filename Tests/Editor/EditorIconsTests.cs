@@ -163,6 +163,18 @@ namespace SideXP.Core.Tests
             Assert.AreEqual(0, IconDownloads.Count, "The downloads didn't complete.");
         }
 
+        /// <summary>
+        /// Waits for editor frames until no refresh of the index is in progress.
+        /// </summary>
+        /// <returns>Returns the coroutine that waits.</returns>
+        private static IEnumerator WaitForRefresh()
+        {
+            for (int i = 0; i < MaxFrames && IconIndexRefresher.IsRefreshing; i++)
+                yield return null;
+
+            Assert.IsFalse(IconIndexRefresher.IsRefreshing, "The refresh didn't complete.");
+        }
+
         #region Index
 
         /// <summary>
@@ -175,6 +187,44 @@ namespace SideXP.Core.Tests
             Assert.IsFalse(EditorIcons.Exists("home"));
             Assert.IsEmpty(EditorIcons.Categories);
             Assert.AreEqual(0, EditorIcons.Icons.Count);
+        }
+
+        /// <summary>
+        /// A failed automatic download of the index logs a warning, and is not attempted again until its retry delay is over.
+        /// </summary>
+        /// <returns>Returns the test coroutine.</returns>
+        [UnityTest]
+        public IEnumerator IsIndexAvailable_AutoRefreshFails_WarnsAndWaitsBeforeRetrying()
+        {
+            // The fake server answers a PNG instead of the latest version, which can't be read
+            EditorIcons.IsAutoRefreshEnabled = true;
+            LogAssert.Expect(LogType.Warning, new Regex("show placeholders"));
+
+            Assert.IsFalse(EditorIcons.IsIndexAvailable);
+            Assert.IsTrue(IconIndexRefresher.IsRefreshing);
+            yield return WaitForRefresh();
+
+            Assert.IsFalse(EditorIcons.IsIndexAvailable);
+            Assert.IsFalse(IconIndexRefresher.IsRefreshing, "The index has been downloaded again before its retry delay.");
+            LogAssert.NoUnexpectedReceived();
+        }
+
+        /// <summary>
+        /// A missing index file gives up the automatic downloads of the index, with a warning.
+        /// </summary>
+        /// <returns>Returns the test coroutine.</returns>
+        [UnityTest]
+        public IEnumerator IsIndexAvailable_AutoRefreshNotFound_GivesUp()
+        {
+            EditorIcons.IsAutoRefreshEnabled = true;
+            _isServerMissingFiles = true;
+            LogAssert.Expect(LogType.Warning, new Regex("editor icons are not available"));
+
+            Assert.IsFalse(EditorIcons.IsIndexAvailable);
+            yield return WaitForRefresh();
+
+            Assert.IsFalse(EditorIcons.IsIndexAvailable);
+            Assert.IsFalse(IconIndexRefresher.IsRefreshing, "The index has been downloaded again after being given up.");
         }
 
         /// <summary>
