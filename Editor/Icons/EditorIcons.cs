@@ -265,6 +265,72 @@ namespace SideXP.Core.EditorOnly
         #endregion
 
 
+        #region IMGUI
+
+        /// <summary>
+        /// Makes a <see cref="GUIContent"/> with an icon, for IMGUI controls.
+        /// </summary>
+        /// <remarks>
+        /// IMGUI draws the image of a <see cref="GUIContent"/> at its size in pixels, so draw the content in an
+        /// <see cref="IconSizeScope"/> to keep the icon at its size on screen at high display scales. Make the content again on each
+        /// draw (it's cheap): the image is a placeholder until the icon is downloaded.
+        /// </remarks>
+        /// <param name="name">The name of the icon, as <c>home</c>.</param>
+        /// <param name="text">The text of the content, or null for an icon only.</param>
+        /// <param name="tooltip">The tooltip of the content, or null for none.</param>
+        /// <param name="style"><inheritdoc cref="GetIcon" path="/param[@name='style']"/></param>
+        /// <param name="color">The color of the icon.</param>
+        /// <param name="size">The size of the icon on screen.</param>
+        /// <returns>Returns the created content.</returns>
+        public static GUIContent IconContent(string name, string text = null, string tooltip = null, EIconStyle style = EIconStyle.Outline,
+            EIconColor color = EIconColor.Auto, EIconSize size = EIconSize.Small)
+        {
+            return new GUIContent(text, GetIcon(name, style, color, size), tooltip);
+        }
+
+        /// <summary>
+        /// Draws an IMGUI button with an icon, at its size on screen.
+        /// </summary>
+        /// <param name="position">The position of the button.</param>
+        /// <param name="name">The name of the icon, as <c>home</c>.</param>
+        /// <param name="label">
+        /// The text and tooltip of the button, or null for an icon only. Its image is replaced by the icon, without changing it.
+        /// </param>
+        /// <param name="style"><inheritdoc cref="GetIcon" path="/param[@name='style']"/></param>
+        /// <param name="color">The color of the icon.</param>
+        /// <param name="size">The size of the icon on screen.</param>
+        /// <returns>Returns true if the button has been clicked.</returns>
+        public static bool IconButton(Rect position, string name, GUIContent label = null, EIconStyle style = EIconStyle.Outline,
+            EIconColor color = EIconColor.Auto, EIconSize size = EIconSize.Small)
+        {
+            GUIContent content = MakeButtonContent(name, label, style, color, size);
+            using (new IconSizeScope(size))
+                return GUI.Button(position, content);
+        }
+
+        /// <summary>
+        /// Draws an IMGUI button with an icon, at its size on screen, using automatic layout.
+        /// </summary>
+        /// <param name="name">The name of the icon, as <c>home</c>.</param>
+        /// <param name="label">
+        /// The text and tooltip of the button, or null for an icon only. Its image is replaced by the icon, without changing it.
+        /// </param>
+        /// <param name="style"><inheritdoc cref="GetIcon" path="/param[@name='style']"/></param>
+        /// <param name="color">The color of the icon.</param>
+        /// <param name="size">The size of the icon on screen.</param>
+        /// <param name="options">The layout options of the button.</param>
+        /// <returns>Returns true if the button has been clicked.</returns>
+        public static bool IconButton(string name, GUIContent label = null, EIconStyle style = EIconStyle.Outline,
+            EIconColor color = EIconColor.Auto, EIconSize size = EIconSize.Small, params GUILayoutOption[] options)
+        {
+            GUIContent content = MakeButtonContent(name, label, style, color, size);
+            using (new IconSizeScope(size))
+                return GUILayout.Button(content, options);
+        }
+
+        #endregion
+
+
         #region Internal API
 
         /// <summary>
@@ -468,6 +534,23 @@ namespace SideXP.Core.EditorOnly
 
                 onComplete?.Invoke(isStored);
             });
+        }
+
+        /// <summary>
+        /// Makes the content of an icon button, from an optional label.
+        /// </summary>
+        /// <param name="name">The name of the icon.</param>
+        /// <param name="label">The text and tooltip of the button, or null for an icon only. It's copied, not changed.</param>
+        /// <param name="style">The style of the icon.</param>
+        /// <param name="color">The color of the icon.</param>
+        /// <param name="size">The size of the icon on screen.</param>
+        /// <returns>Returns the content of the button.</returns>
+        private static GUIContent MakeButtonContent(string name, GUIContent label, EIconStyle style, EIconColor color, EIconSize size)
+        {
+            Texture2D icon = GetIcon(name, style, color, size);
+            return label != null
+                ? new GUIContent(label.text, icon, label.tooltip)
+                : new GUIContent(icon);
         }
 
         /// <summary>

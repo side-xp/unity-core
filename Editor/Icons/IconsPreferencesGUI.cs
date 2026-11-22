@@ -59,7 +59,8 @@ namespace SideXP.Core.EditorOnly
 
             using (new EditorGUI.DisabledScope(isDefaultFolder))
             {
-                if (GUI.Button(resetButtonRect, new GUIContent("Reset", "Move the icons back to the default folder.")))
+                var resetLabel = new GUIContent("Reset", "Move the icons back to the default folder.");
+                if (EditorIcons.IconButton(resetButtonRect, "restore", resetLabel))
                 {
                     ChangeFolder(preferences, IconStorage.DefaultRootFolder);
                     GUIUtility.ExitGUI();

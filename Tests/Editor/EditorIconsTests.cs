@@ -426,6 +426,62 @@ namespace SideXP.Core.Tests
 
         #endregion
 
+
+        #region IMGUI
+
+        /// <summary>
+        /// The content has the given text and tooltip, and the icon as image.
+        /// </summary>
+        [Test]
+        public void IconContent_HasTextTooltipAndIcon()
+        {
+            WriteIndex();
+            Store("home", "Buildings", EIconStyle.Outline);
+
+            GUIContent content = EditorIcons.IconContent("home", "Home", "Go home");
+
+            Assert.AreEqual("Home", content.text);
+            Assert.AreEqual("Go home", content.tooltip);
+            Assert.AreSame(EditorIcons.GetIcon("home"), content.image);
+        }
+
+        /// <summary>
+        /// The content of an unknown icon has the empty placeholder as image, so it's never null.
+        /// </summary>
+        [Test]
+        public void IconContent_UnknownName_HasPlaceholder()
+        {
+            WriteIndex();
+            LogAssert.Expect(LogType.Warning, new Regex(UnknownName));
+
+            GUIContent content = EditorIcons.IconContent(UnknownName);
+
+            Assert.AreSame(IconTextures.GetEmptyPlaceholder(SmallPixelSize), content.image);
+        }
+
+        /// <summary>
+        /// The icon size scope sets the size of the icons drawn in contents, and restores the previous one, even when nested.
+        /// </summary>
+        [Test]
+        public void IconSizeScope_SetsAndRestoresIconSize()
+        {
+            Vector2 previousSize = EditorGUIUtility.GetIconSize();
+
+            using (new IconSizeScope(EIconSize.Large))
+            {
+                Assert.AreEqual(new Vector2(32f, 32f), EditorGUIUtility.GetIconSize());
+
+                using (new IconSizeScope(EIconSize.Small))
+                    Assert.AreEqual(new Vector2(16f, 16f), EditorGUIUtility.GetIconSize());
+
+                Assert.AreEqual(new Vector2(32f, 32f), EditorGUIUtility.GetIconSize());
+            }
+
+            Assert.AreEqual(previousSize, EditorGUIUtility.GetIconSize());
+        }
+
+        #endregion
+
     }
 
 }
