@@ -39,7 +39,7 @@ namespace SideXP.Core.EditorOnly
         /// Number of icons per page. Enough to browse quickly, few enough to download and draw a page in a moment. Divisible by 2, 3, 4,
         /// 5 and 6, so the last row of a full page is complete for most window widths.
         /// </summary>
-        private const int IconsPerPage = 60;
+        private const int IconsPerPage = 40;
 
         /// <summary>
         /// Minimum width of an icon badge. Badges are stretched to fill the width of the window.

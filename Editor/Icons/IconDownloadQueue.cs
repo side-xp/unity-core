@@ -128,6 +128,18 @@ namespace SideXP.Core.EditorOnly
         internal int DownloadingCount => _items.FindAll(item => item.Download != null).Count;
 
         /// <summary>
+        /// Describes the first download in progress, as <c>home (filled)</c>, or null if none.
+        /// </summary>
+        internal string CurrentDownloadName
+        {
+            get
+            {
+                Item item = _items.Find(i => i.Download != null);
+                return item != null ? $"{item.Name} ({IconStorage.GetStyleName(item.Style)})" : null;
+            }
+        }
+
+        /// <summary>
         /// Gets the key of an item, unique per version, icon and style.
         /// </summary>
         /// <example><c>GetKey("3.52.0", "home", EIconStyle.Filled)</c> returns <c>"3.52.0/home/filled"</c>.</example>

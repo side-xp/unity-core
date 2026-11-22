@@ -12,6 +12,8 @@ namespace SideXP.Core.EditorOnly
     /// </summary>
     /// <remarks>
     /// Only one refresh runs at a time: asking for a refresh while one is running waits for that one instead of starting another.
+    /// From Unity 2020.1, every refresh is displayed as a cancellable task in the Background Tasks window. On older versions, only
+    /// interactive refreshes display their progress, in a modal progress bar.
     /// </remarks>
     internal static class IconIndexRefresher
     {
@@ -29,9 +31,14 @@ namespace SideXP.Core.EditorOnly
         private static IconIndexRefresh s_job = null;
 
         /// <summary>
-        /// Whether the refresh in progress displays a progress bar, and its outcome in a dialog.
+        /// Whether the refresh in progress displays its outcome in a dialog, and a progress bar if Background Tasks are not supported.
         /// </summary>
         private static bool s_isInteractive = false;
+
+        /// <summary>
+        /// The task of the refresh in progress in the Background Tasks window, or null if none.
+        /// </summary>
+        private static IconProgressTask s_task = null;
 
         /// <summary>
         /// The functions to call when the refresh in progress is done.
@@ -52,8 +59,9 @@ namespace SideXP.Core.EditorOnly
         /// Starts refreshing the icons index, or waits for the refresh in progress.
         /// </summary>
         /// <param name="isInteractive">
-        /// If enabled, displays a cancellable progress bar, and the outcome in a dialog. Meant for refreshes asked by the user.
-        /// Otherwise, only failures are logged. If a refresh is already running, this makes it interactive.
+        /// If enabled, displays the outcome in a dialog, and a cancellable progress bar if Background Tasks are not supported. Meant
+        /// for refreshes asked by the user. Otherwise, only failures are logged. If a refresh is already running, this makes it
+        /// interactive.
         /// </param>
         /// <param name="onComplete">Called when the refresh is done, whether it succeeded or not. Can be null.</param>
         internal static void Refresh(bool isInteractive, Action<IconIndexRefresh> onComplete = null)
@@ -67,6 +75,7 @@ namespace SideXP.Core.EditorOnly
 
             s_job = new IconIndexRefresh();
             s_job.Start();
+            s_task = new IconProgressTask(Title, s_job.Description, OnTaskCancelled);
             EditorApplication.update += Update;
             AssemblyReloadEvents.beforeAssemblyReload += OnBeforeAssemblyReload;
         }
@@ -77,20 +86,47 @@ namespace SideXP.Core.EditorOnly
         #region Private API
 
         /// <summary>
-        /// Moves the refresh forward, and updates the progress bar.
+        /// Moves the refresh forward, and updates its progress display.
         /// </summary>
         private static void Update()
         {
             s_job.Update();
 
-            if (!s_job.IsDone && s_isInteractive)
+            if (!s_job.IsDone)
             {
-                if (EditorUtility.DisplayCancelableProgressBar(Title, s_job.Description, s_job.Progress))
+                s_task.Report(s_job.Progress, s_job.Description);
+                if (IsUsingProgressBar(s_isInteractive)
+                    && EditorUtility.DisplayCancelableProgressBar(Title, s_job.Description, s_job.Progress))
+                {
                     s_job.Cancel();
+                }
             }
 
             if (s_job.IsDone)
                 Finish();
+        }
+
+        /// <summary>
+        /// Called when the user cancels the refresh from the Background Tasks window.
+        /// </summary>
+        /// <returns>Returns true, since the refresh can always be cancelled.</returns>
+        private static bool OnTaskCancelled()
+        {
+            // Ended by the next update, which reports the outcome and notifies the callbacks
+            if (s_job != null)
+                s_job.Cancel();
+
+            return true;
+        }
+
+        /// <summary>
+        /// Checks if the progress of a refresh is displayed in a modal progress bar.
+        /// </summary>
+        /// <param name="isInteractive">Whether the refresh is interactive.</param>
+        /// <returns>Returns true if the refresh is interactive, and Background Tasks are not supported.</returns>
+        private static bool IsUsingProgressBar(bool isInteractive)
+        {
+            return isInteractive && !IconProgressTask.IsSupported;
         }
 
         /// <summary>
@@ -114,14 +150,23 @@ namespace SideXP.Core.EditorOnly
             AssemblyReloadEvents.beforeAssemblyReload -= OnBeforeAssemblyReload;
 
             IconIndexRefresh job = s_job;
+            IconProgressTask task = s_task;
             bool isInteractive = s_isInteractive;
             Action<IconIndexRefresh>[] callbacks = s_callbacks.ToArray();
             s_job = null;
+            s_task = null;
             s_isInteractive = false;
             s_callbacks.Clear();
 
-            if (isInteractive)
+            if (IsUsingProgressBar(isInteractive))
                 EditorUtility.ClearProgressBar();
+
+            if (job.IsCancelled)
+                task.Cancel();
+            else if (job.IsSuccess)
+                task.Succeed(job.Description);
+            else
+                task.Fail(job.Error);
 
             Report(job, isInteractive);
             foreach (Action<IconIndexRefresh> callback in callbacks)
