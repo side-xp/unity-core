@@ -21,7 +21,7 @@ namespace SideXP.Core.Tests
     /// </summary>
     /// <remarks>
     /// Every test starts from a clean state: a temporary folder set as <see cref="IconStorage.RootFolderOverride"/>, no texture in
-    /// memory, an empty download queue, and no automatic index download. Downloads are replaced by <see cref="FakeIconDownload"/>.
+    /// memory, an empty download queue, and no automatic index download. Downloads are replaced by <see cref="FakeWebDownload"/>.
     /// Textures and processing use the GPU, so these tests work in the editor, but not in batch mode with <c>-nographics</c>.
     /// </remarks>
     public class EditorIconsTests
@@ -61,9 +61,9 @@ namespace SideXP.Core.Tests
             IconStorage.RootFolderOverride = _tempFolder;
 
             _isServerMissingFiles = false;
-            IconDownloader.DownloadOverride = url => _isServerMissingFiles
-                ? new FakeIconDownload(url, IconDownloadResult.Failure(EIconDownloadStatus.NotFound, "Not Found", 404))
-                : new FakeIconDownload(url, IconDownloadResult.Success(MakePng(32)));
+            WebDownloader.DownloadOverride = url => _isServerMissingFiles
+                ? new FakeWebDownload(url, WebDownloadResult.Failure(EWebDownloadStatus.NotFound, "Not Found", 404))
+                : new FakeWebDownload(url, WebDownloadResult.Success(MakePng(32)));
 
             ResetAll();
             EditorIcons.IsAutoRefreshEnabled = false;
@@ -77,7 +77,7 @@ namespace SideXP.Core.Tests
         {
             ResetAll();
             EditorIcons.IsAutoRefreshEnabled = true;
-            IconDownloader.DownloadOverride = null;
+            WebDownloader.DownloadOverride = null;
             IconStorage.RootFolderOverride = null;
             if (Directory.Exists(_tempFolder))
                 Directory.Delete(_tempFolder, true);

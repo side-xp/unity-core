@@ -19,7 +19,7 @@ namespace SideXP.Core.Tests
     /// Tests for <see cref="IconIndexRefresher"/> and the file size display of <see cref="IconsMenu"/>.
     /// </summary>
     /// <remarks>
-    /// Refreshes are not interactive, so no dialog blocks the tests. Downloads are replaced by <see cref="FakeIconDownload"/>, and
+    /// Refreshes are not interactive, so no dialog blocks the tests. Downloads are replaced by <see cref="FakeWebDownload"/>, and
     /// every test works in a temporary folder set as <see cref="IconStorage.RootFolderOverride"/>.
     /// </remarks>
     public class IconIndexRefresherTests
@@ -66,7 +66,7 @@ namespace SideXP.Core.Tests
 
             _isCatalogMissing = false;
             _downloadedUrls = new List<string>();
-            IconDownloader.DownloadOverride = url =>
+            WebDownloader.DownloadOverride = url =>
             {
                 _downloadedUrls.Add(url);
                 if (url == TablerSource.LatestVersionUrl)
@@ -75,7 +75,7 @@ namespace SideXP.Core.Tests
                 if (url == TablerSource.GetCatalogUrl(LatestVersion) && !_isCatalogMissing)
                     return Answer(url, Catalog);
 
-                return new FakeIconDownload(url, IconDownloadResult.Failure(EIconDownloadStatus.NotFound, "Not Found", 404));
+                return new FakeWebDownload(url, WebDownloadResult.Failure(EWebDownloadStatus.NotFound, "Not Found", 404));
             };
         }
 
@@ -85,7 +85,7 @@ namespace SideXP.Core.Tests
         [TearDown]
         public void TearDown()
         {
-            IconDownloader.DownloadOverride = null;
+            WebDownloader.DownloadOverride = null;
             IconStorage.RootFolderOverride = null;
             IconIndexStore.ClearMemory();
             if (Directory.Exists(_tempFolder))
@@ -98,9 +98,9 @@ namespace SideXP.Core.Tests
         /// <param name="url">The URL of the downloaded file.</param>
         /// <param name="text">The downloaded text.</param>
         /// <returns>Returns the fake download.</returns>
-        private static FakeIconDownload Answer(string url, string text)
+        private static FakeWebDownload Answer(string url, string text)
         {
-            return new FakeIconDownload(url, IconDownloadResult.Success(Encoding.UTF8.GetBytes(text)));
+            return new FakeWebDownload(url, WebDownloadResult.Success(Encoding.UTF8.GetBytes(text)));
         }
 
         /// <summary>

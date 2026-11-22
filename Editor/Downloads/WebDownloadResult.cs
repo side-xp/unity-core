@@ -5,17 +5,22 @@ namespace SideXP.Core.EditorOnly
 {
 
     /// <summary>
-    /// The outcome of a completed download, with its data if it succeeded.
+    /// The outcome of a completed web download, with its data if it succeeded.
     /// </summary>
-    internal readonly struct IconDownloadResult
+    public readonly struct WebDownloadResult
     {
 
         #region Fields
 
         /// <summary>
+        /// The HTTP status code of a successful response.
+        /// </summary>
+        public const long OkResponseCode = 200;
+
+        /// <summary>
         /// The outcome of the download.
         /// </summary>
-        public EIconDownloadStatus Status { get; }
+        public EWebDownloadStatus Status { get; }
 
         /// <summary>
         /// The HTTP status code of the response, or 0 if there was no response.
@@ -44,7 +49,7 @@ namespace SideXP.Core.EditorOnly
         /// <param name="responseCode"><inheritdoc cref="ResponseCode" path="/summary"/></param>
         /// <param name="data"><inheritdoc cref="Data" path="/summary"/></param>
         /// <param name="error"><inheritdoc cref="Error" path="/summary"/></param>
-        private IconDownloadResult(EIconDownloadStatus status, long responseCode, byte[] data, string error)
+        private WebDownloadResult(EWebDownloadStatus status, long responseCode, byte[] data, string error)
         {
             Status = status;
             ResponseCode = responseCode;
@@ -55,24 +60,34 @@ namespace SideXP.Core.EditorOnly
         /// <summary>
         /// Creates the outcome of a successful download.
         /// </summary>
-        /// <param name="data">The downloaded data.</param>
+        /// <remarks>
+        /// Meant for custom <see cref="IWebDownload"/> implementations, as fake downloads in tests.
+        /// </remarks>
+        /// <param name="data">The downloaded data. Null is replaced by an empty array.</param>
         /// <param name="responseCode">The HTTP status code of the response.</param>
         /// <returns>Returns the created outcome.</returns>
-        internal static IconDownloadResult Success(byte[] data, long responseCode = 200)
+        public static WebDownloadResult Success(byte[] data, long responseCode = OkResponseCode)
         {
-            return new IconDownloadResult(EIconDownloadStatus.Success, responseCode, data ?? Array.Empty<byte>(), null);
+            return new WebDownloadResult(EWebDownloadStatus.Success, responseCode, data ?? Array.Empty<byte>(), null);
         }
 
         /// <summary>
         /// Creates the outcome of a failed download.
         /// </summary>
-        /// <param name="status">The outcome of the download. Must not be <see cref="EIconDownloadStatus.Success"/>.</param>
-        /// <param name="error">The reason why the download failed.</param>
+        /// <remarks>
+        /// Meant for custom <see cref="IWebDownload"/> implementations, as fake downloads in tests.
+        /// </remarks>
+        /// <param name="status">The outcome of the download. Must not be <see cref="EWebDownloadStatus.Success"/>.</param>
+        /// <param name="error">The reason why the download failed. If null or empty, the name of the status is used.</param>
         /// <param name="responseCode">The HTTP status code of the response, or 0 if there was no response.</param>
         /// <returns>Returns the created outcome.</returns>
-        internal static IconDownloadResult Failure(EIconDownloadStatus status, string error, long responseCode = 0)
+        /// <exception cref="ArgumentException">Thrown if the status is <see cref="EWebDownloadStatus.Success"/>.</exception>
+        public static WebDownloadResult Failure(EWebDownloadStatus status, string error, long responseCode = 0)
         {
-            return new IconDownloadResult(status, responseCode, null, string.IsNullOrEmpty(error) ? status.ToString() : error);
+            if (status == EWebDownloadStatus.Success)
+                throw new ArgumentException($"Use {nameof(Success)}() for a successful download.", nameof(status));
+
+            return new WebDownloadResult(status, responseCode, null, string.IsNullOrEmpty(error) ? status.ToString() : error);
         }
 
         #endregion
@@ -83,7 +98,7 @@ namespace SideXP.Core.EditorOnly
         /// <summary>
         /// Checks if the download succeeded.
         /// </summary>
-        public bool IsSuccess => Status == EIconDownloadStatus.Success;
+        public bool IsSuccess => Status == EWebDownloadStatus.Success;
 
         /// <summary>
         /// Gets the downloaded data as UTF-8 text.

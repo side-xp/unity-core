@@ -19,7 +19,7 @@ namespace SideXP.Core.Tests
     /// Tests for <see cref="IconDownloadQueue"/>.
     /// </summary>
     /// <remarks>
-    /// Downloads are replaced by <see cref="FakeIconDownload"/>, time is given by the tests, and every test works in a temporary
+    /// Downloads are replaced by <see cref="FakeWebDownload"/>, time is given by the tests, and every test works in a temporary
     /// folder set as <see cref="IconStorage.RootFolderOverride"/>. Processing uses the GPU, so these tests work in the editor, but not
     /// in batch mode with <c>-nographics</c>.
     /// </remarks>
@@ -57,7 +57,7 @@ namespace SideXP.Core.Tests
         private static byte[] s_png = null;
 
         private string _tempFolder = null;
-        private IconRetryPolicy _policy = null;
+        private DownloadRetryPolicy _policy = null;
         private IconDownloadQueue _queue = null;
 
         /// <summary>
@@ -68,12 +68,12 @@ namespace SideXP.Core.Tests
         /// <summary>
         /// The downloads started by the queue, in order.
         /// </summary>
-        private List<FakeIconDownload> _downloads = null;
+        private List<FakeWebDownload> _downloads = null;
 
         /// <summary>
         /// Answers a download request of the queue. Answers with a valid PNG by default.
         /// </summary>
-        private Func<string, FakeIconDownload> _answer = null;
+        private Func<string, FakeWebDownload> _answer = null;
 
         /// <summary>
         /// Generates the PNG answered by the fake server.
@@ -99,14 +99,14 @@ namespace SideXP.Core.Tests
             IconStorage.RootFolderOverride = _tempFolder;
 
             _givenUpKeys = new List<string>();
-            _policy = new IconRetryPolicy();
+            _policy = new DownloadRetryPolicy();
             _queue = new IconDownloadQueue(_policy, _givenUpKeys.Add);
 
-            _downloads = new List<FakeIconDownload>();
+            _downloads = new List<FakeWebDownload>();
             _answer = Success;
-            IconDownloader.DownloadOverride = url =>
+            WebDownloader.DownloadOverride = url =>
             {
-                FakeIconDownload download = _answer(url);
+                FakeWebDownload download = _answer(url);
                 _downloads.Add(download);
                 return download;
             };
@@ -118,7 +118,7 @@ namespace SideXP.Core.Tests
         [TearDown]
         public void TearDown()
         {
-            IconDownloader.DownloadOverride = null;
+            WebDownloader.DownloadOverride = null;
             IconStorage.RootFolderOverride = null;
             if (Directory.Exists(_tempFolder))
                 Directory.Delete(_tempFolder, true);
@@ -129,9 +129,9 @@ namespace SideXP.Core.Tests
         /// </summary>
         /// <param name="url">The requested URL.</param>
         /// <returns>Returns the fake download.</returns>
-        private static FakeIconDownload Success(string url)
+        private static FakeWebDownload Success(string url)
         {
-            return new FakeIconDownload(url, IconDownloadResult.Success(s_png));
+            return new FakeWebDownload(url, WebDownloadResult.Success(s_png));
         }
 
         /// <summary>
@@ -140,9 +140,9 @@ namespace SideXP.Core.Tests
         /// <param name="url">The requested URL.</param>
         /// <param name="status">The outcome of the download.</param>
         /// <returns>Returns the fake download.</returns>
-        private static FakeIconDownload Failure(string url, EIconDownloadStatus status)
+        private static FakeWebDownload Failure(string url, EWebDownloadStatus status)
         {
-            return new FakeIconDownload(url, IconDownloadResult.Failure(status, status.ToString()));
+            return new FakeWebDownload(url, WebDownloadResult.Failure(status, status.ToString()));
         }
 
         /// <summary>
@@ -266,7 +266,7 @@ namespace SideXP.Core.Tests
         [Test]
         public void Update_ManyRequests_LimitsConcurrentDownloads()
         {
-            _answer = url => new FakeIconDownload(url, IconDownloadResult.Success(s_png), true);
+            _answer = url => new FakeWebDownload(url, WebDownloadResult.Success(s_png), true);
             int requestCount = IconDownloadQueue.MaxConcurrentDownloads + 2;
             for (int i = 0; i < requestCount; i++)
                 _queue.Request(Version, new IconIndexEntry { name = $"icon-{i}", category = "Shapes" }, EIconStyle.Outline, null);
@@ -301,17 +301,17 @@ namespace SideXP.Core.Tests
         public void Update_FailedDownload_IsRetriedAfterDelay()
         {
             int attemptCount = 0;
-            _answer = url => attemptCount++ == 0 ? Failure(url, EIconDownloadStatus.Failed) : Success(url);
+            _answer = url => attemptCount++ == 0 ? Failure(url, EWebDownloadStatus.Failed) : Success(url);
             bool? isStored = null;
             _queue.Request(Version, User, EIconStyle.Outline, result => isStored = result);
 
             UpdateTwice(0);
             Assert.IsNull(isStored);
 
-            _queue.Update(IconRetryPolicy.FirstRetryDelay - Epsilon);
+            _queue.Update(DownloadRetrySettings.DefaultFirstRetryDelay - Epsilon);
             Assert.AreEqual(1, _downloads.Count);
 
-            UpdateTwice(IconRetryPolicy.FirstRetryDelay);
+            UpdateTwice(DownloadRetrySettings.DefaultFirstRetryDelay);
             Assert.AreEqual(true, isStored);
             Assert.AreEqual(2, _downloads.Count);
         }
@@ -322,7 +322,7 @@ namespace SideXP.Core.Tests
         [Test]
         public void Update_InvalidImage_IsRetried()
         {
-            _answer = url => new FakeIconDownload(url, IconDownloadResult.Success(new byte[] { 1, 2, 3 }));
+            _answer = url => new FakeWebDownload(url, WebDownloadResult.Success(new byte[] { 1, 2, 3 }));
             bool? isStored = null;
             _queue.Request(Version, User, EIconStyle.Outline, result => isStored = result);
 
@@ -339,7 +339,7 @@ namespace SideXP.Core.Tests
         [Test]
         public void Update_NotFound_GivesUpAndRemembers()
         {
-            _answer = url => Failure(url, EIconDownloadStatus.NotFound);
+            _answer = url => Failure(url, EWebDownloadStatus.NotFound);
             bool? isStored = null;
             _queue.Request(Version, User, EIconStyle.Outline, result => isStored = result);
 
@@ -360,7 +360,7 @@ namespace SideXP.Core.Tests
         [Test]
         public void Update_FilledNotFound_StillStoresOutline()
         {
-            _answer = url => url.Contains("/filled/") ? Failure(url, EIconDownloadStatus.NotFound) : Success(url);
+            _answer = url => url.Contains("/filled/") ? Failure(url, EWebDownloadStatus.NotFound) : Success(url);
             bool? isOutlineStored = null;
             _queue.Request(Version, Home, EIconStyle.Outline, result => isOutlineStored = result);
 
@@ -377,15 +377,15 @@ namespace SideXP.Core.Tests
         [Test]
         public void Update_NetworkError_PausesEveryDownload()
         {
-            _answer = url => url.Contains("/user.") ? Failure(url, EIconDownloadStatus.NetworkError) : Success(url);
+            _answer = url => url.Contains("/user.") ? Failure(url, EWebDownloadStatus.NetworkError) : Success(url);
             _queue.Request(Version, User, EIconStyle.Outline, null);
             UpdateTwice(0);
 
             _queue.Request(Version, new IconIndexEntry { name = "star", category = "Shapes" }, EIconStyle.Outline, null);
-            _queue.Update(IconRetryPolicy.FirstNetworkPause - Epsilon);
+            _queue.Update(DownloadRetrySettings.DefaultFirstNetworkPause - Epsilon);
             Assert.AreEqual(1, _downloads.Count);
 
-            _queue.Update(IconRetryPolicy.FirstNetworkPause);
+            _queue.Update(DownloadRetrySettings.DefaultFirstNetworkPause);
             Assert.AreEqual(3, _downloads.Count);
         }
 
@@ -395,7 +395,7 @@ namespace SideXP.Core.Tests
         [Test]
         public void AbortDownloads_KeepsItemsForLater()
         {
-            _answer = url => new FakeIconDownload(url, IconDownloadResult.Success(s_png), true);
+            _answer = url => new FakeWebDownload(url, WebDownloadResult.Success(s_png), true);
             _queue.Request(Version, User, EIconStyle.Outline, null);
             _queue.Update(0);
 

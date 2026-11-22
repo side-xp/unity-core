@@ -14,7 +14,7 @@ namespace SideXP.Core.Tests
     /// Tests for <see cref="IconIndexRefresh"/>.
     /// </summary>
     /// <remarks>
-    /// Downloads are replaced by <see cref="FakeIconDownload"/>, and every test works in a temporary folder set as
+    /// Downloads are replaced by <see cref="FakeWebDownload"/>, and every test works in a temporary folder set as
     /// <see cref="IconStorage.RootFolderOverride"/>, so neither the network nor the real shared folder are used.
     /// </remarks>
     public class IconIndexRefreshTests
@@ -53,12 +53,12 @@ namespace SideXP.Core.Tests
         /// <summary>
         /// The answers of the fake server, by URL. URLs without answer are answered with a 404.
         /// </summary>
-        private Dictionary<string, Func<string, FakeIconDownload>> _answers = null;
+        private Dictionary<string, Func<string, FakeWebDownload>> _answers = null;
 
         /// <summary>
         /// The downloads started by the job, in order.
         /// </summary>
-        private List<FakeIconDownload> _downloads = null;
+        private List<FakeWebDownload> _downloads = null;
 
         /// <summary>
         /// Creates an empty temporary folder as the shared folder, and replaces the downloads by a fake server that knows the latest
@@ -73,18 +73,18 @@ namespace SideXP.Core.Tests
             IconStorage.RootFolderOverride = _tempFolder;
             IconIndexStore.ClearMemory();
 
-            _downloads = new List<FakeIconDownload>();
-            _answers = new Dictionary<string, Func<string, FakeIconDownload>>
+            _downloads = new List<FakeWebDownload>();
+            _answers = new Dictionary<string, Func<string, FakeWebDownload>>
             {
                 { TablerSource.LatestVersionUrl, url => Answer(url, VersionResponse(LatestVersion)) },
                 { TablerSource.GetCatalogUrl(LatestVersion), url => Answer(url, Catalog) },
             };
 
-            IconDownloader.DownloadOverride = url =>
+            WebDownloader.DownloadOverride = url =>
             {
-                FakeIconDownload download = _answers.TryGetValue(url, out Func<string, FakeIconDownload> answer)
+                FakeWebDownload download = _answers.TryGetValue(url, out Func<string, FakeWebDownload> answer)
                     ? answer(url)
-                    : new FakeIconDownload(url, IconDownloadResult.Failure(EIconDownloadStatus.NotFound, "Not Found", 404));
+                    : new FakeWebDownload(url, WebDownloadResult.Failure(EWebDownloadStatus.NotFound, "Not Found", 404));
                 _downloads.Add(download);
                 return download;
             };
@@ -96,7 +96,7 @@ namespace SideXP.Core.Tests
         [TearDown]
         public void TearDown()
         {
-            IconDownloader.DownloadOverride = null;
+            WebDownloader.DownloadOverride = null;
             IconStorage.RootFolderOverride = null;
             IconIndexStore.ClearMemory();
             if (Directory.Exists(_tempFolder))
@@ -110,9 +110,9 @@ namespace SideXP.Core.Tests
         /// <param name="text">The downloaded text.</param>
         /// <param name="isPending">If enabled, the download stays in progress until completed by the test.</param>
         /// <returns>Returns the fake download.</returns>
-        private static FakeIconDownload Answer(string url, string text, bool isPending = false)
+        private static FakeWebDownload Answer(string url, string text, bool isPending = false)
         {
-            return new FakeIconDownload(url, IconDownloadResult.Success(Encoding.UTF8.GetBytes(text)), isPending);
+            return new FakeWebDownload(url, WebDownloadResult.Success(Encoding.UTF8.GetBytes(text)), isPending);
         }
 
         /// <summary>
@@ -231,7 +231,7 @@ namespace SideXP.Core.Tests
         [Test]
         public void Update_PendingDownload_WaitsForIt()
         {
-            FakeIconDownload versionDownload = null;
+            FakeWebDownload versionDownload = null;
             _answers[TablerSource.LatestVersionUrl] = url => versionDownload = Answer(url, VersionResponse(LatestVersion), true);
 
             var job = new IconIndexRefresh();
@@ -260,7 +260,7 @@ namespace SideXP.Core.Tests
         {
             StoreOldIndex();
             _answers[TablerSource.LatestVersionUrl] = url =>
-                new FakeIconDownload(url, IconDownloadResult.Failure(EIconDownloadStatus.NetworkError, "Cannot resolve host"));
+                new FakeWebDownload(url, WebDownloadResult.Failure(EWebDownloadStatus.NetworkError, "Cannot resolve host"));
 
             IconIndexRefresh job = RunToCompletion();
 
@@ -323,7 +323,7 @@ namespace SideXP.Core.Tests
         public void Cancel_DuringCatalogDownload_AbortsAndKeepsIndex()
         {
             string starFolder = StoreOldIndex();
-            FakeIconDownload catalogDownload = null;
+            FakeWebDownload catalogDownload = null;
             _answers[TablerSource.GetCatalogUrl(LatestVersion)] = url => catalogDownload = Answer(url, Catalog, true);
 
             var job = new IconIndexRefresh();

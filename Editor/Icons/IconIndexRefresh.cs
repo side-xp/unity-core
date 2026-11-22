@@ -57,9 +57,15 @@ namespace SideXP.Core.EditorOnly
         private const float VersionProgressShare = 0.1f;
 
         /// <summary>
+        /// Time after which the catalog download fails, in seconds. Larger than <see cref="WebDownloader.DefaultTimeoutSeconds"/>,
+        /// since the catalog weighs a few megabytes and may be downloaded on a slow connection.
+        /// </summary>
+        private const int CatalogTimeoutSeconds = 60;
+
+        /// <summary>
         /// The download in progress, or null if none.
         /// </summary>
-        private IIconDownload _download = null;
+        private IWebDownload _download = null;
 
         #endregion
 
@@ -164,7 +170,7 @@ namespace SideXP.Core.EditorOnly
                 throw new InvalidOperationException("The icons index refresh has already been started.");
 
             Step = EStep.ResolvingVersion;
-            _download = IconDownloader.Start(TablerSource.LatestVersionUrl);
+            _download = WebDownloader.Start(TablerSource.LatestVersionUrl);
         }
 
         /// <summary>
@@ -175,7 +181,7 @@ namespace SideXP.Core.EditorOnly
             if (IsDone || _download == null || !_download.IsDone)
                 return;
 
-            IconDownloadResult result = _download.Result;
+            WebDownloadResult result = _download.Result;
             _download = null;
 
             switch (Step)
@@ -216,7 +222,7 @@ namespace SideXP.Core.EditorOnly
         /// up to date.
         /// </summary>
         /// <param name="result">The outcome of the download.</param>
-        private void OnVersionDownloaded(IconDownloadResult result)
+        private void OnVersionDownloaded(WebDownloadResult result)
         {
             if (!result.IsSuccess)
             {
@@ -239,14 +245,14 @@ namespace SideXP.Core.EditorOnly
             }
 
             Step = EStep.DownloadingCatalog;
-            _download = IconDownloader.Start(TablerSource.GetCatalogUrl(version));
+            _download = WebDownloader.Start(TablerSource.GetCatalogUrl(version), CatalogTimeoutSeconds);
         }
 
         /// <summary>
         /// Called when the catalog has been downloaded: converts it, cleans up the icon files, and writes the new index.
         /// </summary>
         /// <param name="result">The outcome of the download.</param>
-        private void OnCatalogDownloaded(IconDownloadResult result)
+        private void OnCatalogDownloaded(WebDownloadResult result)
         {
             if (!result.IsSuccess)
             {

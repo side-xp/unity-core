@@ -36,7 +36,7 @@ namespace SideXP.Core.Tests
             _tempFolder = IconStorage.NormalizePath(Path.Combine(Path.GetTempPath(), tempFolderName));
             Directory.CreateDirectory(_tempFolder);
             IconStorage.RootFolderOverride = _tempFolder;
-            IconDownloader.DownloadOverride = url => new FakeIconDownload(url, IconDownloadResult.Success(new byte[0]), true);
+            WebDownloader.DownloadOverride = url => new FakeWebDownload(url, WebDownloadResult.Success(new byte[0]), true);
 
             ResetAll();
             EditorIcons.IsAutoRefreshEnabled = false;
@@ -50,7 +50,7 @@ namespace SideXP.Core.Tests
         {
             ResetAll();
             EditorIcons.IsAutoRefreshEnabled = true;
-            IconDownloader.DownloadOverride = null;
+            WebDownloader.DownloadOverride = null;
             IconStorage.RootFolderOverride = null;
             if (Directory.Exists(_tempFolder))
                 Directory.Delete(_tempFolder, true);

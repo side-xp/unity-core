@@ -2,9 +2,9 @@ namespace SideXP.Core.EditorOnly
 {
 
     /// <summary>
-    /// Defines the outcome of a download made for the editor icons.
+    /// Defines the outcome of a web download.
     /// </summary>
-    internal enum EIconDownloadStatus
+    public enum EWebDownloadStatus
     {
 
         /// <summary>
@@ -23,7 +23,7 @@ namespace SideXP.Core.EditorOnly
         NetworkError,
 
         /// <summary>
-        /// The server answered with another error, or the data couldn't be processed. Retrying later may help.
+        /// The server answered with another error, or the downloaded data couldn't be handled. Retrying later may help.
         /// </summary>
         Failed,
 

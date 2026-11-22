@@ -45,7 +45,7 @@ namespace SideXP.Core.EditorOnly
         /// <summary>
         /// The retry policy of the shared queue, or null if the queue has not been created yet.
         /// </summary>
-        private static IconRetryPolicy s_policy = null;
+        private static DownloadRetryPolicy s_policy = null;
 
         /// <summary>
         /// The shared queue, or null if it has not been created yet.
@@ -126,7 +126,7 @@ namespace SideXP.Core.EditorOnly
             if (s_queue != null)
                 return;
 
-            s_policy = new IconRetryPolicy();
+            s_policy = new DownloadRetryPolicy();
             foreach (string key in SessionState.GetString(GivenUpSessionKey, string.Empty).Split(GivenUpSeparator))
             {
                 if (!string.IsNullOrEmpty(key))

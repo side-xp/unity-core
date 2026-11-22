@@ -6,12 +6,21 @@ namespace SideXP.Core.EditorOnly
 {
 
     /// <summary>
-    /// Starts the downloads made for the editor icons.
+    /// Starts web downloads, polled until they're done.
     /// </summary>
     /// <remarks>
-    /// Downloads use <see cref="UnityWebRequest"/>, unless <see cref="DownloadOverride"/> is set, so tests don't depend on the network.
+    /// Downloads use <see cref="UnityWebRequest"/>, and keep the downloaded data in memory. They don't survive a domain reload, so
+    /// abort them before scripts are reloaded (see <see cref="UnityEditor.AssemblyReloadEvents.beforeAssemblyReload"/>).
     /// </remarks>
-    internal static class IconDownloader
+    /// <example>
+    /// <code>
+    /// IWebDownload download = WebDownloader.Start("https://example.com/data.json");
+    /// // Then, from editor updates:
+    /// if (download.IsDone &amp;&amp; download.Result.IsSuccess)
+    ///     Debug.Log(download.Result.GetText());
+    /// </code>
+    /// </example>
+    public static class WebDownloader
     {
 
         #region Subclasses
@@ -19,7 +28,7 @@ namespace SideXP.Core.EditorOnly
         /// <summary>
         /// A download made with <see cref="UnityWebRequest"/>.
         /// </summary>
-        private class WebDownload : IIconDownload
+        private class UnityWebDownload : IWebDownload
         {
 
             /// <summary>
@@ -30,16 +39,17 @@ namespace SideXP.Core.EditorOnly
             /// <summary>
             /// The outcome of the download, or null if it's not done yet.
             /// </summary>
-            private IconDownloadResult? _result = null;
+            private WebDownloadResult? _result = null;
 
             /// <summary>
             /// Starts downloading a file.
             /// </summary>
             /// <param name="url">The URL of the file to download.</param>
-            public WebDownload(string url)
+            /// <param name="timeoutSeconds">The time after which the download fails, in seconds, or 0 for no timeout.</param>
+            public UnityWebDownload(string url, int timeoutSeconds)
             {
                 _request = UnityWebRequest.Get(url);
-                _request.timeout = TimeoutSeconds;
+                _request.timeout = timeoutSeconds;
                 _request.SendWebRequest();
             }
 
@@ -63,7 +73,7 @@ namespace SideXP.Core.EditorOnly
             public float Progress => _result.HasValue ? 1f : _request.downloadProgress;
 
             /// <inheritdoc/>
-            public IconDownloadResult Result
+            public WebDownloadResult Result
             {
                 get
                 {
@@ -81,14 +91,14 @@ namespace SideXP.Core.EditorOnly
                     return;
 
                 _request.Abort();
-                Finish(IconDownloadResult.Failure(EIconDownloadStatus.Aborted, "The download has been aborted."));
+                Finish(WebDownloadResult.Failure(EWebDownloadStatus.Aborted, "The download has been aborted."));
             }
 
             /// <summary>
             /// Stores the outcome of the download, and disposes the request.
             /// </summary>
             /// <param name="result">The outcome of the download.</param>
-            private void Finish(IconDownloadResult result)
+            private void Finish(WebDownloadResult result)
             {
                 _result = result;
                 _request.Dispose();
@@ -103,10 +113,10 @@ namespace SideXP.Core.EditorOnly
         #region Fields
 
         /// <summary>
-        /// Time after which a download is considered failed, in seconds. Large enough for the catalog (a few megabytes) on a slow
-        /// connection.
+        /// Time after which a download fails by default, in seconds. Enough for small files on a slow connection: pass a larger
+        /// timeout for large files.
         /// </summary>
-        internal const int TimeoutSeconds = 60;
+        public const int DefaultTimeoutSeconds = 30;
 
         /// <summary>
         /// HTTP status code of a missing file.
@@ -119,18 +129,31 @@ namespace SideXP.Core.EditorOnly
         #region Public API
 
         /// <summary>
-        /// Starts the downloads instead of <see cref="UnityWebRequest"/>, or null to use it. Meant for tests.
+        /// Starts the downloads instead of <see cref="UnityWebRequest"/>, or null to use it. Meant for tests, so they don't depend on
+        /// the network.
         /// </summary>
-        internal static Func<string, IIconDownload> DownloadOverride { get; set; } = null;
+        internal static Func<string, IWebDownload> DownloadOverride { get; set; } = null;
 
         /// <summary>
         /// Starts downloading a file.
         /// </summary>
         /// <param name="url">The URL of the file to download.</param>
+        /// <param name="timeoutSeconds">The time after which the download fails, in seconds, or 0 for no timeout.</param>
         /// <returns>Returns the download in progress.</returns>
-        internal static IIconDownload Start(string url)
+        /// <exception cref="ArgumentException">Thrown if the URL is null or empty.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if the timeout is negative.</exception>
+        public static IWebDownload Start(string url, int timeoutSeconds = DefaultTimeoutSeconds)
         {
-            return DownloadOverride != null ? DownloadOverride(url) : new WebDownload(url);
+            if (string.IsNullOrEmpty(url))
+                throw new ArgumentException("The URL of a download can't be null or empty.", nameof(url));
+
+            if (timeoutSeconds < 0)
+            {
+                string message = "The timeout of a download can't be negative.";
+                throw new ArgumentOutOfRangeException(nameof(timeoutSeconds), timeoutSeconds, message);
+            }
+
+            return DownloadOverride != null ? DownloadOverride(url) : new UnityWebDownload(url, timeoutSeconds);
         }
 
         #endregion
@@ -143,7 +166,7 @@ namespace SideXP.Core.EditorOnly
         /// </summary>
         /// <param name="request">The completed request.</param>
         /// <returns>Returns the outcome of the request.</returns>
-        private static IconDownloadResult MakeResult(UnityWebRequest request)
+        private static WebDownloadResult MakeResult(UnityWebRequest request)
         {
 #if UNITY_2020_2_OR_NEWER
             bool isNetworkError = request.result == UnityWebRequest.Result.ConnectionError;
@@ -154,15 +177,15 @@ namespace SideXP.Core.EditorOnly
 #endif
 
             if (isNetworkError)
-                return IconDownloadResult.Failure(EIconDownloadStatus.NetworkError, request.error);
+                return WebDownloadResult.Failure(EWebDownloadStatus.NetworkError, request.error);
 
             if (request.responseCode == NotFoundStatusCode)
-                return IconDownloadResult.Failure(EIconDownloadStatus.NotFound, request.error, request.responseCode);
+                return WebDownloadResult.Failure(EWebDownloadStatus.NotFound, request.error, request.responseCode);
 
             if (isFailed)
-                return IconDownloadResult.Failure(EIconDownloadStatus.Failed, request.error, request.responseCode);
+                return WebDownloadResult.Failure(EWebDownloadStatus.Failed, request.error, request.responseCode);
 
-            return IconDownloadResult.Success(request.downloadHandler.data, request.responseCode);
+            return WebDownloadResult.Success(request.downloadHandler.data, request.responseCode);
         }
 
         #endregion

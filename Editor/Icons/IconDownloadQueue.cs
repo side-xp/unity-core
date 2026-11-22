@@ -16,7 +16,7 @@ namespace SideXP.Core.EditorOnly
     /// <item>Each style of an icon is a separate item with its own retries, so a failing filled style doesn't hold back the outline
     /// one. Requests for the same item share the same download.</item>
     /// <item>Icons are downloaded with the Tabler version of the index they come from, so their files match it.</item>
-    /// <item>Failed downloads are retried as decided by <see cref="IconRetryPolicy"/>.</item>
+    /// <item>Failed downloads are retried as decided by <see cref="DownloadRetryPolicy"/>.</item>
     /// </list>
     /// The queue doesn't run by itself: its owner must call <see cref="Update(double)"/> regularly (as from editor updates).
     /// Callbacks are called from <see cref="Update(double)"/>, or right away if the result is already known.
@@ -60,7 +60,7 @@ namespace SideXP.Core.EditorOnly
             /// <summary>
             /// The download in progress, or null if the item is waiting.
             /// </summary>
-            public IIconDownload Download = null;
+            public IWebDownload Download = null;
 
             /// <summary>
             /// The functions to call when the item is stored (true) or given up (false).
@@ -83,7 +83,7 @@ namespace SideXP.Core.EditorOnly
         /// <summary>
         /// Decides when failed downloads can be attempted again.
         /// </summary>
-        private readonly IconRetryPolicy _policy = null;
+        private readonly DownloadRetryPolicy _policy = null;
 
         /// <summary>
         /// Called with the key of an item when it's given up, or null.
@@ -106,7 +106,7 @@ namespace SideXP.Core.EditorOnly
         /// <param name="policy">Decides when failed downloads can be attempted again. Its failures are shared with the queue.</param>
         /// <param name="onGivenUp">Called with the key of an item when it's given up, as to remember it. Can be null.</param>
         /// <exception cref="ArgumentNullException">Thrown if the policy is null.</exception>
-        internal IconDownloadQueue(IconRetryPolicy policy, Action<string> onGivenUp = null)
+        internal IconDownloadQueue(DownloadRetryPolicy policy, Action<string> onGivenUp = null)
         {
             _policy = policy ?? throw new ArgumentNullException(nameof(policy));
             _onGivenUp = onGivenUp;
@@ -269,7 +269,7 @@ namespace SideXP.Core.EditorOnly
                 if (item.Download != null || !_policy.CanAttempt(item.Key, time))
                     continue;
 
-                item.Download = IconDownloader.Start(TablerSource.GetIconUrl(item.Version, item.Name, item.Style));
+                item.Download = WebDownloader.Start(TablerSource.GetIconUrl(item.Version, item.Name, item.Style));
                 downloadingCount++;
             }
         }
@@ -282,10 +282,10 @@ namespace SideXP.Core.EditorOnly
         /// <returns>Returns true if the item has been stored or given up, and removed from the queue.</returns>
         private bool HandleDownload(Item item, double time)
         {
-            IconDownloadResult result = item.Download.Result;
+            WebDownloadResult result = item.Download.Result;
             item.Download = null;
 
-            EIconDownloadStatus status = result.Status;
+            EWebDownloadStatus status = result.Status;
             if (result.IsSuccess)
             {
                 if (TryStore(item, result.Data))
@@ -296,7 +296,7 @@ namespace SideXP.Core.EditorOnly
                 }
 
                 // The downloaded file couldn't be processed or written, which may work on the next attempt
-                status = EIconDownloadStatus.Failed;
+                status = EWebDownloadStatus.Failed;
             }
 
             _policy.ReportFailure(item.Key, status, time);

@@ -7,10 +7,10 @@ namespace SideXP.Core.Tests
     /// A download that doesn't use the network, with an outcome set by the test.
     /// </summary>
     /// <remarks>
-    /// Use it through <see cref="IconDownloader.DownloadOverride"/>. A download created as pending stays in progress until
+    /// Use it through <see cref="WebDownloader.DownloadOverride"/>. A download created as pending stays in progress until
     /// <see cref="Complete"/> is called.
     /// </remarks>
-    internal class FakeIconDownload : IIconDownload
+    internal class FakeWebDownload : IWebDownload
     {
 
         #region Fields
@@ -23,7 +23,7 @@ namespace SideXP.Core.Tests
         /// <summary>
         /// The outcome of the download.
         /// </summary>
-        private IconDownloadResult _result;
+        private WebDownloadResult _result;
 
         #endregion
 
@@ -36,7 +36,7 @@ namespace SideXP.Core.Tests
         /// <param name="url">The URL of the downloaded file.</param>
         /// <param name="result">The outcome of the download.</param>
         /// <param name="isPending">If enabled, the download stays in progress until <see cref="Complete"/> is called.</param>
-        public FakeIconDownload(string url, IconDownloadResult result, bool isPending = false)
+        public FakeWebDownload(string url, WebDownloadResult result, bool isPending = false)
         {
             Url = url;
             _result = result;
@@ -65,7 +65,7 @@ namespace SideXP.Core.Tests
         public float Progress => IsDone ? 1f : PendingProgress;
 
         /// <inheritdoc/>
-        public IconDownloadResult Result => _result;
+        public WebDownloadResult Result => _result;
 
         /// <summary>
         /// Ends a pending download with its outcome.
@@ -83,7 +83,7 @@ namespace SideXP.Core.Tests
 
             IsAborted = true;
             IsDone = true;
-            _result = IconDownloadResult.Failure(EIconDownloadStatus.Aborted, "Aborted by the test.");
+            _result = WebDownloadResult.Failure(EWebDownloadStatus.Aborted, "Aborted by the test.");
         }
 
         #endregion

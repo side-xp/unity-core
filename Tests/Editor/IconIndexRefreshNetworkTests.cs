@@ -46,7 +46,7 @@ namespace SideXP.Core.Tests
             _tempFolder = IconStorage.NormalizePath(Path.Combine(Path.GetTempPath(), tempFolderName));
             Directory.CreateDirectory(_tempFolder);
             IconStorage.RootFolderOverride = _tempFolder;
-            IconDownloader.DownloadOverride = null;
+            WebDownloader.DownloadOverride = null;
             IconIndexStore.ClearMemory();
         }
 

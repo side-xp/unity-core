@@ -46,7 +46,7 @@ namespace SideXP.Core.Tests
             _tempFolder = IconStorage.NormalizePath(Path.Combine(Path.GetTempPath(), tempFolderName));
             Directory.CreateDirectory(_tempFolder);
             IconStorage.RootFolderOverride = _tempFolder;
-            IconDownloader.DownloadOverride = null;
+            WebDownloader.DownloadOverride = null;
         }
 
         /// <summary>
@@ -67,7 +67,7 @@ namespace SideXP.Core.Tests
         [UnityTest]
         public IEnumerator Request_RealIcon_StoresBothStyles()
         {
-            var queue = new IconDownloadQueue(new IconRetryPolicy());
+            var queue = new IconDownloadQueue(new DownloadRetryPolicy());
             var home = new IconIndexEntry { name = "home", category = "Buildings", hasFilled = true };
             bool? isStored = null;
             queue.Request(Version, home, EIconStyle.Outline, result => isStored = result);

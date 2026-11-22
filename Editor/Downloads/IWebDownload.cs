@@ -2,13 +2,13 @@ namespace SideXP.Core.EditorOnly
 {
 
     /// <summary>
-    /// A download in progress, polled from editor updates until it's done.
+    /// A web download in progress, polled (as from editor updates) until it's done.
     /// </summary>
     /// <remarks>
-    /// Started with <see cref="IconDownloader.Start(string)"/>. Polling (instead of callbacks) lets the caller show progress, and
-    /// abort the download at any time.
+    /// Started with <see cref="WebDownloader.Start(string, int)"/>. Polling (instead of callbacks) lets the caller show progress,
+    /// and abort the download at any time.
     /// </remarks>
-    internal interface IIconDownload
+    public interface IWebDownload
     {
 
         /// <summary>
@@ -24,10 +24,10 @@ namespace SideXP.Core.EditorOnly
         /// <summary>
         /// The outcome of the download, only available once <see cref="IsDone"/> is true.
         /// </summary>
-        IconDownloadResult Result { get; }
+        WebDownloadResult Result { get; }
 
         /// <summary>
-        /// Aborts the download if it's not done yet. Its outcome is then <see cref="EIconDownloadStatus.Aborted"/>.
+        /// Aborts the download if it's not done yet. Its outcome is then <see cref="EWebDownloadStatus.Aborted"/>.
         /// </summary>
         void Abort();
 
