@@ -14,6 +14,8 @@ Open `Tools > Sideways Experiments > Viewers > Editor Icons` to browse the avail
 - Filter by category, or only list the icons that exist in the filled style with the *Filled* checkbox.
 - Click an icon to copy its name.
 
+![Editor Icons window preview](../img/icons-window.png)
+
 The status bar shows the Tabler version of the icons index, the size of the downloaded icons, and buttons to open their folder, refresh the index or delete the downloaded icons.
 
 You can also browse the icons on the [Tabler website](https://tabler.io/icons): the names are the same.
