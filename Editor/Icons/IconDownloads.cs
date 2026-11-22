@@ -74,6 +74,21 @@ namespace SideXP.Core.EditorOnly
             }
         }
 
+        /// <summary>
+        /// Aborts the downloads in progress, and forgets the shared queue and the given up downloads, without calling the pending
+        /// callbacks. Meant for tests.
+        /// </summary>
+        internal static void Reset()
+        {
+            if (s_queue != null)
+                s_queue.AbortDownloads();
+
+            StopUpdating();
+            s_queue = null;
+            s_policy = null;
+            SessionState.EraseString(GivenUpSessionKey);
+        }
+
         #endregion
 
 
