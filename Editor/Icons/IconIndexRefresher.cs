@@ -38,7 +38,7 @@ namespace SideXP.Core.EditorOnly
         /// <summary>
         /// The task of the refresh in progress in the Background Tasks window, or null if none.
         /// </summary>
-        private static IconProgressTask s_task = null;
+        private static EditorProgressTask s_task = null;
 
         /// <summary>
         /// The functions to call when the refresh in progress is done.
@@ -75,7 +75,7 @@ namespace SideXP.Core.EditorOnly
 
             s_job = new IconIndexRefresh();
             s_job.Start();
-            s_task = new IconProgressTask(Title, s_job.Description, OnTaskCancelled);
+            s_task = new EditorProgressTask(Title, s_job.Description, OnTaskCancelled);
             EditorApplication.update += Update;
             AssemblyReloadEvents.beforeAssemblyReload += OnBeforeAssemblyReload;
         }
@@ -126,7 +126,7 @@ namespace SideXP.Core.EditorOnly
         /// <returns>Returns true if the refresh is interactive, and Background Tasks are not supported.</returns>
         private static bool IsUsingProgressBar(bool isInteractive)
         {
-            return isInteractive && !IconProgressTask.IsSupported;
+            return isInteractive && !EditorProgressTask.IsSupported;
         }
 
         /// <summary>
@@ -150,7 +150,7 @@ namespace SideXP.Core.EditorOnly
             AssemblyReloadEvents.beforeAssemblyReload -= OnBeforeAssemblyReload;
 
             IconIndexRefresh job = s_job;
-            IconProgressTask task = s_task;
+            EditorProgressTask task = s_task;
             bool isInteractive = s_isInteractive;
             Action<IconIndexRefresh>[] callbacks = s_callbacks.ToArray();
             s_job = null;

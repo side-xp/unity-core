@@ -1,20 +1,18 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
 using System.Text.RegularExpressions;
-
-using UnityEngine;
 
 namespace SideXP.Core.EditorOnly
 {
 
     /// <summary>
-    /// Resolves the paths in the shared folder where editor icons and their index are stored, and writes files into it safely.
+    /// Resolves the paths in the shared folder where editor icons and their index are stored, and manages the stored files.
     /// </summary>
     /// <remarks>
     /// The shared folder is per user and doesn't depend on Unity, so every project, session and Unity version on this machine reuses
-    /// the same files. Several editors may write into it at the same time, hence <see cref="WriteFileAtomic(string, byte[], bool)"/>.
+    /// the same files. Several editors may write into it at the same time, so files are written with
+    /// <see cref="FileEditorUtility.WriteFileAtomic(string, byte[], bool)"/>.
     /// </remarks>
     internal static class IconStorage
     {
@@ -22,7 +20,7 @@ namespace SideXP.Core.EditorOnly
         #region Fields
 
         /// <summary>
-        /// Path to the default shared folder, relative to the user's cache folder.
+        /// Path to the default shared folder, relative to <see cref="PathEditorUtility.UserCachePath"/>.
         /// </summary>
         /// <remarks>
         /// Uses <see cref="PathUtility.DefaultDirectorySeparator"/> like every path in this class, which is supported by every OS.
@@ -55,11 +53,6 @@ namespace SideXP.Core.EditorOnly
         internal const string IconFileExtension = ".png";
 
         /// <summary>
-        /// Extension of the temporary files written before being moved into place.
-        /// </summary>
-        internal const string TempFileExtension = ".tmp";
-
-        /// <summary>
         /// The sizes in which icon files are stored, in pixels, from the smallest.
         /// </summary>
         /// <remarks>
@@ -78,16 +71,6 @@ namespace SideXP.Core.EditorOnly
         /// Matches the characters to replace with a hyphen in a category folder name.
         /// </summary>
         private static readonly Regex CategoryFolderSeparatorsRegex = new Regex(@"[^a-z0-9]+");
-
-        /// <summary>
-        /// Encoding used for text files, without BOM.
-        /// </summary>
-        private static readonly Encoding TextEncoding = new UTF8Encoding(false);
-
-        /// <summary>
-        /// Cached path to the default shared folder, resolved on first use.
-        /// </summary>
-        private static string s_defaultRootFolder = null;
 
         #endregion
 
@@ -121,67 +104,12 @@ namespace SideXP.Core.EditorOnly
         /// Absolute path to the default shared folder for the current platform, ignoring the preferences and
         /// <see cref="RootFolderOverride"/>.
         /// </summary>
-        internal static string DefaultRootFolder
-        {
-            get
-            {
-                if (s_defaultRootFolder == null)
-                    s_defaultRootFolder = ResolveRootFolder(Application.platform, Environment.GetEnvironmentVariable);
-
-                return s_defaultRootFolder;
-            }
-        }
+        internal static string DefaultRootFolder => $"{PathEditorUtility.UserCachePath}/{DefaultRelativeFolder}";
 
         /// <summary>
         /// Absolute path to the index file.
         /// </summary>
         internal static string IndexFilePath => $"{RootFolder}/{IndexFileName}";
-
-        /// <summary>
-        /// Resolves the path to the shared folder for a given platform.
-        /// </summary>
-        /// <remarks>
-        /// The folder is resolved explicitly per platform, since <see cref="Environment.SpecialFolder.LocalApplicationData"/> hasn't
-        /// always mapped to the same folder on macOS and Linux across the Mono and .NET versions used by Unity.
-        /// </remarks>
-        /// <param name="platform">The platform of the running editor.</param>
-        /// <param name="getEnvironmentVariable">Gets the value of an environment variable, or null if it's not defined.</param>
-        /// <returns>Returns the absolute path to the shared folder, using <see cref="PathUtility.DefaultDirectorySeparator"/>.</returns>
-        internal static string ResolveRootFolder(RuntimePlatform platform, Func<string, string> getEnvironmentVariable)
-        {
-            bool isWindows = platform == RuntimePlatform.WindowsEditor || platform == RuntimePlatform.WindowsPlayer;
-
-            string cacheFolder;
-            switch (platform)
-            {
-                case RuntimePlatform.WindowsEditor:
-                case RuntimePlatform.WindowsPlayer:
-                    cacheFolder = GetRootedVariable(getEnvironmentVariable, "LOCALAPPDATA")
-                        ?? Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-                    break;
-
-                case RuntimePlatform.OSXEditor:
-                case RuntimePlatform.OSXPlayer:
-                    cacheFolder = GetHomeSubfolder(getEnvironmentVariable, "Library/Caches");
-                    break;
-
-                // Linux, and any other Unix-like platform, following the XDG Base Directory specification
-                default:
-                    cacheFolder = GetRootedVariable(getEnvironmentVariable, "XDG_CACHE_HOME")
-                        ?? GetHomeSubfolder(getEnvironmentVariable, ".cache");
-                    break;
-            }
-
-            // Never resolve to a relative path, which would end up in the project folder
-            if (string.IsNullOrEmpty(cacheFolder) || !Path.IsPathRooted(cacheFolder))
-                cacheFolder = Path.GetTempPath();
-
-            // Only on Windows, since a backslash is a valid character in file names on other platforms
-            if (isWindows)
-                cacheFolder = cacheFolder.Replace('\\', PathUtility.DefaultDirectorySeparator);
-
-            return $"{cacheFolder.TrimEnd(PathUtility.DefaultDirectorySeparator)}/{DefaultRelativeFolder}";
-        }
 
         /// <summary>
         /// Converts a file or folder path to an absolute path, using <see cref="PathUtility.DefaultDirectorySeparator"/> and without
@@ -200,35 +128,6 @@ namespace SideXP.Core.EditorOnly
             // Keep the separator of a root folder ("C:/" or "/")
             string trimmedPath = fullPath.TrimEnd(PathUtility.DefaultDirectorySeparator);
             return trimmedPath.Length > 0 && !trimmedPath.EndsWith(":") ? trimmedPath : fullPath;
-        }
-
-        /// <summary>
-        /// Gets the value of an environment variable, only if it's an absolute path.
-        /// </summary>
-        /// <param name="getEnvironmentVariable">Gets the value of an environment variable, or null if it's not defined.</param>
-        /// <param name="name">The name of the environment variable.</param>
-        /// <returns>Returns the value of the variable, or null if it's not defined or not an absolute path.</returns>
-        private static string GetRootedVariable(Func<string, string> getEnvironmentVariable, string name)
-        {
-            string value = getEnvironmentVariable(name);
-            return !string.IsNullOrEmpty(value) && Path.IsPathRooted(value) ? value : null;
-        }
-
-        /// <summary>
-        /// Gets the path to a subfolder of the user's home folder on Unix-like platforms.
-        /// </summary>
-        /// <param name="getEnvironmentVariable">Gets the value of an environment variable, or null if it's not defined.</param>
-        /// <param name="subfolder">The path to the subfolder, relative to the home folder.</param>
-        /// <returns>Returns the absolute path to the subfolder, or null if the home folder can't be resolved.</returns>
-        private static string GetHomeSubfolder(Func<string, string> getEnvironmentVariable, string subfolder)
-        {
-            string home = GetRootedVariable(getEnvironmentVariable, "HOME")
-                ?? Environment.GetFolderPath(Environment.SpecialFolder.Personal);
-
-            // Without home folder, don't resolve to a subfolder of the system root
-            return !string.IsNullOrEmpty(home)
-                ? $"{home.TrimEnd(PathUtility.DefaultDirectorySeparator)}/{subfolder}"
-                : null;
         }
 
         #endregion
@@ -336,142 +235,6 @@ namespace SideXP.Core.EditorOnly
         #endregion
 
 
-        #region Files
-
-        /// <summary>
-        /// Writes a file safely, even if another editor writes the same file at the same time.
-        /// </summary>
-        /// <remarks>
-        /// The content is written to a temporary file next to the target, then moved into place, which is atomic on the same volume.
-        /// So the target file is either missing or complete, never partially written. Missing folders are created.
-        /// </remarks>
-        /// <param name="path">The absolute path to the file to write.</param>
-        /// <param name="bytes">The content of the file.</param>
-        /// <param name="overwrite">
-        /// If enabled, replaces the target file if it already exists. Otherwise, keeps the existing file, assuming that another editor
-        /// wrote the same content.
-        /// </param>
-        /// <returns>Returns true if the file has been written, or false if it already existed and has been kept.</returns>
-        /// <exception cref="IOException">Thrown if the file can't be written.</exception>
-        internal static bool WriteFileAtomic(string path, byte[] bytes, bool overwrite)
-        {
-            string folder = Path.GetDirectoryName(path);
-            if (!string.IsNullOrEmpty(folder))
-                Directory.CreateDirectory(folder);
-
-            if (!overwrite && File.Exists(path))
-                return false;
-
-            string tempPath = $"{path}.{Guid.NewGuid():N}{TempFileExtension}";
-            try
-            {
-                File.WriteAllBytes(tempPath, bytes);
-
-                if (overwrite && File.Exists(path))
-                {
-                    File.Replace(tempPath, path, null);
-                    return true;
-                }
-
-                try
-                {
-                    File.Move(tempPath, path);
-                    return true;
-                }
-                // Another editor wrote the target file after the check above
-                catch (IOException) when (File.Exists(path))
-                {
-                    if (!overwrite)
-                        return false;
-
-                    File.Replace(tempPath, path, null);
-                    return true;
-                }
-            }
-            finally
-            {
-                TryDeleteFile(tempPath);
-            }
-        }
-
-        /// <summary>
-        /// Writes a text file safely, using UTF-8 without BOM.
-        /// </summary>
-        /// <remarks>
-        /// See <see cref="WriteFileAtomic(string, byte[], bool)"/> for details.
-        /// </remarks>
-        /// <param name="path">The absolute path to the file to write.</param>
-        /// <param name="text">The content of the file.</param>
-        /// <param name="overwrite">
-        /// If enabled, replaces the target file if it already exists. Otherwise, keeps the existing file, assuming that another editor
-        /// wrote the same content.
-        /// </param>
-        /// <returns>Returns true if the file has been written, or false if it already existed and has been kept.</returns>
-        /// <exception cref="IOException">Thrown if the file can't be written.</exception>
-        internal static bool WriteFileAtomic(string path, string text, bool overwrite)
-        {
-            return WriteFileAtomic(path, TextEncoding.GetBytes(text), overwrite);
-        }
-
-        /// <summary>
-        /// Deletes a file if it exists, ignoring errors.
-        /// </summary>
-        /// <param name="path">The absolute path to the file to delete.</param>
-        private static void TryDeleteFile(string path)
-        {
-            try
-            {
-                if (File.Exists(path))
-                    File.Delete(path);
-            }
-            catch (IOException) { }
-            catch (UnauthorizedAccessException) { }
-        }
-
-        /// <summary>
-        /// Deletes a folder if it's empty, ignoring errors.
-        /// </summary>
-        /// <param name="folder">The absolute path to the folder to delete.</param>
-        /// <returns>Returns true if the folder has been deleted, or didn't exist.</returns>
-        internal static bool TryDeleteEmptyFolder(string folder)
-        {
-            if (!Directory.Exists(folder))
-                return true;
-
-            try
-            {
-                if (HasEntries(folder))
-                    return false;
-
-                Directory.Delete(folder);
-                return true;
-            }
-            catch (IOException) { }
-            catch (UnauthorizedAccessException) { }
-
-            return false;
-        }
-
-        /// <summary>
-        /// Checks if a folder contains at least one file or subfolder.
-        /// </summary>
-        /// <param name="folder">The absolute path to the folder to check.</param>
-        /// <returns>Returns true if the folder exists and is not empty.</returns>
-        internal static bool HasEntries(string folder)
-        {
-            if (!Directory.Exists(folder))
-                return false;
-
-            // The enumeration stops at the first entry, and foreach disposes the enumerator
-            foreach (string _ in Directory.EnumerateFileSystemEntries(folder))
-                return true;
-
-            return false;
-        }
-
-        #endregion
-
-
         #region Downloaded icons
 
         /// <summary>
@@ -545,8 +308,8 @@ namespace SideXP.Core.EditorOnly
             }
 
             // Temporary files left by an interrupted write of the index
-            foreach (string file in Directory.GetFiles(RootFolder, $"*{TempFileExtension}"))
-                TryDeleteFile(file);
+            foreach (string file in Directory.GetFiles(RootFolder, $"*{FileEditorUtility.TempFileExtension}"))
+                FileEditorUtility.TryDeleteFile(file);
 
             return errors;
         }

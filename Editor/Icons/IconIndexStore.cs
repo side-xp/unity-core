@@ -91,7 +91,7 @@ namespace SideXP.Core.EditorOnly
                 throw new ArgumentException("The index to write is not valid.", nameof(index));
 
             string path = IconStorage.IndexFilePath;
-            IconStorage.WriteFileAtomic(path, JsonUtility.ToJson(index), true);
+            FileEditorUtility.WriteFileAtomic(path, JsonUtility.ToJson(index), true);
             Remember(index, path, File.GetLastWriteTimeUtc(path));
         }
 

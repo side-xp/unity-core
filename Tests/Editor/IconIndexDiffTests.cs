@@ -77,12 +77,12 @@ namespace SideXP.Core.Tests
             foreach (int size in new[] { 16, 32 })
             {
                 string outlinePath = IconStorage.GetIconFilePath(name, category, size, EIconStyle.Outline);
-                IconStorage.WriteFileAtomic(outlinePath, new byte[] { 1 }, false);
+                FileEditorUtility.WriteFileAtomic(outlinePath, new byte[] { 1 }, false);
 
                 if (hasFilled)
                 {
                     string filledPath = IconStorage.GetIconFilePath(name, category, size, EIconStyle.Filled);
-                    IconStorage.WriteFileAtomic(filledPath, new byte[] { 2 }, false);
+                    FileEditorUtility.WriteFileAtomic(filledPath, new byte[] { 2 }, false);
                 }
             }
         }
@@ -250,7 +250,7 @@ namespace SideXP.Core.Tests
         {
             CreateIconFiles("home", "Buildings", false);
             string newFile = IconStorage.GetIconFilePath("home", "Map", 16, EIconStyle.Outline);
-            IconStorage.WriteFileAtomic(newFile, new byte[] { 9 }, false);
+            FileEditorUtility.WriteFileAtomic(newFile, new byte[] { 9 }, false);
 
             ApplyAll(new[] { IconIndexChange.MoveFolder("home", "Buildings", "Map") });
 

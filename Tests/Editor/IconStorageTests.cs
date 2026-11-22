@@ -1,11 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
 
 using NUnit.Framework;
-
-using UnityEngine;
 
 using SideXP.Core.EditorOnly;
 
@@ -23,7 +20,7 @@ namespace SideXP.Core.Tests
     {
 
         /// <summary>
-        /// Path to the expected icons folder, relative to the user's cache folder.
+        /// Path to the expected icons folder, relative to <see cref="PathEditorUtility.UserCachePath"/>.
         /// </summary>
         private const string DefaultSubfolder = "Sideways Experiments/Icons";
 
@@ -52,29 +49,6 @@ namespace SideXP.Core.Tests
                 Directory.Delete(_tempFolder, true);
         }
 
-        /// <summary>
-        /// Makes a function that reads environment variables from a dictionary instead of the real environment.
-        /// </summary>
-        /// <param name="variables">The environment variables, as name and value pairs.</param>
-        /// <returns>Returns the function to pass to <see cref="IconStorage.ResolveRootFolder"/>.</returns>
-        private static Func<string, string> MakeEnvironment(params (string name, string value)[] variables)
-        {
-            var dictionary = new Dictionary<string, string>();
-            foreach ((string name, string value) in variables)
-                dictionary[name] = value;
-
-            return name => dictionary.TryGetValue(name, out string value) ? value : null;
-        }
-
-        /// <summary>
-        /// Checks that no temporary file is left in the temporary folder.
-        /// </summary>
-        private void AssertNoTempFile()
-        {
-            string[] tempFiles = Directory.GetFiles(_tempFolder, $"*{IconStorage.TempFileExtension}", SearchOption.AllDirectories);
-            Assert.IsEmpty(tempFiles);
-        }
-
         #region Root folder
 
         /// <summary>
@@ -99,99 +73,13 @@ namespace SideXP.Core.Tests
         }
 
         /// <summary>
-        /// The default shared folder is an absolute path ending with the default relative folder.
+        /// The default shared folder is the default relative folder, in the user's cache folder.
         /// </summary>
         [Test]
-        public void DefaultRootFolder_IsAbsolute_EndsWithDefaultSubfolder()
+        public void DefaultRootFolder_IsDefaultSubfolder_InUserCache()
         {
             Assert.IsTrue(Path.IsPathRooted(IconStorage.DefaultRootFolder));
-            StringAssert.EndsWith(DefaultSubfolder, IconStorage.DefaultRootFolder);
-        }
-
-        /// <summary>
-        /// On Windows, the shared folder is in the local application data folder, with backslashes replaced by slashes.
-        /// </summary>
-        [Test]
-        public void ResolveRootFolder_Windows_UsesLocalAppData()
-        {
-            // Rooted on the current OS, so the test also works when run from a macOS or Linux editor
-            string localAppData = Path.Combine(Path.GetPathRoot(Path.GetTempPath()), "Users", "someone", "AppData", "Local");
-            Func<string, string> environment = MakeEnvironment(("LOCALAPPDATA", localAppData));
-
-            string rootFolder = IconStorage.ResolveRootFolder(RuntimePlatform.WindowsEditor, environment);
-
-            Assert.AreEqual($"{localAppData.Replace('\\', '/')}/{DefaultSubfolder}", rootFolder);
-            StringAssert.DoesNotContain("\\", rootFolder);
-        }
-
-        /// <summary>
-        /// On Windows, a trailing separator in the local application data folder doesn't make a double separator.
-        /// </summary>
-        [Test]
-        public void ResolveRootFolder_WindowsWithTrailingSeparator_HasNoDoubleSeparator()
-        {
-            string localAppData = Path.Combine(Path.GetPathRoot(Path.GetTempPath()), "Users", "someone", "AppData", "Local");
-            Func<string, string> environment = MakeEnvironment(("LOCALAPPDATA", $"{localAppData}\\"));
-
-            string rootFolder = IconStorage.ResolveRootFolder(RuntimePlatform.WindowsEditor, environment);
-
-            Assert.AreEqual($"{localAppData.Replace('\\', '/')}/{DefaultSubfolder}", rootFolder);
-        }
-
-        /// <summary>
-        /// On macOS, the shared folder is in the user's caches folder.
-        /// </summary>
-        [Test]
-        public void ResolveRootFolder_MacOS_UsesLibraryCaches()
-        {
-            string home = "/Users/someone";
-            Func<string, string> environment = MakeEnvironment(("HOME", home));
-
-            string rootFolder = IconStorage.ResolveRootFolder(RuntimePlatform.OSXEditor, environment);
-
-            Assert.AreEqual($"{home}/Library/Caches/{DefaultSubfolder}", rootFolder);
-        }
-
-        /// <summary>
-        /// On Linux, the shared folder is in the folder defined by XDG_CACHE_HOME, when defined.
-        /// </summary>
-        [Test]
-        public void ResolveRootFolder_LinuxWithXdgCacheHome_UsesXdgCacheHome()
-        {
-            string xdgCacheHome = "/home/someone/custom-cache";
-            Func<string, string> environment = MakeEnvironment(("XDG_CACHE_HOME", xdgCacheHome), ("HOME", "/home/someone"));
-
-            string rootFolder = IconStorage.ResolveRootFolder(RuntimePlatform.LinuxEditor, environment);
-
-            Assert.AreEqual($"{xdgCacheHome}/{DefaultSubfolder}", rootFolder);
-        }
-
-        /// <summary>
-        /// On Linux, the shared folder is in ~/.cache when XDG_CACHE_HOME is not defined.
-        /// </summary>
-        [Test]
-        public void ResolveRootFolder_LinuxWithoutXdgCacheHome_UsesDotCache()
-        {
-            string home = "/home/someone";
-            Func<string, string> environment = MakeEnvironment(("HOME", home));
-
-            string rootFolder = IconStorage.ResolveRootFolder(RuntimePlatform.LinuxEditor, environment);
-
-            Assert.AreEqual($"{home}/.cache/{DefaultSubfolder}", rootFolder);
-        }
-
-        /// <summary>
-        /// On Linux, a relative XDG_CACHE_HOME is ignored, as required by the XDG Base Directory specification.
-        /// </summary>
-        [Test]
-        public void ResolveRootFolder_LinuxWithRelativeXdgCacheHome_UsesDotCache()
-        {
-            string home = "/home/someone";
-            Func<string, string> environment = MakeEnvironment(("XDG_CACHE_HOME", "relative/cache"), ("HOME", home));
-
-            string rootFolder = IconStorage.ResolveRootFolder(RuntimePlatform.LinuxEditor, environment);
-
-            Assert.AreEqual($"{home}/.cache/{DefaultSubfolder}", rootFolder);
+            Assert.AreEqual($"{PathEditorUtility.UserCachePath}/{DefaultSubfolder}", IconStorage.DefaultRootFolder);
         }
 
         #endregion
@@ -275,77 +163,20 @@ namespace SideXP.Core.Tests
         #endregion
 
 
-        #region Files
-
-        /// <summary>
-        /// A new file is written with its content, and its missing folders are created.
-        /// </summary>
-        [Test]
-        public void WriteFileAtomic_NewFile_WritesFileAndFolders()
-        {
-            string path = Path.Combine(_tempFolder, "buildings", "home", "home_16_outline.png");
-            byte[] bytes = { 1, 2, 3 };
-
-            bool isWritten = IconStorage.WriteFileAtomic(path, bytes, false);
-
-            Assert.IsTrue(isWritten);
-            CollectionAssert.AreEqual(bytes, File.ReadAllBytes(path));
-            AssertNoTempFile();
-        }
-
-        /// <summary>
-        /// Without overwrite, an existing file is kept as is, as if another editor had just written it.
-        /// </summary>
-        [Test]
-        public void WriteFileAtomic_TargetExists_KeepsExistingFile()
-        {
-            string path = Path.Combine(_tempFolder, "file.png");
-            byte[] existingBytes = { 1, 2, 3 };
-            File.WriteAllBytes(path, existingBytes);
-
-            bool isWritten = IconStorage.WriteFileAtomic(path, new byte[] { 4, 5, 6 }, false);
-
-            Assert.IsFalse(isWritten);
-            CollectionAssert.AreEqual(existingBytes, File.ReadAllBytes(path));
-            AssertNoTempFile();
-        }
-
-        /// <summary>
-        /// With overwrite, an existing file is replaced.
-        /// </summary>
-        [Test]
-        public void WriteFileAtomic_TargetExistsWithOverwrite_ReplacesFile()
-        {
-            string path = Path.Combine(_tempFolder, "file.png");
-            File.WriteAllBytes(path, new byte[] { 1, 2, 3 });
-            byte[] newBytes = { 4, 5, 6 };
-
-            bool isWritten = IconStorage.WriteFileAtomic(path, newBytes, true);
-
-            Assert.IsTrue(isWritten);
-            CollectionAssert.AreEqual(newBytes, File.ReadAllBytes(path));
-            AssertNoTempFile();
-        }
-
-        /// <summary>
-        /// Text files are written in UTF-8 without BOM.
-        /// </summary>
-        [Test]
-        public void WriteFileAtomic_Text_WritesUtf8WithoutBom()
-        {
-            string path = IconStorage.IndexFilePath;
-            string text = "{\"version\":\"3.52.0\",\"name\":\"é\"}";
-
-            IconStorage.WriteFileAtomic(path, text, true);
-
-            CollectionAssert.AreEqual(new UTF8Encoding(false).GetBytes(text), File.ReadAllBytes(path));
-            AssertNoTempFile();
-        }
-
-        #endregion
-
-
         #region Downloaded icons
+
+        /// <summary>
+        /// Writes an icon file in the shared folder.
+        /// </summary>
+        /// <param name="name">The name of the icon.</param>
+        /// <param name="category">The category of the icon, as written in the index.</param>
+        /// <param name="pixelSize">The size of the icon file, in pixels.</param>
+        /// <param name="style">The style of the icon.</param>
+        /// <param name="bytes">The content of the file.</param>
+        private static void WriteIconFile(string name, string category, int pixelSize, EIconStyle style, byte[] bytes)
+        {
+            FileEditorUtility.WriteFileAtomic(IconStorage.GetIconFilePath(name, category, pixelSize, style), bytes, false);
+        }
 
         /// <summary>
         /// Creates an index file and the files of two icons, in two categories, plus temporary files left by interrupted writes.
@@ -353,10 +184,10 @@ namespace SideXP.Core.Tests
         private void CreateDownloadedIcons()
         {
             File.WriteAllText(IconStorage.IndexFilePath, "{}");
-            File.WriteAllText($"{IconStorage.IndexFilePath}.0123{IconStorage.TempFileExtension}", "partial index");
-            IconStorage.WriteFileAtomic(IconStorage.GetIconFilePath("home", "Buildings", 16, EIconStyle.Outline), new byte[10], false);
-            IconStorage.WriteFileAtomic(IconStorage.GetIconFilePath("home", "Buildings", 16, EIconStyle.Filled), new byte[20], false);
-            IconStorage.WriteFileAtomic(IconStorage.GetIconFilePath("user", "System", 32, EIconStyle.Outline), new byte[30], false);
+            File.WriteAllText($"{IconStorage.IndexFilePath}.0123{FileEditorUtility.TempFileExtension}", "partial index");
+            WriteIconFile("home", "Buildings", 16, EIconStyle.Outline, new byte[10]);
+            WriteIconFile("home", "Buildings", 16, EIconStyle.Filled, new byte[20]);
+            WriteIconFile("user", "System", 32, EIconStyle.Outline, new byte[30]);
             File.WriteAllText($"{IconStorage.GetIconFolderPath("user", "System")}/user_64_outline.png.0123.tmp", "partial icon");
         }
 
@@ -371,7 +202,7 @@ namespace SideXP.Core.Tests
             foreach (int size in IconStorage.StoredSizes)
             {
                 Assert.IsFalse(IconStorage.IsStored("home", "Buildings", EIconStyle.Outline));
-                IconStorage.WriteFileAtomic(IconStorage.GetIconFilePath("home", "Buildings", size, EIconStyle.Outline), new byte[1], false);
+                WriteIconFile("home", "Buildings", size, EIconStyle.Outline, new byte[1]);
             }
 
             Assert.IsTrue(IconStorage.IsStored("home", "Buildings", EIconStyle.Outline));

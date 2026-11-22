@@ -60,7 +60,7 @@ namespace SideXP.Core.EditorOnly
         /// <summary>
         /// The task of the downloads in the Background Tasks window, or null if no download is in progress.
         /// </summary>
-        private static IconProgressTask s_task = null;
+        private static EditorProgressTask s_task = null;
 
         /// <summary>
         /// The number of icon styles stored or given up since the task started.
@@ -198,7 +198,7 @@ namespace SideXP.Core.EditorOnly
         {
             s_completedCount = 0;
             s_givenUpCount = 0;
-            s_task = new IconProgressTask(TaskName, $"0 / {s_queue.Count}");
+            s_task = new EditorProgressTask(TaskName, $"0 / {s_queue.Count}");
         }
 
         /// <summary>

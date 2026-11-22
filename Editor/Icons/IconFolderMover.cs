@@ -66,7 +66,7 @@ namespace SideXP.Core.EditorOnly
                 return false;
             }
 
-            if (IconStorage.HasEntries(targetFolder) && !File.Exists($"{targetFolder}/{IconStorage.IndexFileName}"))
+            if (FileEditorUtility.HasEntries(targetFolder) &&!File.Exists($"{targetFolder}/{IconStorage.IndexFileName}"))
             {
                 error = "The selected folder is not empty, and doesn't contain icons. "
                     + "Select an empty folder, or an existing icons folder.";
@@ -194,13 +194,13 @@ namespace SideXP.Core.EditorOnly
                         return false;
                     }
 
-                    if (sourceFiles[i].EndsWith(IconStorage.TempFileExtension, StringComparison.OrdinalIgnoreCase))
+                    if (sourceFiles[i].EndsWith(FileEditorUtility.TempFileExtension, StringComparison.OrdinalIgnoreCase))
                         continue;
 
                     // Normalized, since the returned paths may not keep the separators of the source folder path
                     string relativePath = IconStorage.NormalizePath(sourceFiles[i]).Substring(sourceFolder.Length + 1);
                     string targetFile = $"{targetFolder}/{relativePath}";
-                    if (IconStorage.WriteFileAtomic(targetFile, File.ReadAllBytes(sourceFiles[i]), false))
+                    if (FileEditorUtility.WriteFileAtomic(targetFile, File.ReadAllBytes(sourceFiles[i]), false))
                         copiedFiles.Add(targetFile);
                 }
             }
@@ -234,14 +234,7 @@ namespace SideXP.Core.EditorOnly
         private static void DeleteFiles(List<string> files)
         {
             foreach (string file in files)
-            {
-                try
-                {
-                    File.Delete(file);
-                }
-                catch (IOException) { }
-                catch (UnauthorizedAccessException) { }
-            }
+                FileEditorUtility.TryDeleteFile(file);
         }
 
         /// <summary>
@@ -258,7 +251,7 @@ namespace SideXP.Core.EditorOnly
                 DeleteEmptyFolders(subfolder, true);
 
             if (deleteFolder)
-                IconStorage.TryDeleteEmptyFolder(folder);
+                FileEditorUtility.TryDeleteEmptyFolder(folder);
         }
 
         /// <summary>
@@ -271,7 +264,7 @@ namespace SideXP.Core.EditorOnly
             string parent = Path.GetDirectoryName(folder);
             for (int i = 0; i < count && !string.IsNullOrEmpty(parent); i++)
             {
-                if (!IconStorage.TryDeleteEmptyFolder(parent))
+                if (!FileEditorUtility.TryDeleteEmptyFolder(parent))
                     return;
 
                 parent = Path.GetDirectoryName(parent);

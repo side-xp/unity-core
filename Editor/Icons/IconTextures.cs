@@ -107,7 +107,7 @@ namespace SideXP.Core.EditorOnly
             texture = CreateTexture(pngData, isBlack, false);
             if (texture == null)
             {
-                TryDeleteFile(path);
+                FileEditorUtility.TryDeleteFile(path);
                 return false;
             }
 
@@ -278,20 +278,6 @@ namespace SideXP.Core.EditorOnly
                 RenderTexture.active = previousActive;
                 RenderTexture.ReleaseTemporary(scaled);
             }
-        }
-
-        /// <summary>
-        /// Deletes a file, ignoring errors.
-        /// </summary>
-        /// <param name="path">The absolute path to the file to delete.</param>
-        private static void TryDeleteFile(string path)
-        {
-            try
-            {
-                File.Delete(path);
-            }
-            catch (IOException) { }
-            catch (UnauthorizedAccessException) { }
         }
 
         #endregion

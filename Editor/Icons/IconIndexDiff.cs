@@ -155,7 +155,7 @@ namespace SideXP.Core.EditorOnly
                     break;
             }
 
-            IconStorage.TryDeleteEmptyFolder(Path.GetDirectoryName(folder));
+            FileEditorUtility.TryDeleteEmptyFolder(Path.GetDirectoryName(folder));
         }
 
         #endregion

@@ -92,7 +92,7 @@ namespace SideXP.Core.Tests
         private static string StoreHome()
         {
             string path = IconStorage.GetIconFilePath("home", "Buildings", PixelSize, EIconStyle.Outline);
-            IconStorage.WriteFileAtomic(path, MakeWhitePng(), false);
+            FileEditorUtility.WriteFileAtomic(path, MakeWhitePng(), false);
             return path;
         }
 
@@ -195,7 +195,7 @@ namespace SideXP.Core.Tests
         public void TryGet_InvalidFile_DeletesIt()
         {
             string path = IconStorage.GetIconFilePath("home", "Buildings", PixelSize, EIconStyle.Outline);
-            IconStorage.WriteFileAtomic(path, new byte[] { 1, 2, 3 }, false);
+            FileEditorUtility.WriteFileAtomic(path, new byte[] { 1, 2, 3 }, false);
 
             Assert.IsFalse(IconTextures.TryGet("home", "Buildings", EIconStyle.Outline, PixelSize, false, out _));
             Assert.IsFalse(File.Exists(path));

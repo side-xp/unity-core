@@ -138,7 +138,8 @@ namespace SideXP.Core.Tests
             };
             IconIndexStore.Write(oldIndex);
 
-            IconStorage.WriteFileAtomic(IconStorage.GetIconFilePath("star", "Shapes", 16, EIconStyle.Outline), new byte[] { 1 }, false);
+            string iconPath = IconStorage.GetIconFilePath("star", "Shapes", 16, EIconStyle.Outline);
+            FileEditorUtility.WriteFileAtomic(iconPath, new byte[] { 1 }, false);
             return IconStorage.GetIconFolderPath("star", "Shapes");
         }
 

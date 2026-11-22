@@ -82,7 +82,7 @@ namespace SideXP.Core.Tests
             {
                 var texture = new Texture2D(size, size, TextureFormat.RGBA32, false);
                 string path = IconStorage.GetIconFilePath("home", "Buildings", size, EIconStyle.Outline);
-                IconStorage.WriteFileAtomic(path, texture.EncodeToPNG(), false);
+                FileEditorUtility.WriteFileAtomic(path, texture.EncodeToPNG(), false);
                 Object.DestroyImmediate(texture);
             }
         }

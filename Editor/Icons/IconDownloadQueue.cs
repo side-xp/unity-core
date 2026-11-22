@@ -325,7 +325,7 @@ namespace SideXP.Core.EditorOnly
                 foreach (KeyValuePair<int, byte[]> png in pngBySize)
                 {
                     string path = IconStorage.GetIconFilePath(item.Name, item.Category, png.Key, item.Style);
-                    IconStorage.WriteFileAtomic(path, png.Value, false);
+                    FileEditorUtility.WriteFileAtomic(path, png.Value, false);
                 }
 
                 return true;

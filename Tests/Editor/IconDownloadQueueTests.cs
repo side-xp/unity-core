@@ -153,7 +153,7 @@ namespace SideXP.Core.Tests
         private static void Store(IconIndexEntry entry, EIconStyle style)
         {
             foreach (int size in IconStorage.StoredSizes)
-                IconStorage.WriteFileAtomic(IconStorage.GetIconFilePath(entry.name, entry.category, size, style), s_png, false);
+                FileEditorUtility.WriteFileAtomic(IconStorage.GetIconFilePath(entry.name, entry.category, size, style), s_png, false);
         }
 
         /// <summary>

@@ -15,7 +15,14 @@ namespace SideXP.Core.EditorOnly
     /// Uses the <c>UnityEditor.Progress</c> API, available from Unity 2020.1. On older versions, this class does nothing, and
     /// <see cref="IsSupported"/> is false so callers can display progress another way.
     /// </remarks>
-    internal class IconProgressTask
+    /// <example>
+    /// <code>
+    /// var task = new EditorProgressTask("Import files", "0 / 10");
+    /// task.Report(0.5f, "5 / 10");
+    /// task.Succeed("10 files imported.");
+    /// </code>
+    /// </example>
+    public class EditorProgressTask
     {
 
         #region Fields
@@ -51,7 +58,7 @@ namespace SideXP.Core.EditorOnly
         /// Called when the user cancels the task from the Background Tasks window. Returns true if the task has been cancelled. If
         /// null, the task can't be cancelled.
         /// </param>
-        internal IconProgressTask(string name, string description, Func<bool> onCancel = null)
+        public EditorProgressTask(string name, string description, Func<bool> onCancel = null)
         {
 #if UNITY_2020_1_OR_NEWER
             _id = Progress.Start(name, description);
@@ -69,7 +76,7 @@ namespace SideXP.Core.EditorOnly
         /// <summary>
         /// Checks if tasks can be displayed in this version of Unity.
         /// </summary>
-        internal static bool IsSupported
+        public static bool IsSupported
         {
             get
             {
@@ -84,7 +91,7 @@ namespace SideXP.Core.EditorOnly
         /// <summary>
         /// Checks if the task is still running, as it may have been cancelled from the Background Tasks window.
         /// </summary>
-        internal bool IsRunning
+        public bool IsRunning
         {
             get
             {
@@ -101,7 +108,7 @@ namespace SideXP.Core.EditorOnly
         /// </summary>
         /// <param name="progress">The progress of the task, between 0 and 1.</param>
         /// <param name="description">The description of the current state of the task.</param>
-        internal void Report(float progress, string description)
+        public void Report(float progress, string description)
         {
             progress = Mathf.Clamp01(progress);
             if (Mathf.Approximately(progress, _lastProgress) && description == _lastDescription)
@@ -119,7 +126,7 @@ namespace SideXP.Core.EditorOnly
         /// Ends the task successfully.
         /// </summary>
         /// <param name="description">The final description of the task.</param>
-        internal void Succeed(string description)
+        public void Succeed(string description)
         {
 #if UNITY_2020_1_OR_NEWER
             Finish(Progress.Status.Succeeded, description);
@@ -130,7 +137,7 @@ namespace SideXP.Core.EditorOnly
         /// Ends the task with an error.
         /// </summary>
         /// <param name="error">The reason why the task failed, displayed as its description.</param>
-        internal void Fail(string error)
+        public void Fail(string error)
         {
 #if UNITY_2020_1_OR_NEWER
             Finish(Progress.Status.Failed, error);
@@ -140,7 +147,7 @@ namespace SideXP.Core.EditorOnly
         /// <summary>
         /// Ends the task as cancelled.
         /// </summary>
-        internal void Cancel()
+        public void Cancel()
         {
 #if UNITY_2020_1_OR_NEWER
             Finish(Progress.Status.Canceled, _lastDescription);

@@ -199,12 +199,12 @@ namespace SideXP.Core.Tests
         public void Move_WithTempFiles_SkipsAndDeletesThem()
         {
             CreateSourceIcons();
-            CreateFile($"{_sourceFolder}/buildings/home/home_24_outline.png.0123{IconStorage.TempFileExtension}", "partial");
+            CreateFile($"{_sourceFolder}/buildings/home/home_24_outline.png.0123{FileEditorUtility.TempFileExtension}", "partial");
             Directory.CreateDirectory(_targetFolder);
 
             Assert.IsTrue(IconFolderMover.Move(_sourceFolder, _targetFolder, 0, null, out string error), error);
 
-            string[] tempFiles = Directory.GetFiles(_targetFolder, $"*{IconStorage.TempFileExtension}", SearchOption.AllDirectories);
+            string[] tempFiles = Directory.GetFiles(_targetFolder, $"*{FileEditorUtility.TempFileExtension}", SearchOption.AllDirectories);
             Assert.IsEmpty(tempFiles);
             Assert.IsFalse(Directory.Exists(_sourceFolder));
         }
