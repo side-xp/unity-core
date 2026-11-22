@@ -5,6 +5,7 @@ using System.IO;
 
 using UnityEngine;
 using UnityEditor;
+using UnityEditorInternal;
 
 namespace SideXP.Core.EditorOnly
 {
@@ -20,7 +21,7 @@ namespace SideXP.Core.EditorOnly
         /// <summary>
         /// Base path of the editor icons menus.
         /// </summary>
-        private const string MenuPath = EditorConstants.ToolbarMenu + "/Icons";
+        public const string MenuPath = EditorConstants.ToolbarMenu + "/Icons";
 
         /// <summary>
         /// Path of the menu that refreshes the icons index.
@@ -45,7 +46,7 @@ namespace SideXP.Core.EditorOnly
         /// <summary>
         /// Units used to display file sizes, from bytes.
         /// </summary>
-        private static readonly string[] SizeUnits = { "B", "KB", "MB", "GB" };
+        private static readonly string[] s_sizeUnits = { "B", "KB", "MB", "GB" };
 
         #endregion
 
@@ -74,8 +75,12 @@ namespace SideXP.Core.EditorOnly
         /// <summary>
         /// Deletes all the downloaded icons after confirmation, so they're downloaded again when requested.
         /// </summary>
+        /// <remarks>
+        /// The icon textures kept in memory are cleared too, so the editor views download the icons again instead of drawing icons
+        /// whose files have been deleted.
+        /// </remarks>
         [MenuItem(DeleteIconsMenu)]
-        private static void DeleteDownloadedIcons()
+        internal static void DeleteDownloadedIcons()
         {
             // Icon downloads in progress don't need to be paused (see IconDownloads)
             string folder = IconStorage.RootFolder;
@@ -103,6 +108,9 @@ namespace SideXP.Core.EditorOnly
                 return;
 
             List<string> errors = IconStorage.DeleteDownloadedIcons();
+            IconTextures.Clear();
+            InternalEditorUtility.RepaintAllViews();
+
             if (errors.Count > 0)
             {
                 Debug.LogWarning("Some downloaded icons couldn't be deleted (they may be used by another editor):\n"
@@ -137,15 +145,15 @@ namespace SideXP.Core.EditorOnly
         {
             double size = byteCount;
             int unitIndex = 0;
-            while (size >= BytesPerKilobyte && unitIndex < SizeUnits.Length - 1)
+            while (size >= BytesPerKilobyte && unitIndex < s_sizeUnits.Length - 1)
             {
                 size /= BytesPerKilobyte;
                 unitIndex++;
             }
 
             return unitIndex == 0
-                ? $"{byteCount} {SizeUnits[0]}"
-                : $"{size.ToString("0.#", CultureInfo.InvariantCulture)} {SizeUnits[unitIndex]}";
+                ? $"{byteCount} {s_sizeUnits[0]}"
+                : $"{size.ToString("0.#", CultureInfo.InvariantCulture)} {s_sizeUnits[unitIndex]}";
         }
 
         #endregion
