@@ -90,16 +90,6 @@ namespace SideXP.Core.EditorOnly
         /// </summary>
         private static HashSet<string> s_namesToCheck = new HashSet<string>();
 
-        /// <summary>
-        /// The keys of the icon downloads requested and not completed yet (see <see cref="IconDownloadQueue.GetKey"/>).
-        /// </summary>
-        private static HashSet<string> s_pendingKeys = new HashSet<string>();
-
-        /// <summary>
-        /// The keys of the icon downloads given up for this session.
-        /// </summary>
-        private static HashSet<string> s_unavailableKeys = new HashSet<string>();
-
         #endregion
 
 
@@ -309,8 +299,8 @@ namespace SideXP.Core.EditorOnly
         internal static bool IsAutoRefreshEnabled { get; set; } = true;
 
         /// <summary>
-        /// Forgets the index in use, the warnings already logged and the requested downloads, so the next request starts from a
-        /// clean state. Meant for tests.
+        /// Forgets the index in use and the warnings already logged, so the next request starts from a clean state. Meant for tests,
+        /// along with <see cref="IconDownloads.Reset"/>.
         /// </summary>
         internal static void ResetState()
         {
@@ -319,7 +309,6 @@ namespace SideXP.Core.EditorOnly
             s_lastAutoRefreshTime = double.MinValue;
             s_warnedNames.Clear();
             s_namesToCheck.Clear();
-            s_pendingKeys.Clear();
         }
 
         /// <summary>
@@ -381,8 +370,7 @@ namespace SideXP.Core.EditorOnly
             if (!s_entries.TryGetValue(name, out IconIndexEntry entry))
                 return;
 
-            EIconStyle resolvedStyle = entry.hasFilled ? style : EIconStyle.Outline;
-            RequestDownload(s_index.version, entry, resolvedStyle, isStored =>
+            IconDownloads.Request(s_index.version, entry, style, isStored =>
             {
                 if (isStored)
                     LoadIcon(name, onLoaded, style, color, pointSize);
@@ -442,10 +430,13 @@ namespace SideXP.Core.EditorOnly
                     return texture;
                 }
 
-                if (s_unavailableKeys.Contains(IconDownloadQueue.GetKey(s_index.version, name, style)))
+                if (IconDownloads.IsGivenUp(s_index.version, name, style))
                     return IconTextures.GetEmptyPlaceholder(pixelSize);
 
-                RequestDownload(s_index.version, entry, style, null);
+                // Not requested again on each repaint while it's downloading
+                if (!IconDownloads.IsPending(s_index.version, name, style))
+                    IconDownloads.Request(s_index.version, entry, style, null);
+
                 return IconTextures.GetLoadingPlaceholder(pixelSize, pointSize);
             }
             catch (Exception exception)
@@ -512,7 +503,6 @@ namespace SideXP.Core.EditorOnly
         {
             s_index = index;
             s_entries.Clear();
-            s_unavailableKeys.Clear();
 
             if (index == null)
             {
@@ -546,31 +536,6 @@ namespace SideXP.Core.EditorOnly
             s_namesToCheck.Clear();
         }
 
-        /// <summary>
-        /// Requests the download of an icon, unless it's already requested.
-        /// </summary>
-        /// <param name="version">The Tabler version of the index.</param>
-        /// <param name="entry">The index entry of the icon.</param>
-        /// <param name="style">The style to download, already resolved from the styles of the icon.</param>
-        /// <param name="onComplete">
-        /// Called with true when the icon is stored, or false if it won't be. If null, the download is not requested again while
-        /// it's pending.
-        /// </param>
-        private static void RequestDownload(string version, IconIndexEntry entry, EIconStyle style, Action<bool> onComplete)
-        {
-            string key = IconDownloadQueue.GetKey(version, entry.name, style);
-            if (!s_pendingKeys.Add(key) && onComplete == null)
-                return;
-
-            IconDownloads.Request(version, entry, style, isStored =>
-            {
-                s_pendingKeys.Remove(key);
-                if (!isStored)
-                    s_unavailableKeys.Add(key);
-
-                onComplete?.Invoke(isStored);
-            });
-        }
 
         /// <summary>
         /// Makes the content of an icon button, from an optional label.

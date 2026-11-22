@@ -13,15 +13,16 @@ namespace SideXP.Core.Tests
 {
 
     /// <summary>
-    /// Tests for <see cref="IconDownloadQueue"/> using the real Tabler files.
+    /// Tests for <see cref="IconDownloads"/> using the real Tabler files.
     /// </summary>
     /// <remarks>
     /// These tests need a network connection, so they only run when selected by hand. They work in a temporary folder set as
-    /// <see cref="IconStorage.RootFolderOverride"/>, so the real shared folder is never touched.
+    /// <see cref="IconStorage.RootFolderOverride"/>, so the real shared folder is never touched. The shared queue is reset before
+    /// and after each test.
     /// </remarks>
     [Explicit("Uses the network.")]
     [Category("Network")]
-    public class IconDownloadQueueNetworkTests
+    public class IconDownloadsNetworkTests
     {
 
         /// <summary>
@@ -37,24 +38,26 @@ namespace SideXP.Core.Tests
         private string _tempFolder = null;
 
         /// <summary>
-        /// Creates an empty temporary folder, and uses it as the shared folder.
+        /// Creates an empty temporary folder, uses it as the shared folder, and resets the shared queue.
         /// </summary>
         [SetUp]
         public void SetUp()
         {
-            string tempFolderName = $"SideXP-{nameof(IconDownloadQueueNetworkTests)}-{Guid.NewGuid():N}";
+            string tempFolderName = $"SideXP-{nameof(IconDownloadsNetworkTests)}-{Guid.NewGuid():N}";
             _tempFolder = IconStorage.NormalizePath(Path.Combine(Path.GetTempPath(), tempFolderName));
             Directory.CreateDirectory(_tempFolder);
             IconStorage.RootFolderOverride = _tempFolder;
             WebDownloader.DownloadOverride = null;
+            IconDownloads.Reset();
         }
 
         /// <summary>
-        /// Restores the default shared folder, and deletes the temporary folder.
+        /// Resets the shared queue, restores the default shared folder, and deletes the temporary folder.
         /// </summary>
         [TearDown]
         public void TearDown()
         {
+            IconDownloads.Reset();
             IconStorage.RootFolderOverride = null;
             if (Directory.Exists(_tempFolder))
                 Directory.Delete(_tempFolder, true);
@@ -67,19 +70,14 @@ namespace SideXP.Core.Tests
         [UnityTest]
         public IEnumerator Request_RealIcon_StoresBothStyles()
         {
-            var queue = new IconDownloadQueue(new DownloadRetryPolicy());
             var home = new IconIndexEntry { name = "home", category = "Buildings", hasFilled = true };
             bool? isStored = null;
-            queue.Request(Version, home, EIconStyle.Outline, result => isStored = result);
+            IconDownloads.Request(Version, home, EIconStyle.Outline, result => isStored = result);
 
             Stopwatch stopwatch = Stopwatch.StartNew();
-            while (queue.Count > 0 && stopwatch.Elapsed.TotalSeconds < TimeoutSeconds)
-            {
-                queue.Update(stopwatch.Elapsed.TotalSeconds);
+            while (IconDownloads.Count > 0 && stopwatch.Elapsed.TotalSeconds < TimeoutSeconds)
                 yield return null;
-            }
 
-            queue.AbortDownloads();
             Assert.AreEqual(true, isStored);
             Assert.IsTrue(IconStorage.IsStored("home", "Buildings", EIconStyle.Outline));
             Assert.IsTrue(IconStorage.IsStored("home", "Buildings", EIconStyle.Filled));
