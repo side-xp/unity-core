@@ -47,12 +47,13 @@ namespace SideXP.Core.Tests
                 File.Delete(_configPath);
         }
 
+        /// <summary>
+        /// Unloads the configs that may be loaded during a test without saving them.
+        /// </summary>
         private static void ClearLoadedConfigs()
         {
-            FieldInfo field = typeof(EditorConfigUtility).GetField("s_loadedConfigs", BindingFlags.NonPublic | BindingFlags.Static);
-            if (field == null)
-                return;
-            ((IList)field.GetValue(null)).Clear();
+            EditorConfigUtility.Unload(typeof(TypesMigration));
+            EditorConfigUtility.Unload(typeof(ScriptCache));
         }
 
         #region Resolve

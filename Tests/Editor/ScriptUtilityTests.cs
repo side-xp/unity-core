@@ -23,7 +23,7 @@ namespace SideXP.Core.Tests
     /// </summary>
     /// <remarks>
     /// The project-scan methods (<c>GetScriptRef*</c>, <c>GetProjectTypes</c>) are intentionally not exercised: they scan every
-    /// <see cref="UnityEditor.MonoScript"/> in the project and read <c>CoreEditorConfig</c>, whose default
+    /// <see cref="UnityEditor.MonoScript"/> in the project and read <c>CoreProjectSettings</c>, whose default
     /// <c>ExcludedDirectories = { "Packages" }</c> filters out every package-embedded fixture (same wall as
     /// <c>MonoScriptExtensions</c>). Fixtures are declared as temp <c>*.cs</c> files in the OS temp directory (deleted in teardown)
     /// and resolve to types that actually exist in this test assembly, so the parser can find them via reflection.
@@ -77,15 +77,11 @@ namespace SideXP.Core.Tests
         }
 
         /// <summary>
-        /// Empties <c>EditorConfigUtility.s_loadedConfigs</c> via reflection so any config loaded during a test (e.g. the ScriptCache)
-        /// is dropped before it can be saved.
+        /// Unloads the <see cref="ScriptCache"/> (which may be loaded during a test) so it's dropped before it can be saved.
         /// </summary>
         private static void ClearLoadedConfigs()
         {
-            FieldInfo field = typeof(EditorConfigUtility).GetField("s_loadedConfigs", BindingFlags.NonPublic | BindingFlags.Static);
-            if (field == null)
-                return;
-            ((IList)field.GetValue(null)).Clear();
+            EditorConfigUtility.Unload(typeof(ScriptCache));
         }
 
         #region ClassDeclarationPattern

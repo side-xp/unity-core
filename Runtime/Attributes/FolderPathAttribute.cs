@@ -24,6 +24,12 @@ namespace SideXP.Core
         /// </summary>
         public bool AllowExternal { get; set; } = false;
 
+        /// <summary>
+        /// If enabled, a path typed in the text field is only applied when pressing Enter or when the field loses focus, instead of on
+        /// every keystroke.
+        /// </summary>
+        public bool IsDelayed { get; set; } = false;
+
         /// <inheritdoc cref="FolderPathAttribute(string, bool)"/>
         public FolderPathAttribute() { }
 
