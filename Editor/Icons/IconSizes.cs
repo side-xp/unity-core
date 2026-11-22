@@ -12,17 +12,17 @@ namespace SideXP.Core.EditorOnly
         /// <summary>
         /// Size on screen of <see cref="EIconSize.Small"/> icons, in points.
         /// </summary>
-        internal const float SmallPointSize = 16f;
+        private const float SmallPointSize = 16f;
 
         /// <summary>
         /// Size on screen of <see cref="EIconSize.Medium"/> icons, in points.
         /// </summary>
-        internal const float MediumPointSize = 24f;
+        private const float MediumPointSize = 24f;
 
         /// <summary>
         /// Size on screen of <see cref="EIconSize.Large"/> icons, in points.
         /// </summary>
-        internal const float LargePointSize = 32f;
+        private const float LargePointSize = 32f;
 
         /// <summary>
         /// Margin under which a stored size is considered large enough, in pixels, so float imprecision on the display scale doesn't

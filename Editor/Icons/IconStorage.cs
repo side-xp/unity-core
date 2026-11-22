@@ -35,17 +35,17 @@ namespace SideXP.Core.EditorOnly
         /// <summary>
         /// Name of the category folder for icons without a category. Shared with the icons of an actual "Other" category, if any.
         /// </summary>
-        internal const string OtherFolderName = "other";
+        private const string OtherFolderName = "other";
 
         /// <summary>
         /// Name of the outline style, used in icon file names and in the Tabler catalog.
         /// </summary>
-        internal const string OutlineStyleName = "outline";
+        private const string OutlineStyleName = "outline";
 
         /// <summary>
         /// Name of the filled style, used in icon file names and in the Tabler catalog.
         /// </summary>
-        internal const string FilledStyleName = "filled";
+        private const string FilledStyleName = "filled";
 
         /// <summary>
         /// Extension of the stored icon files.
