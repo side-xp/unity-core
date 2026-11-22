@@ -2,6 +2,35 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.6.0](https://github.com/side-xp/unity-core/compare/v1.5.0...v1.6.0) (2026-11-22)
+
+
+### Features
+
+* added `FileEditorUtility` ([bf66a48](https://github.com/side-xp/unity-core/commit/bf66a489ea92320b8ce7ea0d2dc90e411c24ddcd))
+* **dl:** queue, scheduler & base resource download behavior ([1f6283f](https://github.com/side-xp/unity-core/commit/1f6283f1502da395e29728e450cf1e3f2499e38d))
+* **icons:** custom UI element for editor icons ([3e99750](https://github.com/side-xp/unity-core/commit/3e997505bd3d93e6d6382f9d07319d083ea7116f))
+* **icons:** editor icons utilities ([28ed852](https://github.com/side-xp/unity-core/commit/28ed8520a74b3cfcb00ff4fb1b2189d90686eb70))
+* **icons:** icons diff ([fd675d3](https://github.com/side-xp/unity-core/commit/fd675d393f966610ef612c08b72167f70a41883f))
+* **icons:** icons download queue ([98043bc](https://github.com/side-xp/unity-core/commit/98043bcc6f8856826f9930eef8a31c3099e6285b))
+* **icons:** icons index ([92590d0](https://github.com/side-xp/unity-core/commit/92590d0978b6ed32cd58f90bfab1fd726d59ba58))
+* **icons:** icons processing ([da69995](https://github.com/side-xp/unity-core/commit/da699951e883b785b8b14316fc3b0ff053b68a09))
+* **icons:** icons storage & config ([8c976ef](https://github.com/side-xp/unity-core/commit/8c976ef25f58ab7e9a1e4c1083c9405f09c83db1))
+* **icons:** icons viewer window ([963b822](https://github.com/side-xp/unity-core/commit/963b822219b5be8f32e26acffd6e2482d9592aa8))
+* **icons:** on-demand icons download ([9ab1355](https://github.com/side-xp/unity-core/commit/9ab13551a224811467a8b53ce411bea1dc8b013a))
+* **icons:** retries ([855a691](https://github.com/side-xp/unity-core/commit/855a6916a4e87498bcea670193eed777f48d8e83))
+* **icons:** use Progress API for supported Unity versions ([73eb171](https://github.com/side-xp/unity-core/commit/73eb171243f84e6b0f5856cf320cd5f6fdaf70fc))
+* improved editor settings provider ([c225bda](https://github.com/side-xp/unity-core/commit/c225bda97900344ea1757743cc36afcfe6a8e436))
+* major editor config utilities improvements ([a501370](https://github.com/side-xp/unity-core/commit/a5013705b554cc56891d7fbc5bb1f8315c8dc57b))
+
+
+### Bug Fixes
+
+* **icons:** add preference keywords ([350303a](https://github.com/side-xp/unity-core/commit/350303a9be90446c40589b94bcaefda00c0adbb4))
+* **icons:** improved icons download retry policy ([8d8a9e1](https://github.com/side-xp/unity-core/commit/8d8a9e1d212b1ebc6265af87d3d964cfdc72de07))
+* **icons:** use icon in preferences GUI ([bca037a](https://github.com/side-xp/unity-core/commit/bca037af2d70f76b0510e435cb029f1cf0f41017))
+* split project & user settings ([0eec292](https://github.com/side-xp/unity-core/commit/0eec292d0108742f21167c1f01c0ee3ed0a0942e))
+
 ## [1.5.0](https://github.com/side-xp/unity-core/compare/v1.4.2...v1.5.0) (2026-09-29)
 
 
