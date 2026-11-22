@@ -154,7 +154,7 @@ Icons come from the [Tabler Icons](https://tabler.io/icons) npm packages, served
 1. The icons index is downloaded and converted (about 2 MB): it lists the available icons, with their categories, tags and styles.
 2. Each icon is downloaded when it's first used, in both its styles (a few kilobytes each), then converted into white images at every stored size.
 
-The downloads are displayed in the *Background Tasks* window (from Unity 2020.1). If the network is not available, the editor keeps working: icons already downloaded are displayed, and the others show their placeholder until the connection is back.
+The downloads are displayed in the *Background Tasks* window (from Unity 2020.1). If the network is not available, the editor keeps working: icons already downloaded are displayed, and the others show their placeholder until the connection is back. Icons are downloaded with the [web downloads](web-downloads.md) feature of the package, which you can also use in your own tools.
 
 The index keeps the Tabler version it comes from, and icons are always downloaded in that version. Use `Tools > Sideways Experiments > Icons > Refresh Icons Index` to update to the latest Tabler version.
 

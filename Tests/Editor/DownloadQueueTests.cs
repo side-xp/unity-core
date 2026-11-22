@@ -271,7 +271,7 @@ namespace SideXP.Core.Tests
             _answer = Pending;
             int requestCount = DownloadQueue.DefaultMaxConcurrentDownloads + 2;
             for (int i = 0; i < requestCount; i++)
-                _queue.Request(new FakeDownloadRequest($"icon-{i}"), null);
+                _queue.Request(new FakeDownloadRequest($"file-{i}"), null);
 
             _scheduler.Update(0);
 

@@ -17,6 +17,7 @@ As a general rule, this package is meant to be used as a foundation for our othe
 - **[Weighted random](https://side-xp.github.io/unity-core/guides/probability-lists/)**: `ProbabilityList<T>`, an inspector-editable weighted collection for loot tables, spawn tables, or random events.
 - **[Inline sub-assets](https://side-xp.github.io/unity-core/guides/subassets/)**: `SubassetsList<T>` lets you author nested `ScriptableObject`s straight from the parent asset's inspector.
 - **[Editor icons](https://side-xp.github.io/unity-core/guides/editor-icons/)**: more than 5,000 [Tabler](https://tabler.io/icons) icons for your editor tools, in IMGUI and UI Toolkit, downloaded on demand and shared by all your projects, with a window to browse them.
+- **[Web downloads](https://side-xp.github.io/unity-core/guides/web-downloads/)**: download files from the web in your editor tools, with retries, download limits and progress in the *Background Tasks* window.
 - **Editor-friendly serializable types**: [`OptionalValue<T>`](https://side-xp.github.io/unity-core/api/SideXP.Core/OptionalValue), [`Range`/`RangeInt`](https://side-xp.github.io/unity-core/guides/range), [`Pagination`](https://side-xp.github.io/unity-core/guides/pagination), ...
 
 ... and many more things!
