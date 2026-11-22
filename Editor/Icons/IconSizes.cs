@@ -71,10 +71,18 @@ namespace SideXP.Core.EditorOnly
         /// <returns>Returns the size of the stored file to use, in pixels.</returns>
         internal static int GetPixelSize(EIconSize size, float pixelsPerPoint)
         {
+            return GetPixelSize(GetPointSize(size), pixelsPerPoint);
+        }
+
+        /// <inheritdoc cref="GetPixelSize(EIconSize, float)"/>
+        /// <param name="pointSize">The size of the icon on screen, in points (as a custom size set from USS).</param>
+        /// <param name="pixelsPerPoint">The display scale, as <see cref="UnityEditor.EditorGUIUtility.pixelsPerPoint"/>.</param>
+        internal static int GetPixelSize(float pointSize, float pixelsPerPoint)
+        {
             if (pixelsPerPoint <= 0f)
                 pixelsPerPoint = 1f;
 
-            float requiredPixels = GetPointSize(size) * pixelsPerPoint;
+            float requiredPixels = pointSize * pixelsPerPoint;
             int[] storedSizes = IconStorage.StoredSizes;
             foreach (int storedSize in storedSizes)
             {

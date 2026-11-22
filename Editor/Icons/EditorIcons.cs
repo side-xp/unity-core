@@ -123,25 +123,26 @@ namespace SideXP.Core.EditorOnly
         public static Texture2D GetIcon(string name, EIconStyle style = EIconStyle.Outline, EIconColor color = EIconColor.Auto,
             EIconSize size = EIconSize.Small)
         {
-            return GetIconOrPlaceholder(name, style, color, size, out _);
+            return GetIconOrPlaceholder(name, style, color, IconSizes.GetPointSize(size), out _);
         }
 
         /// <summary>
         /// Gets an icon only if it's already available.
         /// </summary>
         /// <remarks>
-        /// If the icon is not downloaded yet, the download starts as with <see cref="GetIcon"/>, so a later call may succeed.
+        /// If the icon is not downloaded yet, the download starts as with
+        /// <see cref="GetIcon(string, EIconStyle, EIconColor, EIconSize)"/>, so a later call may succeed.
         /// </remarks>
         /// <param name="name">The name of the icon, as <c>home</c>.</param>
         /// <param name="icon">Outputs the icon texture, or null if it's not available yet.</param>
-        /// <param name="style"><inheritdoc cref="GetIcon" path="/param[@name='style']"/></param>
+        /// <param name="style"><inheritdoc cref="GetIcon(string, EIconStyle, EIconColor, EIconSize)" path="/param[@name='style']"/></param>
         /// <param name="color">The color of the icon.</param>
-        /// <param name="size"><inheritdoc cref="GetIcon" path="/param[@name='size']"/></param>
+        /// <param name="size"><inheritdoc cref="GetIcon(string, EIconStyle, EIconColor, EIconSize)" path="/param[@name='size']"/></param>
         /// <returns>Returns true if the icon is available.</returns>
         public static bool TryGetIcon(string name, out Texture2D icon, EIconStyle style = EIconStyle.Outline,
             EIconColor color = EIconColor.Auto, EIconSize size = EIconSize.Small)
         {
-            Texture2D texture = GetIconOrPlaceholder(name, style, color, size, out bool isAvailable);
+            Texture2D texture = GetIconOrPlaceholder(name, style, color, IconSizes.GetPointSize(size), out bool isAvailable);
             icon = isAvailable ? texture : null;
             return isAvailable;
         }
@@ -155,9 +156,9 @@ namespace SideXP.Core.EditorOnly
         /// </remarks>
         /// <param name="name">The name of the icon, as <c>home</c>.</param>
         /// <param name="onLoaded">Called with the icon texture once it's available.</param>
-        /// <param name="style"><inheritdoc cref="GetIcon" path="/param[@name='style']"/></param>
+        /// <param name="style"><inheritdoc cref="GetIcon(string, EIconStyle, EIconColor, EIconSize)" path="/param[@name='style']"/></param>
         /// <param name="color">The color of the icon.</param>
-        /// <param name="size"><inheritdoc cref="GetIcon" path="/param[@name='size']"/></param>
+        /// <param name="size"><inheritdoc cref="GetIcon(string, EIconStyle, EIconColor, EIconSize)" path="/param[@name='size']"/></param>
         /// <exception cref="ArgumentNullException">Thrown if the callback is null.</exception>
         public static void LoadIcon(string name, Action<Texture2D> onLoaded, EIconStyle style = EIconStyle.Outline,
             EIconColor color = EIconColor.Auto, EIconSize size = EIconSize.Small)
@@ -165,38 +166,7 @@ namespace SideXP.Core.EditorOnly
             if (onLoaded == null)
                 throw new ArgumentNullException(nameof(onLoaded));
 
-            if (TryGetIcon(name, out Texture2D icon, style, color, size))
-            {
-                onLoaded(icon);
-                return;
-            }
-
-            if (!IconStorage.IsValidIconName(name))
-                return;
-
-            // Wait for the index if it's being downloaded (asking for it while refreshing joins the refresh in progress)
-            if (s_index == null)
-            {
-                if (IconIndexRefresher.IsRefreshing)
-                {
-                    IconIndexRefresher.Refresh(false, job =>
-                    {
-                        if (job.IsSuccess)
-                            LoadIcon(name, onLoaded, style, color, size);
-                    });
-                }
-                return;
-            }
-
-            if (!s_entries.TryGetValue(name, out IconIndexEntry entry))
-                return;
-
-            EIconStyle resolvedStyle = entry.hasFilled ? style : EIconStyle.Outline;
-            RequestDownload(s_index.version, entry, resolvedStyle, isStored =>
-            {
-                if (isStored)
-                    LoadIcon(name, onLoaded, style, color, size);
-            });
+            LoadIcon(name, onLoaded, style, color, IconSizes.GetPointSize(size));
         }
 
         /// <summary>
@@ -278,7 +248,7 @@ namespace SideXP.Core.EditorOnly
         /// <param name="name">The name of the icon, as <c>home</c>.</param>
         /// <param name="text">The text of the content, or null for an icon only.</param>
         /// <param name="tooltip">The tooltip of the content, or null for none.</param>
-        /// <param name="style"><inheritdoc cref="GetIcon" path="/param[@name='style']"/></param>
+        /// <param name="style"><inheritdoc cref="GetIcon(string, EIconStyle, EIconColor, EIconSize)" path="/param[@name='style']"/></param>
         /// <param name="color">The color of the icon.</param>
         /// <param name="size">The size of the icon on screen.</param>
         /// <returns>Returns the created content.</returns>
@@ -296,7 +266,7 @@ namespace SideXP.Core.EditorOnly
         /// <param name="label">
         /// The text and tooltip of the button, or null for an icon only. Its image is replaced by the icon, without changing it.
         /// </param>
-        /// <param name="style"><inheritdoc cref="GetIcon" path="/param[@name='style']"/></param>
+        /// <param name="style"><inheritdoc cref="GetIcon(string, EIconStyle, EIconColor, EIconSize)" path="/param[@name='style']"/></param>
         /// <param name="color">The color of the icon.</param>
         /// <param name="size">The size of the icon on screen.</param>
         /// <returns>Returns true if the button has been clicked.</returns>
@@ -315,7 +285,7 @@ namespace SideXP.Core.EditorOnly
         /// <param name="label">
         /// The text and tooltip of the button, or null for an icon only. Its image is replaced by the icon, without changing it.
         /// </param>
-        /// <param name="style"><inheritdoc cref="GetIcon" path="/param[@name='style']"/></param>
+        /// <param name="style"><inheritdoc cref="GetIcon(string, EIconStyle, EIconColor, EIconSize)" path="/param[@name='style']"/></param>
         /// <param name="color">The color of the icon.</param>
         /// <param name="size">The size of the icon on screen.</param>
         /// <param name="options">The layout options of the button.</param>
@@ -352,6 +322,73 @@ namespace SideXP.Core.EditorOnly
             s_pendingKeys.Clear();
         }
 
+        /// <summary>
+        /// Gets an icon drawn at any size on screen, or a placeholder of the same size if it's being downloaded or doesn't exist.
+        /// </summary>
+        /// <remarks>
+        /// Same as <see cref="GetIcon(string, EIconStyle, EIconColor, EIconSize)"/>, for custom sizes (as set from USS on the
+        /// <see cref="Icon"/> element).
+        /// </remarks>
+        /// <param name="name">The name of the icon.</param>
+        /// <param name="style">The style of the icon.</param>
+        /// <param name="color">The color of the icon.</param>
+        /// <param name="pointSize">The size of the icon on screen, in points.</param>
+        /// <param name="isAvailable">Outputs true if the returned texture is the icon, or false if it's a placeholder.</param>
+        /// <returns>Returns the icon texture, or a placeholder of the same size.</returns>
+        internal static Texture2D GetIcon(string name, EIconStyle style, EIconColor color, float pointSize, out bool isAvailable)
+        {
+            return GetIconOrPlaceholder(name, style, color, pointSize, out isAvailable);
+        }
+
+        /// <summary>
+        /// Gets an icon drawn at any size on screen asynchronously, downloading it if needed.
+        /// </summary>
+        /// <remarks>
+        /// Same as <see cref="LoadIcon(string, Action{Texture2D}, EIconStyle, EIconColor, EIconSize)"/>, for custom sizes (as set from
+        /// USS on the <see cref="Icon"/> element).
+        /// </remarks>
+        /// <param name="name">The name of the icon.</param>
+        /// <param name="onLoaded">Called with the icon texture once it's available. Must not be null.</param>
+        /// <param name="style">The style of the icon.</param>
+        /// <param name="color">The color of the icon.</param>
+        /// <param name="pointSize">The size of the icon on screen, in points.</param>
+        internal static void LoadIcon(string name, Action<Texture2D> onLoaded, EIconStyle style, EIconColor color, float pointSize)
+        {
+            Texture2D icon = GetIconOrPlaceholder(name, style, color, pointSize, out bool isAvailable);
+            if (isAvailable)
+            {
+                onLoaded(icon);
+                return;
+            }
+
+            if (!IconStorage.IsValidIconName(name))
+                return;
+
+            // Wait for the index if it's being downloaded (asking for it while refreshing joins the refresh in progress)
+            if (s_index == null)
+            {
+                if (IconIndexRefresher.IsRefreshing)
+                {
+                    IconIndexRefresher.Refresh(false, job =>
+                    {
+                        if (job.IsSuccess)
+                            LoadIcon(name, onLoaded, style, color, pointSize);
+                    });
+                }
+                return;
+            }
+
+            if (!s_entries.TryGetValue(name, out IconIndexEntry entry))
+                return;
+
+            EIconStyle resolvedStyle = entry.hasFilled ? style : EIconStyle.Outline;
+            RequestDownload(s_index.version, entry, resolvedStyle, isStored =>
+            {
+                if (isStored)
+                    LoadIcon(name, onLoaded, style, color, pointSize);
+            });
+        }
+
         #endregion
 
 
@@ -363,15 +400,14 @@ namespace SideXP.Core.EditorOnly
         /// <param name="name">The name of the icon.</param>
         /// <param name="style">The style of the icon.</param>
         /// <param name="color">The color of the icon.</param>
-        /// <param name="size">The size of the icon on screen.</param>
+        /// <param name="pointSize">The size of the icon on screen, in points.</param>
         /// <param name="isAvailable">Outputs true if the returned texture is the icon, or false if it's a placeholder.</param>
         /// <returns>Returns the icon texture, or a placeholder of the same size.</returns>
-        private static Texture2D GetIconOrPlaceholder(string name, EIconStyle style, EIconColor color, EIconSize size,
+        private static Texture2D GetIconOrPlaceholder(string name, EIconStyle style, EIconColor color, float pointSize,
             out bool isAvailable)
         {
             isAvailable = false;
-            float pointSize = IconSizes.GetPointSize(size);
-            int pixelSize = IconSizes.GetPixelSize(size, EditorGUIUtility.pixelsPerPoint);
+            int pixelSize = IconSizes.GetPixelSize(pointSize, EditorGUIUtility.pixelsPerPoint);
 
             try
             {
