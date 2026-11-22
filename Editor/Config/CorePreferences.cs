@@ -38,7 +38,14 @@ namespace SideXP.Core.EditorOnly
 
         #region Public API
 
-        /// <inheritdoc cref="_iconsFolder"/>
+        /// <summary>
+        /// Absolute path to the folder where the editor icons are stored, or an empty string if the default folder for this OS is
+        /// used.
+        /// </summary>
+        /// <remarks>
+        /// Read-only, since changing the folder must move the icons. Change it from the <c>Sideways Experiments &gt; General</c>
+        /// page of the Preferences window.
+        /// </remarks>
         public string IconsFolder => _iconsFolder;
 
         #endregion

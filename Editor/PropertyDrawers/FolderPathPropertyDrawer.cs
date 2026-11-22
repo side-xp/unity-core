@@ -38,6 +38,7 @@ namespace SideXP.Core.EditorOnly
                 property.serializedObject.ApplyModifiedProperties();
         }
 
+        /// <inheritdoc cref="PropertyDrawer.GetPropertyHeight(SerializedProperty, GUIContent)"/>
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
         {
             return property.IsArrayElement()

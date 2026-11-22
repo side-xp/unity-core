@@ -16,6 +16,7 @@ As a general rule, this package is meant to be used as a foundation for our othe
 - **Utility classes**: focused static helpers such as [`MathUtility`](https://side-xp.github.io/unity-core/api/SideXP.Core/MathUtility), [`ColorUtility`](https://side-xp.github.io/unity-core/api/SideXP.Core/ColorUtility), [`TransformUtility`](https://side-xp.github.io/unity-core/api/SideXP.Core/TransformUtility) (pooling & hierarchy), and (in the editor) [`ObjectUtility`](https://side-xp.github.io/unity-core/api/SideXP.Core.EditorOnly/ObjectUtility), ...
 - **[Weighted random](https://side-xp.github.io/unity-core/guides/probability-lists/)**: `ProbabilityList<T>`, an inspector-editable weighted collection for loot tables, spawn tables, or random events.
 - **[Inline sub-assets](https://side-xp.github.io/unity-core/guides/subassets/)**: `SubassetsList<T>` lets you author nested `ScriptableObject`s straight from the parent asset's inspector.
+- **[Editor icons](https://side-xp.github.io/unity-core/guides/editor-icons/)**: more than 5,000 [Tabler](https://tabler.io/icons) icons for your editor tools, in IMGUI and UI Toolkit, downloaded on demand and shared by all your projects, with a window to browse them.
 - **Editor-friendly serializable types**: [`OptionalValue<T>`](https://side-xp.github.io/unity-core/api/SideXP.Core/OptionalValue), [`Range`/`RangeInt`](https://side-xp.github.io/unity-core/guides/range), [`Pagination`](https://side-xp.github.io/unity-core/guides/pagination), ...
 
 ... and many more things!
@@ -64,6 +65,13 @@ This project is licensed under the [MIT License](./LICENSE.md).
 <!-- docs:remove:end -->
 <!-- docs:only:start
 This project is licensed under the [MIT License](https://mit-license.org).
+docs:only:end -->
+
+<!-- docs:remove:start -->
+The editor icons come from [Tabler Icons](https://github.com/tabler/tabler-icons), also released under the MIT License. See [Third Party Notices.md](./Third%20Party%20Notices.md).
+<!-- docs:remove:end -->
+<!-- docs:only:start
+The editor icons come from [Tabler Icons](https://github.com/tabler/tabler-icons), also released under the [MIT License](https://github.com/tabler/tabler-icons/blob/main/LICENSE).
 docs:only:end -->
 
 ---
