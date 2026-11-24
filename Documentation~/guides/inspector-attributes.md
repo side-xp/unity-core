@@ -101,6 +101,25 @@ Turns a `string` field into a folder path picker with a "browse" button. By defa
 
 ![FolderPath UI preview](../img/custom_attributes-folder_path.png)
 
+## `AssetDropdown`
+
+Draws a reference to an asset as a dropdown, instead of an object field. The dropdown lists *None*, then every asset of the field's type found in the project, including the assets of its derived types and the sub-assets. Use it for fields that reference a small, known set of "definition" assets (categories, types, tiers), where picking from a list is faster than drag-and-drop or the object picker.
+
+```cs
+[AssetDropdown] public ItemCategory category;
+[AssetDropdown] public AudioClip[] footsteps;
+```
+
+![AssetDropdown UI preview](../img/custom_attributes-asset_dropdown-inspector.png)
+![AssetDropdown demo assets](../img/custom_attributes-asset_dropdown-assets.png)
+
+- The options are found when the dropdown opens, so new assets show up right away.
+- Sub-assets are listed in a submenu named after their main asset, and a `/` in the name of a sub-asset creates a submenu too.
+- The field must reference a type of asset that is not a component: a `ScriptableObject` type, or a type such as `Material`, `Sprite`, `AudioClip` or `GameObject` (prefabs and models, without their children). On arrays and lists, each element is a dropdown. Other fields show a message instead.
+- A button with a search icon, next to the dropdown, highlights the referenced asset in the Project window.
+- The drawer supports IMGUI and, from Unity 2022.2, UI Toolkit. It also supports editing several objects at once.
+- `AssetDropdownMenu` (the menu) and `AssetDropdownField` (the UI Toolkit field, from Unity 2022.2) can be reused in your own editor tools.
+
 ## `AnimCurve`
 
 Frames an `AnimationCurve` field inside a fixed bounding box (min/max time and value) and tints the curve, so multiple curves stay visually consistent and comparable.

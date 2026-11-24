@@ -191,6 +191,94 @@ namespace SideXP.Core.EditorOnly
         }
 
         /// <summary>
+        /// Loads all the assets of a given type found in the project, including the assets of its derived types and the sub-assets,
+        /// in the order of the Project window.
+        /// </summary>
+        /// <remarks>
+        /// Assets are ordered by path. Sub-assets come after their main asset, ordered by name. Sub-assets hidden from the Project
+        /// window (<see cref="HideFlags.HideInHierarchy"/>) are skipped. For <see cref="GameObject"/>, only the main assets are loaded
+        /// (prefabs and models), since the other game objects of their files are the children of their hierarchy.
+        /// <para>
+        /// Unlike <see cref="FindAssets(Type, bool)"/>, each concrete type among the type and its derived types is searched on its own,
+        /// so an abstract type finds the assets of its concrete types.
+        /// </para>
+        /// </remarks>
+        /// <param name="assetType">The type of the assets to load.</param>
+        /// <returns>Returns the loaded assets.</returns>
+        /// <exception cref="ArgumentException">Thrown if the type is null or doesn't derive from <see cref="Object"/>.</exception>
+        public static List<Object> LoadAllAssetsOfType(Type assetType)
+        {
+            if (assetType == null || !typeof(Object).IsAssignableFrom(assetType))
+                throw new ArgumentException($"The type of the assets must derive from {typeof(Object).FullName}.", nameof(assetType));
+
+            // The type filters only use type names: the files found may contain assets of other types with the same name, which are
+            // filtered out once loaded
+            HashSet<string> typeNames = new HashSet<string>();
+            if (!assetType.IsAbstract && !assetType.ContainsGenericParameters)
+                typeNames.Add(assetType.Name);
+
+            foreach (Type derivedType in TypeCache.GetTypesDerivedFrom(assetType))
+            {
+                if (!derivedType.IsAbstract && !derivedType.ContainsGenericParameters)
+                    typeNames.Add(derivedType.Name);
+            }
+
+            HashSet<string> paths = new HashSet<string>();
+            foreach (string typeName in typeNames)
+            {
+                foreach (string guid in AssetDatabase.FindAssets($"t:{typeName}"))
+                    paths.Add(AssetDatabase.GUIDToAssetPath(guid));
+            }
+
+            List<string> sortedPaths = new List<string>(paths);
+            sortedPaths.Sort(StringComparer.OrdinalIgnoreCase);
+
+            // The other game objects of a prefab or a model are the children of its hierarchy, not assets of their own
+            bool hasSubassets = assetType != typeof(GameObject);
+            List<Object> assets = new List<Object>();
+            List<Object> subassets = new List<Object>();
+            foreach (string path in sortedPaths)
+            {
+                Object mainAsset = AssetDatabase.LoadMainAssetAtPath(path);
+                if (assetType.IsInstanceOfType(mainAsset))
+                    assets.Add(mainAsset);
+
+                if (!hasSubassets)
+                    continue;
+
+                subassets.Clear();
+                foreach (Object subasset in AssetDatabase.LoadAllAssetsAtPath(path))
+                {
+                    if (subasset == null || subasset == mainAsset || !assetType.IsInstanceOfType(subasset))
+                        continue;
+
+                    if ((subasset.hideFlags & HideFlags.HideInHierarchy) != 0)
+                        continue;
+
+                    subassets.Add(subasset);
+                }
+
+                subassets.Sort((a, b) => string.Compare(a.name, b.name, StringComparison.OrdinalIgnoreCase));
+                assets.AddRange(subassets);
+            }
+
+            return assets;
+        }
+
+        /// <typeparam name="T">The type of the assets to load.</typeparam>
+        /// <inheritdoc cref="LoadAllAssetsOfType(Type)"/>
+        public static List<T> LoadAllAssetsOfType<T>()
+            where T : Object
+        {
+            List<Object> assets = LoadAllAssetsOfType(typeof(T));
+            List<T> typedAssets = new List<T>(assets.Count);
+            foreach (Object asset in assets)
+                typedAssets.Add((T)asset);
+
+            return typedAssets;
+        }
+
+        /// <summary>
         /// Gets the first subasset of the given type in the given main asset.
         /// </summary>
         /// <param name="asset">The main asset of which you want to get the subasset.</param>
