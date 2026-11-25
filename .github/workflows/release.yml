@@ -183,14 +183,14 @@ jobs:
           git archive --format=zip    -o "${{ steps.pkg.outputs.name }}.zip"    HEAD
           git archive --format=tar.gz -o "${{ steps.pkg.outputs.name }}.tar.gz" HEAD
 
-      # Zip Documentation~ (incl. the generated api/ and README.md, excl. zensical.toml and the build
+      # Zip Documentation~ (incl. the generated api/ and README.md, excl. the site config and the build
       # output) into Documentation_<tag>.zip.
       - name: Build documentation archive
         if: needs.release.outputs.released == 'true'
         working-directory: Documentation~
         run: |
           zip -r -q "../Documentation_${{ needs.release.outputs.tag }}.zip" . \
-            -x "zensical.toml" -x "site/*" -x ".cache/*"
+            -x "zensical.toml" -x ".nav.yml" -x "site/*" -x ".cache/*"
 
       - name: Upload release assets
         if: needs.release.outputs.released == 'true'
