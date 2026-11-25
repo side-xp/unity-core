@@ -155,6 +155,123 @@ namespace SideXP.Core.Tests
         #endregion
 
 
+        #region LoadAllAssetsOfType
+
+        /// <summary>
+        /// The assets of a type include the assets of its derived types and the sub-assets, ordered by path, with the sub-assets after
+        /// their main asset, ordered by name. Hidden sub-assets are skipped.
+        /// </summary>
+        [Test]
+        public void LoadAllAssetsOfType_BaseType_IncludesDerivedTypesAndSubassetsInOrder()
+        {
+            CreateSearchedAssets();
+
+            CollectionAssert.AreEqual(new[] { "Derived", "Main", "Sub A", "Sub Z" }, LoadNamesInTempDir(typeof(SampleScriptableObject)));
+        }
+
+        /// <summary>
+        /// The assets of a derived type skip the assets of its base type, including the main asset of a file that contains one of its
+        /// sub-assets.
+        /// </summary>
+        [Test]
+        public void LoadAllAssetsOfType_DerivedType_SkipsBaseType()
+        {
+            CreateSearchedAssets();
+
+            CollectionAssert.AreEqual(new[] { "Derived", "Sub Z" }, LoadNamesInTempDir(typeof(SampleDerivedScriptableObject)));
+        }
+
+        /// <summary>
+        /// The generic version loads the same assets, in the same order, typed.
+        /// </summary>
+        [Test]
+        public void LoadAllAssetsOfType_Generic_SameAssetsTyped()
+        {
+            CreateSearchedAssets();
+
+            List<SampleDerivedScriptableObject> assets = ObjectUtility.LoadAllAssetsOfType<SampleDerivedScriptableObject>();
+
+            CollectionAssert.AreEqual(ObjectUtility.LoadAllAssetsOfType(typeof(SampleDerivedScriptableObject)), assets);
+            CollectionAssert.IsNotEmpty(assets);
+        }
+
+        /// <summary>
+        /// The game objects are the prefabs, without the children of their hierarchy.
+        /// </summary>
+        [Test]
+        public void LoadAllAssetsOfType_GameObject_SkipsChildrenOfPrefabs()
+        {
+            GameObject root = new GameObject("Prefab");
+            new GameObject("Child").transform.SetParent(root.transform);
+            try
+            {
+                PrefabUtility.SaveAsPrefabAsset(root, $"{TempDir}/Prefab.prefab");
+            }
+            finally
+            {
+                Object.DestroyImmediate(root);
+            }
+
+            CollectionAssert.AreEqual(new[] { "Prefab" }, LoadNamesInTempDir(typeof(GameObject)));
+        }
+
+        /// <summary>
+        /// The type must be a type of Unity object.
+        /// </summary>
+        [Test]
+        public void LoadAllAssetsOfType_InvalidType_Throws()
+        {
+            Assert.Throws<System.ArgumentException>(() => ObjectUtility.LoadAllAssetsOfType(null));
+            Assert.Throws<System.ArgumentException>(() => ObjectUtility.LoadAllAssetsOfType(typeof(string)));
+        }
+
+        /// <summary>
+        /// Creates the assets searched by the tests of <see cref="ObjectUtility.LoadAllAssetsOfType(System.Type)"/>, next to the main
+        /// asset: <c>Derived</c> (<see cref="SampleDerivedScriptableObject"/>), and the sub-assets of the main asset <c>Sub Z</c>
+        /// (<see cref="SampleDerivedScriptableObject"/>), <c>Sub A</c> and <c>Hidden</c> (hidden from the Project window).
+        /// </summary>
+        private void CreateSearchedAssets()
+        {
+            AssetDatabase.CreateAsset(ScriptableObject.CreateInstance<SampleDerivedScriptableObject>(), $"{TempDir}/Derived.asset");
+
+            SampleDerivedScriptableObject subZ = ScriptableObject.CreateInstance<SampleDerivedScriptableObject>();
+            subZ.name = "Sub Z";
+            AssetDatabase.AddObjectToAsset(subZ, _mainAsset);
+
+            SampleScriptableObject subA = ScriptableObject.CreateInstance<SampleScriptableObject>();
+            subA.name = "Sub A";
+            AssetDatabase.AddObjectToAsset(subA, _mainAsset);
+
+            SampleScriptableObject hidden = ScriptableObject.CreateInstance<SampleScriptableObject>();
+            hidden.name = "Hidden";
+            hidden.hideFlags = HideFlags.HideInHierarchy;
+            AssetDatabase.AddObjectToAsset(hidden, _mainAsset);
+
+            // Import the file again, so the search index knows the types of its sub-assets
+            AssetDatabase.SaveAssets();
+            AssetDatabase.ImportAsset(MainAssetPath, ImportAssetOptions.ForceUpdate);
+        }
+
+        /// <summary>
+        /// Loads the assets of a type with <see cref="ObjectUtility.LoadAllAssetsOfType(System.Type)"/>, limited to the temporary
+        /// folder, so the other assets of the project don't affect the tests.
+        /// </summary>
+        /// <param name="type">The type of the assets to load.</param>
+        /// <returns>Returns the names of the loaded assets, in order.</returns>
+        private static string[] LoadNamesInTempDir(System.Type type)
+        {
+            List<string> names = new List<string>();
+            foreach (Object asset in ObjectUtility.LoadAllAssetsOfType(type))
+            {
+                if (AssetDatabase.GetAssetPath(asset).StartsWith($"{TempDir}/"))
+                    names.Add(asset.name);
+            }
+            return names.ToArray();
+        }
+
+        #endregion
+
+
         #region GetUniqueAssetName
 
         [Test]

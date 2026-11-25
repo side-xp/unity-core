@@ -6,8 +6,6 @@ using UnityEngine;
 using UnityEditor;
 using UnityEditorInternal;
 
-using SideXP.Core.Reflection;
-
 using Object = UnityEngine.Object;
 
 namespace SideXP.Core.EditorOnly
@@ -449,23 +447,42 @@ namespace SideXP.Core.EditorOnly
         /// <summary>
         /// Gets the expected type of subassets, based on the property's related field's declaration.
         /// </summary>
+        /// <remarks>
+        /// The field is the one resolved by Unity for this drawer (<see cref="PropertyDrawer.fieldInfo"/>), instead of a field searched
+        /// by name on the inspected object's type. This works for private fields declared in a base class (which
+        /// <see cref="Type.GetField(string, BindingFlags)"/> never returns), and for lists declared in nested serializable objects.
+        /// </remarks>
         /// <param name="property">The property being inspected (not the inner subassets list property).</param>
-        /// <returns>Returns the expected type of subassets.</returns>
+        /// <returns>Returns the expected type of subassets, or null if it can't be found.</returns>
         private Type GetExpectedSubassetsType(SerializedProperty property)
         {
-            Type subassetsBaseType = null;
-            try
-            {
-                FieldInfo propertyInfo = property.serializedObject.targetObject.GetType().GetField(property.name, ReflectionUtility.InstanceFlags);
-                subassetsBaseType = propertyInfo.FieldType.GenericTypeArguments[0];
-            }
-            catch (Exception e)
-            {
-                Debug.LogException(e);
-                Debug.LogError($"An error has occured while trying to get the subassets base type expected for the property {property.serializedObject.targetObject.GetType().Name}.{property.name}. See previous log for more info.", property.serializedObject.targetObject);
-            }
+            Type subassetsBaseType = GetSubassetsType(fieldInfo != null ? fieldInfo.FieldType : null);
+            if (subassetsBaseType == null)
+                Debug.LogError($"The subassets base type expected for the property {property.serializedObject.targetObject.GetType().Name}.{property.propertyPath} can't be found from its field's declaration.", property.serializedObject.targetObject);
 
             return subassetsBaseType;
+        }
+
+        /// <summary>
+        /// Gets the type of the subassets of a <see cref="SubassetsList{T}"/> field.
+        /// </summary>
+        /// <param name="fieldType">The type of the field. If the field is an array or a <see cref="List{T}"/>, its elements are expected to
+        /// be <see cref="SubassetsList{T}"/>, since Unity gives the field of the collection to the drawer of its elements.</param>
+        /// <returns>Returns the generic type of the <see cref="SubassetsList{T}"/>, or null if the field is not a
+        /// <see cref="SubassetsList{T}"/>.</returns>
+        private static Type GetSubassetsType(Type fieldType)
+        {
+            if (fieldType == null)
+                return null;
+
+            if (fieldType.IsArray)
+                fieldType = fieldType.GetElementType();
+            else if (fieldType.IsGenericType && fieldType.GetGenericTypeDefinition() == typeof(List<>))
+                fieldType = fieldType.GenericTypeArguments[0];
+
+            return fieldType.IsGenericType && fieldType.GetGenericTypeDefinition() == typeof(SubassetsList<>)
+                ? fieldType.GenericTypeArguments[0]
+                : null;
         }
 
     }
