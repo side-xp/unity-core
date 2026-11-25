@@ -208,8 +208,40 @@ namespace SideXP.Core.EditorOnly
         /// <exception cref="ArgumentException">Thrown if the type is null or doesn't derive from <see cref="Object"/>.</exception>
         public static List<Object> LoadAllAssetsOfType(Type assetType)
         {
+            return LoadAllAssetsOfType(assetType, null);
+        }
+
+        /// <summary>
+        /// Loads all the assets of a given type found in some folders of the project (subfolders included), including the assets of
+        /// its derived types and the sub-assets, in the order of the Project window.
+        /// </summary>
+        /// <remarks>
+        /// The assets outside of the folders are never loaded. The order and the assets found are the same as
+        /// <see cref="LoadAllAssetsOfType(Type)"/>, limited to the folders.
+        /// </remarks>
+        /// <example>
+        /// <c>LoadAllAssetsOfType(typeof(ItemSO), new[] { "Assets/Items/Weapons", "Assets/Items/Shields" })</c> loads the items of
+        /// both folders and of their subfolders.
+        /// </example>
+        /// <param name="assetType">The type of the assets to load.</param>
+        /// <param name="folders">
+        /// The paths of the folders where to search, relative to the project (for example <c>Assets/Items</c>), or null or empty to
+        /// search the whole project. The folders that don't exist are ignored: if none of them exists, no asset is found.
+        /// </param>
+        /// <returns>Returns the loaded assets.</returns>
+        /// <exception cref="ArgumentException">Thrown if the type is null or doesn't derive from <see cref="Object"/>.</exception>
+        public static List<Object> LoadAllAssetsOfType(Type assetType, string[] folders)
+        {
             if (assetType == null || !typeof(Object).IsAssignableFrom(assetType))
                 throw new ArgumentException($"The type of the assets must derive from {typeof(Object).FullName}.", nameof(assetType));
+
+            string[] searchInFolders = null;
+            if (folders != null && folders.Length > 0)
+            {
+                searchInFolders = GetExistingFolders(folders);
+                if (searchInFolders.Length == 0)
+                    return new List<Object>();
+            }
 
             // The type filters only use type names: the files found may contain assets of other types with the same name, which are
             // filtered out once loaded
@@ -223,10 +255,16 @@ namespace SideXP.Core.EditorOnly
                     typeNames.Add(derivedType.Name);
             }
 
+            // A set, since a file found in two overlapping folders, or for two type names, must be loaded once
             HashSet<string> paths = new HashSet<string>();
             foreach (string typeName in typeNames)
             {
-                foreach (string guid in AssetDatabase.FindAssets($"t:{typeName}"))
+                string filter = $"t:{typeName}";
+                string[] guids = searchInFolders != null
+                    ? AssetDatabase.FindAssets(filter, searchInFolders)
+                    : AssetDatabase.FindAssets(filter);
+
+                foreach (string guid in guids)
                     paths.Add(AssetDatabase.GUIDToAssetPath(guid));
             }
 
@@ -270,12 +308,42 @@ namespace SideXP.Core.EditorOnly
         public static List<T> LoadAllAssetsOfType<T>()
             where T : Object
         {
-            List<Object> assets = LoadAllAssetsOfType(typeof(T));
+            return LoadAllAssetsOfType<T>(null);
+        }
+
+        /// <typeparam name="T">The type of the assets to load.</typeparam>
+        /// <inheritdoc cref="LoadAllAssetsOfType(Type, string[])"/>
+        public static List<T> LoadAllAssetsOfType<T>(string[] folders)
+            where T : Object
+        {
+            List<Object> assets = LoadAllAssetsOfType(typeof(T), folders);
             List<T> typedAssets = new List<T>(assets.Count);
             foreach (Object asset in assets)
                 typedAssets.Add((T)asset);
 
             return typedAssets;
+        }
+
+        /// <summary>
+        /// Gets the folders of a list that exist in the project, in the format of the asset database: forward slashes, without a
+        /// slash at the end.
+        /// </summary>
+        /// <param name="folders">The paths of the folders, relative to the project.</param>
+        /// <returns>Returns the existing folders, without duplicates.</returns>
+        private static string[] GetExistingFolders(string[] folders)
+        {
+            List<string> existingFolders = new List<string>(folders.Length);
+            foreach (string folder in folders)
+            {
+                if (string.IsNullOrEmpty(folder))
+                    continue;
+
+                string normalizedFolder = folder.Replace('\\', '/').TrimEnd('/');
+                if (AssetDatabase.IsValidFolder(normalizedFolder) && !existingFolders.Contains(normalizedFolder))
+                    existingFolders.Add(normalizedFolder);
+            }
+
+            return existingFolders.ToArray();
         }
 
         /// <summary>

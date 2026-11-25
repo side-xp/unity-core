@@ -28,6 +28,8 @@ namespace SideXP.Core.Tests
         private const string TempFolderName = "ObjectUtilityTests_Temp";
         private const string TempDir = "Assets/" + TempFolderName;
         private const string MainAssetPath = TempDir + "/Main.asset";
+        private const string InnerFolderName = "Inner";
+        private const string InnerDir = TempDir + "/" + InnerFolderName;
 
         private SampleScriptableObject _mainAsset;
         private readonly List<Object> _toDestroy = new List<Object>();
@@ -223,6 +225,97 @@ namespace SideXP.Core.Tests
         {
             Assert.Throws<System.ArgumentException>(() => ObjectUtility.LoadAllAssetsOfType(null));
             Assert.Throws<System.ArgumentException>(() => ObjectUtility.LoadAllAssetsOfType(typeof(string)));
+            Assert.Throws<System.ArgumentException>(() => ObjectUtility.LoadAllAssetsOfType(typeof(string), new[] { TempDir }));
+        }
+
+        /// <summary>
+        /// With folders, only the assets of these folders are loaded, subfolders included, in the order of their paths.
+        /// </summary>
+        [Test]
+        public void LoadAllAssetsOfType_Folders_OnlyAssetsInFoldersAndSubfolders()
+        {
+            CreateInnerAsset();
+
+            CollectionAssert.AreEqual(new[] { "Inner" }, LoadNames(typeof(SampleScriptableObject), new[] { InnerDir }));
+            CollectionAssert.AreEqual(new[] { "Inner", "Main" }, LoadNames(typeof(SampleScriptableObject), new[] { TempDir }));
+        }
+
+        /// <summary>
+        /// The folders that don't exist are ignored, and no asset is found if none of them exists.
+        /// </summary>
+        [Test]
+        public void LoadAllAssetsOfType_MissingFolders_Ignored()
+        {
+            CreateInnerAsset();
+            string missingDir = $"{TempDir}/Missing";
+
+            CollectionAssert.AreEqual(new[] { "Inner" }, LoadNames(typeof(SampleScriptableObject), new[] { missingDir, InnerDir, null }));
+            Assert.IsEmpty(ObjectUtility.LoadAllAssetsOfType(typeof(SampleScriptableObject), new[] { missingDir }));
+        }
+
+        /// <summary>
+        /// The folders can use backslashes and end with a slash, and overlapping folders load each asset once.
+        /// </summary>
+        [Test]
+        public void LoadAllAssetsOfType_FolderFormats_SameAssetsOnce()
+        {
+            CreateInnerAsset();
+
+            CollectionAssert.AreEqual(new[] { "Inner" },
+                LoadNames(typeof(SampleScriptableObject), new[] { $"{InnerDir.Replace('/', '\\')}\\" }));
+            CollectionAssert.AreEqual(new[] { "Inner", "Main" },
+                LoadNames(typeof(SampleScriptableObject), new[] { $"{TempDir}/", InnerDir }));
+        }
+
+        /// <summary>
+        /// Without folders (null or empty), the whole project is searched.
+        /// </summary>
+        [Test]
+        public void LoadAllAssetsOfType_NoFolders_WholeProject()
+        {
+            CreateInnerAsset();
+            List<Object> allAssets = ObjectUtility.LoadAllAssetsOfType(typeof(SampleScriptableObject));
+
+            CollectionAssert.AreEqual(allAssets, ObjectUtility.LoadAllAssetsOfType(typeof(SampleScriptableObject), null));
+            CollectionAssert.AreEqual(allAssets, ObjectUtility.LoadAllAssetsOfType(typeof(SampleScriptableObject), new string[0]));
+        }
+
+        /// <summary>
+        /// The generic version with folders loads the same assets, in the same order, typed.
+        /// </summary>
+        [Test]
+        public void LoadAllAssetsOfType_GenericWithFolders_SameAssetsTyped()
+        {
+            CreateInnerAsset();
+
+            List<SampleScriptableObject> assets = ObjectUtility.LoadAllAssetsOfType<SampleScriptableObject>(new[] { TempDir });
+
+            CollectionAssert.AreEqual(ObjectUtility.LoadAllAssetsOfType(typeof(SampleScriptableObject), new[] { TempDir }), assets);
+            Assert.AreEqual(2, assets.Count);
+        }
+
+        /// <summary>
+        /// Creates the <see cref="InnerDir"/> folder, with the asset <c>Inner</c> (<see cref="SampleScriptableObject"/>).
+        /// </summary>
+        private static void CreateInnerAsset()
+        {
+            AssetDatabase.CreateFolder(TempDir, InnerFolderName);
+            AssetDatabase.CreateAsset(ScriptableObject.CreateInstance<SampleScriptableObject>(), $"{InnerDir}/Inner.asset");
+        }
+
+        /// <summary>
+        /// Loads the assets of a type in some folders with <see cref="ObjectUtility.LoadAllAssetsOfType(System.Type, string[])"/>.
+        /// </summary>
+        /// <param name="type">The type of the assets to load.</param>
+        /// <param name="folders">The folders where to search.</param>
+        /// <returns>Returns the names of the loaded assets, in order.</returns>
+        private static string[] LoadNames(System.Type type, string[] folders)
+        {
+            List<string> names = new List<string>();
+            foreach (Object asset in ObjectUtility.LoadAllAssetsOfType(type, folders))
+                names.Add(asset.name);
+
+            return names.ToArray();
         }
 
         /// <summary>
